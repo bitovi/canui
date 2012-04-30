@@ -1,5 +1,5 @@
-@page Mxui Mxui
-@parent index 6
+@page canui CanUI
+@parent index 1
 @tag beta
 
 Mxui is a __BETA__ UI library for 
