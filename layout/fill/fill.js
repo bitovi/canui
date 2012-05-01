@@ -35,10 +35,10 @@ steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 			}
 		},
 		/**
-		 * @function jQuery.fn.mxui_layout_fill
-		 * @parent Mxui
-		 * @test mxui/layout/fill/funcunit.html
-		 * @plugin mxui/layout/fill
+		 * @function jQuery.fn.can_ui_layout_fill
+		 * @parent canui
+		 * @test canui/layout/fill/funcunit.html
+		 * @plugin canui/layout/fill
 		 * 
 		 * Fills a parent element's height with the another 
 		 * element.  This is extremely useful for complex layout,
@@ -55,11 +55,11 @@ steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 		 * 
 		 * The follow makes `#child` fill up `#box`:
 		 * 
-		 *     $('#child').mxui_layout_fill("#box")
+		 *     $('#child').can_ui_layout_fill("#box")
 		 * 
 		 * ## Demo
 		 * 
-		 * @demo mxui/layout/fill/demo.html
+		 * @demo canui/layout/fill/demo.html
 		 * 
 		 * ## Limitations
 		 * 
@@ -78,24 +78,24 @@ steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 		 * 
 		 * The following fills the parent to `#child`:
 		 * 
-		 *     $('#child').mxui_layout_fill()
+		 *     $('#child').can_ui_layout_fill()
 		 *    
 		 * A selector can also be pased.  This selector is passed to jQuery's
 		 * closet method.  The following matches the first `#parent` element that
 		 * is a parentNode of `#child`:
 		 * 
-		 *     $('#child').mxui_layout_fill("#parent")
+		 *     $('#child').can_ui_layout_fill("#parent")
 		 *    
 		 * An element or window can also be passed.  The following will make
 		 * `#child` big enough so the entire window is filled:
 		 * 
-		 *     $('#child').mxui_layout_fill(window)
+		 *     $('#child').can_ui_layout_fill(window)
 		 * 
 		 * @return {jQuery} the original jQuery collection for chaining.
 		 */
-		filler = $.fn.mxui_layout_fill = function( parent ) {
+		filler = $.fn.can_ui_layout_fill = function( parent ) {
 			// setup stuff on every element
-			this.addClass('mxui_layout_fill')
+			this.addClass('can_ui_layout_fill')
 			
 			
 			var options = parent;
@@ -131,7 +131,7 @@ steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 				//if this element is removed, take it out
 	
 				$(this).bind('destroyed', evData, function( ev ) {
-					$(ev.target).removeClass('mxui_filler')
+					$(ev.target).removeClass('can_ui_layout_fill')
 					$(options.parent).unbind('resize', cb)
 				});
 				

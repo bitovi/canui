@@ -1,4 +1,4 @@
-steal('jquery/controller',
+steal('can/control',
 	'jquery/event/drop',
 	'jquery/event/drag/limit',
 	'jquery/event/default',
@@ -9,32 +9,32 @@ steal('jquery/controller',
 		VERTICAL = 'vertical';
 
 	/**
-	 * @class Mxui.Layout.Sortable
-	 * @parent Mxui
-	 * @test mxui/layout/sortable/funcunit.html
-	 * 
+	 * @class can.ui.layout.Sortable
+	 * @parent canui
+	 * @test canui/layout/sortable/funcunit.html
+	 *
 	 * @description Makes a sortable control that can accept outside draggables.
-	 * 
+	 *
 	 * Makes a sortable control that can accept outside draggables.
-	 * This is useful for making lists that can be added to, removed 
+	 * This is useful for making lists that can be added to, removed
 	 * from, or re-ordered.
-	 * 
+	 *
 	 * ## Basic Example
-	 * 
+	 *
 	 * If you have the following html:
-	 * 
+	 *
 	 *		<div id='vegetables'>
 	 *			<div class='sortable'>Carrots</div>
 	 *			<div class='sortable'>Onions</div>
 	 *			<div class='sortable'>Lettuce</div>
 	 *		</div>
-	 * 
+	 *
 	 * The following will make the list sortable:
-	 * 
-	 *     $('#vegetables').mxui_layout_sortable()
-	 * 
+	 *
+	 *     new can.ui.layout.Sortable($('#vegetables'));
+	 *
 	 * Additionally, you can set up draggable items:
-	 * 
+	 *
 	 *		<div id='draggables'>
 	 *			<div class='draggable'>Potatoes</div>
 	 *			<div class='draggable'>Peppers</div>
@@ -42,34 +42,34 @@ steal('jquery/controller',
 	 *		</div>
 	 *
 	 * Then make them draggable:
-	 * 
+	 *
 	 *     $('.draggable').bind("draginit",function(){})
-	 * 
-	 * This will allow you to have the list of items that can be re-ordered, 
+	 *
+	 * This will allow you to have the list of items that can be re-ordered,
 	 * but you can also add new items by dragging them into the list.
-	 * 
+	 *
 	 * ## Demo
-	 * 
-	 * @demo mxui/layout/sortable/demo.html
-	 * 
+	 *
+	 * @demo canui/layout/sortable/demo.html
+	 *
 	 * ## How it works
-	 * 
-	 * When re-ordering items, the drag position of the item is monitored. When 
-	 * the item is dragged past the midpoint of the next item (as determined by 
-	 * [Mxui.Layout.Sortable.prototype.where where]), they have their spots 
+	 *
+	 * When re-ordering items, the drag position of the item is monitored. When
+	 * the item is dragged past the midpoint of the next item (as determined by
+	 * [can.ui.layout.Sortable.prototype.where where]), they have their spots
 	 * swapped.
 	 *
-	 * When injecting new items, the item is dragged over the list and creates a 
-	 * clone of the new item using the `makePlaceHolder` option method. The clone 
+	 * When injecting new items, the item is dragged over the list and creates a
+	 * clone of the new item using the `makePlaceHolder` option method. The clone
 	 * has its visibility hidden until the new item is dropped into the list.
 	 *
 	 * ## Using a custom placeholder
-	 * 
+	 *
 	 * By default, the dragged element will be cloned and injected into the list.
-	 * This process can be overridden by setting a custom `makePlaceHolder` 
+	 * This process can be overridden by setting a custom `makePlaceHolder`
 	 * option method.
 	 *
-	 * 	$("#vegetables").mxui_layout_sortable({
+	 * 	new can.ui.layout.Sortable($("#vegetables", {
 	 *			makePlaceHolder : function(el, ev, drop, drag){
 	 *				return drag.element.clone().css({
 	 *					"backgroundColor" : "blue",
@@ -82,11 +82,11 @@ steal('jquery/controller',
 	 *
 	 * ## Injecting a group of elements with a single drag
 	 *
-	 * Multiple items can be injected into the list while dragging a single item 
-	 * by changing the `makePlaceHolder` option method to return more than one 
+	 * Multiple items can be injected into the list while dragging a single item
+	 * by changing the `makePlaceHolder` option method to return more than one
 	 * placeholder.
 	 *
-	 * 	$("#vegetables").mxui_layout_sortable({
+	 * 	new can.ui.layout.Sortable($("#vegetables"), {
 	 *			makePlaceHolder : function(el, ev, drop, drag){
 	 *				var css = {
 	 *							"visibility":"hidden",
@@ -100,24 +100,24 @@ steal('jquery/controller',
 	 *				return placeholders;
 	 *			}
 	 * 	});
-	 * 
+	 *
 	 * @constructor
-	 * 
+	 *
 	 * @param {HTMLElement} el
 	 * @param {Object} [options] Values to configure
 	 * the behavior of sortable:
-	 * 
-	 * - `makePlaceHolder` - A function used to create a placeholder clone of 
+	 *
+	 * - `makePlaceHolder` - A function used to create a placeholder clone of
 	 * 		dragged element.
 	 * - `sortable` - The name of the class to be used for sortable items.
-	 * - `direction` - The direction with which to constrain dragging within 
+	 * - `direction` - The direction with which to constrain dragging within
 	 *		the list: `"horizontal"` (default) or `"vertical"`.
 	 * - `scrolls` - The element to scroll as the size of the list changes.
 	 * - `scrollOptions` - Additional scrolling options.
 	 *
-	 * @return {mxui.layout.sortable}
+	 * @return {can.ui.layout.Sortable}
 	 */
-	$.Controller("Mxui.Layout.Sortable",{
+	can.Control("can.ui.layout.Sortable",{
 		defaults:{
 			//makes a placeholder for the element dragged over
 			makePlaceHolder : function(el, ev, drop, drag){
@@ -137,6 +137,10 @@ steal('jquery/controller',
 	 * @prototype
 	 */
 	{
+		find : function(selector) {
+			return this.element.find(selector);
+		},
+
 		"{sortable} dragdown" : function(el, ev){
 			ev.preventDefault();
 		},

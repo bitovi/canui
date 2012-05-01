@@ -1,5 +1,5 @@
 steal('./split.css',
-	'jquery/controller',
+	'can/control',
 	'jquery/event/drag/limit', 
 	'jquery/dom/dimensions', 
 	'jquery/event/key', 
@@ -7,9 +7,9 @@ steal('./split.css',
 function( $ ) {
 
 	/**
-	 * @class Mxui.Layout.Split
-	 * @parent Mxui
-	 * @test mxui/layout/split/funcunit.html
+	 * @class can.ui.layout.Split
+	 * @parent canui
+	 * @test canui/layout/split/funcunit.html
 	 * 
 	 * @description Makes a splitter widget.
 	 * 
@@ -99,7 +99,7 @@ function( $ ) {
 	 *      					(by default any child is considered a panel)
 	 * @return {Mxui.Layout.Split}  
 	 */
-	$.Controller.extend("Mxui.Layout.Split",
+	can.Control("can.ui.layout.Split",
 	/** 
 	 * @static
 	 */
@@ -140,7 +140,7 @@ function( $ ) {
 	{
 		/**
 		 * @hide
-		 * Init method called by JMVC base controller.
+		 * Init method called by CanJS base control.
 		 */
 		init: function() {
 			var c = this.panels();

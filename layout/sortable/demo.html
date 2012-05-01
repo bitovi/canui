@@ -51,8 +51,8 @@
 		</div>
 		<script type='text/javascript' src='../../../steal/steal.js'></script>
 		<script type='text/javascript'>
-			steal("mxui/layout/sortable" , function(){
-				$("#vegetables").mxui_layout_sortable();
+			steal("canui/layout/sortable" , function(){
+				new can.ui.layout.Sortable($("#vegetables"));
 				$(".draggable").bind("draginit",function(){});
 			})
 		</script>

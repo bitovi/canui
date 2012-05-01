@@ -1,9 +1,9 @@
 steal('funcunit',function(){
 
-	module("Mxui.Nav.Accordion", { 
+	module("can.ui.nav.Accordion", {
 		setup: function(){
-			S.open("//mxui/nav/accordion/accordion.html");
-			S('.mxui_nav_accordion').exists();
+			S.open("//canui/nav/accordion/accordion.html");
+			S('.can_ui_nav_accordion').exists();
 		}
 	});
 	

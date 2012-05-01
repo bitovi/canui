@@ -20,15 +20,14 @@
 		<input class='wrap' type='text'/>
 		<select  class='wrap'><option>1</option></select>
 		<button type='button'  class='wrap'>try me</button>
-		<img src='../../../jmvc/images/phui.png'  class='wrap'/>
 
-		<script type='text/javascript' 
-                src='../../../steal/steal.js?mxui/layout/wrap'>   
+		<script type='text/javascript'
+                src='../../../steal/steal.js?canui/layout/wrap'>
         </script>
 		<script type='text/javascript'>
-			$(function(){
-				$('.wrap').mxui_layout_wrap()
-			})
+			steal(function(){
+				$('.wrap').can_ui_layout_wrap()
+			});
 		</script>
 	</body>
 </html>

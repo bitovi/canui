@@ -17,9 +17,7 @@
 				margin: 0px;
 			}
         </style>
-		
-		<link rel="stylesheet" type="text/css" href="../../smoothness/jquery-ui-1.7.2.custom.css" />
-		
+		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" />
 	</head>
 	<body>
 		
@@ -70,10 +68,10 @@
 		
 		<script type='text/javascript' src='../../../steal/steal.js'></script>
 		<script type='text/javascript'>
-		steal('mxui/nav/accordion').then(function(){	
-		
-				$('#accordion').mxui_nav_accordion();
-				
+		steal('canui/nav/accordion').then(function(){
+
+				new can.ui.nav.Accordion($('#accordion'));
+
 				$('#resize').click(function(){
 					$('#accordion').height(550).trigger('resize');
 				});

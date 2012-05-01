@@ -81,18 +81,8 @@
 	<body>
 <div id="demo-html">
 <h1>Filler</h1>
-<!--<p>Mxui.Filler will expand an element to fill a parent.  This is very useful for elements that change size.
-	Mxui.Filler is smart enough to know when to adjust for internal element's margins.  To 
-	make resizables on the page, click run.  This will add Mxui.Resizables.  Resize the parent to watch the internal
-	filler fill the space.  
-</p>-->
 
 <a href="javascript://" id='run'>Run</a>
-<!--<h2>Limitations</h2>
-<p>If you want to support IE6, it's best to not have top margins on the first element in a container, and bottom
-	margins on the last element.  Mxui.Filler will compensate for this, but things will not look exactly the same in 
-	IE6.  
-</p>-->
 <h3>jQuery.support.containerSizeAdjustments: <span id='log'></span></h3>
 
 <table>
@@ -174,7 +164,7 @@
 	// document.addEventListener('click', function(){
 		// console.log('CLICK not in app')
 	// }, false)
-	steal('mxui/layout/fill','mxui/layout/resize').then(function(){
+	steal('canui/layout/fill','canui/layout/resize').then(function(){
 		$(function(){
 			var out = [], affects= jQuery.support.containerSizeAdjustments;
 			for (var part in affects) {
@@ -203,31 +193,6 @@
 		$('#scrollfill').click(function(){
 			$('#fillthis').mxui_layout_fill("#scrollable")
 		})
-		/**/
-		/*$("#nestedFiller2").mxui_filler({
-			parent: $("#resize2").mxui_resizable(),
-			cache: true
-		});*/
-		
-		//$("#content").mxui_filler();
-		/*$("#modal").css({
-			opacity: 0.5
-		})
-		$("#expand").click(function(){
-			$("#modal").mxui_filler({width: true, parent: $([window, document.documentElement]), all: true})
-			
-		})	
-		$("#nestedFiller").mxui_filler({
-			parent: $("#resize1").mxui_resizable()
-		});*/
-		
-		/*$("#nestedFiller2").mxui_filler({
-			parent: $("#resize2").mxui_resizable(),
-			cache: true
-		});
-		$("#changeme").click(function(){
-			$("#nestedFiller2").siblings().height(40)
-		})*/
 	})
 </script>
 	</body>

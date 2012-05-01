@@ -93,11 +93,13 @@
                 src='../../../steal/steal.js'>   
         </script>
 		<script type='text/javascript'>
-			steal("mxui/layout/sortable" , function(){
-				$("#sortable").mxui_layout_sortable().bind("sortable.addPlaceholder", function(){
+			steal("canui/layout/sortable" , function(){
+				$('#sortable, #sortable2, #sortable3').on("sortable.addPlaceholder", function(){
 					$(document.body).append("<p>added placeholder</p>")
-				})
-				$("#sortable2").mxui_layout_sortable({
+				});
+
+				new can.ui.layout.Sortable($('#sortable'));
+				new can.ui.layout.Sortable($('#sortable2'), {
 				  makePlaceHolder: function(el, ev, drop, drag) {
 						// Example for if a multiple item drag UI was implemented (using a single drag target, but injecting multiple items)
 						var css = {
@@ -111,14 +113,11 @@
 						});
 						return placeholders;
 					}
-				}).bind("sortable.addPlaceholder", function(){
-					$(document.body).append("<p>added placeholder</p>")
-				})
-				$("#sortable3").mxui_layout_sortable({
+				});
+
+				new can.ui.layout.Sortable($("#sortable3"), {
 					direction: 'vertical'
-				}).bind("sortable.addPlaceholder", function(){
-					$(document.body).append("<p>added placeholder</p>")
-				})
+				});
 				
 				$(".somethingElse").bind("draginit",function(){})
 				$(".groupParent").bind("draginit",function(){})
