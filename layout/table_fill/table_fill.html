@@ -50,7 +50,7 @@
                 src='../../../steal/steal.js'>   
         </script>
 		<script type='text/javascript'>
-			steal('mxui/layout/table_fill','mxui/layout/resize').then(function(){
+			steal('canui/layout/table_fill', 'can/control/plugin', 'canui/layout/resize').then(function(){
 			var body = $('tbody'),
 				html = [],
 				cols = 8,
@@ -80,11 +80,11 @@
 			}
 			body.html(html.join(''))
 			$('#scrollable').click(function(){
-				$('#table').mxui_layout_table_fill();
+				$('#table').can_ui_layout_table_fill();
 			})
 			
 			$('#resize').click(function(){
-				$('#container').css("overflow","hidden").mxui_layout_resize();
+				$('#container').css("overflow","hidden").can_ui_layout_resize();
 			})
 			})
 		</script>

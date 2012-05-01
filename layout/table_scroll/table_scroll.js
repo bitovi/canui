@@ -1,4 +1,5 @@
-steal('mxui/layout/table_fill').then(function( $ ) {
+steal('can/construct/proxy', 'can/construct/super', 'can/control', 'canui/layout/table_fill')
+.then(function( $ ) {
 
 	// helpers
 	var setWidths = function( cells, firstWidths ) {
@@ -9,9 +10,9 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 	}
 
 	/**
-	 * @class Mxui.Layout.TableScroll
-	 * @parent Mxui
-	 * @test mxui/layout/table_scroll/funcunit.html
+	 * @class can.ui.layout.TableScroll
+	 * @parent canui
+	 * @test canui/layout/table_scroll/funcunit.html
 	 * 
 	 * @description Makes a table body scroll under a table header.
 	 * 
@@ -39,16 +40,16 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 	 * The following make the list of people, the tbody, scrollable between
 	 * the table header and footer:
 	 * 
-	 *     $('#people').mxui_layout_table_scroll()
+	 *     new can.ui.layout.TableScroll($('#people'))
 	 * 
 	 * It makes it so you can always see the table header 
-	 * and footer.  The table will [Mxui.Layout.Fill fill] the height of it's parent 
+	 * and footer.  The table will [jQuery.fn.can_ui_layout_fill fill] the height of it's parent
 	 * element. This means that if the `#area` element's height 
 	 * is 500px, the table will take up everything outside the `p`aragraph element.
 	 * 
 	 * ## Demo
 	 * 
-	 * @demo mxui/layout/table_scroll/demo.html
+	 * @demo canui/layout/table_scroll/demo.html
 	 * 
 	 * ## How it works
 	 * 
@@ -57,7 +58,7 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 	 * `thead` into its own div.  After changing the DOM,
 	 * the table looks like:
 	 * 
-	 *     <div class='mxui_layout_table_scroll'>
+	 *     <div class='can_ui_layout_table_scroll'>
 	 *       <div class='header'>
 	 *          <table>
 	 *            <thead> THEAD CONTENT </thead>
@@ -84,7 +85,7 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 	 * you can simply trigger resize on the grid.
 	 * 
 	 * But, if you change the columns, you must call
-	 * [Mxui.Layout.Fill.prototype.changed changed].
+	 * [can.ui.layout.Fill.prototype.changed changed].
 	 * 
 	 * @constructor
 	 * 
@@ -96,7 +97,7 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 	 *      it's parent's height. Pass false to not actually scroll the
 	 *      table.
 	 */
-	$.Controller("Mxui.Layout.TableScroll", {
+	can.Control("can.ui.layout.TableScroll", {
 		defaults: {
 			// this option is really for the grid, because the grid
 			// uses table scroll internally to add items to
@@ -128,7 +129,7 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 			this.$.body.css("width", "100%");
 
 			// get the thead, and tfoot into their own table.
-			$.each(['thead', 'tfoot'], this.callback('_wrapWithTable'))
+			$.each(['thead', 'tfoot'], this.proxy('_wrapWithTable'))
 
 
 			// get the tbody
@@ -160,21 +161,19 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 			// add representations of the header cells to the bottom of the table
 
 			// fill up the parent
-			//this.element.mxui_layout_fill();
-			//make the scroll body fill up all other space
-			// why doesn't it do this by default?
+			// make the scroll body fill up all other space
 			if ( this.options.filler ) {
-				this.$.scrollBody.mxui_layout_table_fill({
+				this.$.scrollBody.can_ui_layout_table_fill({
 					parent: this.element.parent()
 				})
 			}
 
-			this.bind(this.$.scrollBody, "resize", "bodyResized")
+			this.on(this.$.scrollBody, "resize", "bodyResized")
 			//this.element.parent().triggerHandler('resize')
 			//make a quick resize
 			//then redraw the titles
 
-			this.bind(this.$.scrollBody, "scroll", "bodyScroll")
+			this.on(this.$.scrollBody, "scroll", "bodyScroll")
 			this._sizeHeaderAndFooters();
 		},
 		_wrapWithTable: function( i, tag ) {
@@ -196,7 +195,7 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 		 * Returns useful elements of the table
 		 * the thead, tbody, tfoot, and scrollBody of the modified table:
 		 * 
-		 *     $('.mxui_layout_table_scroll')
+		 *     $('.can_ui_layout_table_scroll')
 		 *       .controller().element() //-> {...}
 		 * 
 		 * If you need to change the content of the table, you can
@@ -226,8 +225,8 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 		 * ### Example:
 		 * 
 		 *     $('th:eq(2)').text('New Text');
-		 *     $('.mxui_layout_table_scroll')
-		 *        .mxui_layout_table_scroll('changed')
+		 *     $('.can_ui_layout_table_scroll')
+		 *        .can_ui_layout_table_scroll('changed')
 		 * 
 		 * @param {Boolean} [resize] By default, changed will trigger a resize,
 		 * which re-calculates the layout.  Pass false to prevent this 
@@ -252,8 +251,8 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 		 * current column headers.  If you change the column
 		 * headers, make sure you trigger resize.
 		 * 
-		 *     $('.mxui_layout_table_scroll')
-		 *       .mxui_layout_table_scroll('append', elements );
+		 *     $('.can_ui_layout_table_scroll')
+		 *       .can_ui_layout_table_scroll('append', elements );
 		 * 
 		 * @param {jQuery} els The elements to append.
 		 * @param {jQuery|false} [after] where to insert items in the list
@@ -279,8 +278,8 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 		/**
 		 * Empties the table body.
 		 * 
-		 *     $('.mxui_layout_table_scroll')
-		 *       .mxui_layout_table_scroll('empty');
+		 *     $('.can_ui_layout_table_scroll')
+		 *       .can_ui_layout_table_scroll('empty');
 		 *       
 		 * @return {table_scroll} returns the table_scroll instance
 		 * for chaining.
@@ -362,7 +361,7 @@ steal('mxui/layout/table_fill').then(function( $ ) {
 					return $(this).outerWidth()
 				}),
 
-				padding = this.$.table.height() >= body.height() ? Mxui.scrollbarWidth : 0,
+				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth : 0,
 				tableWidth = this.$.table.width();
 
 			if ( tableWidth ) {

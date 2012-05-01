@@ -1,4 +1,5 @@
-steal('jquery/controller', 
+steal('can/control',
+	'can/construct/proxy',
 	'jquery/event/key')
      .then(function(){
 
@@ -9,9 +10,9 @@ $.event.special.activate = {
 }
 
 /**
- * @class Mxui.Nav.Selectable
- * @test mxui/nav/selectable/funcunit.html
- * @parent Mxui
+ * @class can.ui.nav.Selectable
+ * @test canui/nav/selectable/funcunit.html
+ * @parent canui
  * 
  * Selectable provides keyboard and mouse selection to a group of 
  * items. Instead of listening to click and key events, 
@@ -36,7 +37,7 @@ $.event.special.activate = {
  * 
  * Make this selectable like:
  * 
- *     $('#menu').mxui_nav_selectable();
+ *     new can.ui.nav.Selectable($('#menu'));
  * 
  * You can listen for `activate` and `select` events (also `deactivate` and `deselect`) like:
  * 
@@ -50,7 +51,7 @@ $.event.special.activate = {
  * 
  * Use the keyboard and mouse to navigate.  Use the __SHIFT__ and __CTRL__ keys too!
  * 
- * @demo mxui/nav/selectable/demo.html
+ * @demo canui/nav/selectable/demo.html
  * 
  * ## Listening to events
  * 
@@ -97,7 +98,7 @@ $.event.special.activate = {
  *     
  * Use them like:
  * 
- *     $('#menu').mxui_nav_selectable({
+ *     new can.ui.nav.Selectable($('#menu'), {
  *       selectOn : "tr",
  *       selectedClassName : "ui-hover",
  *       activateClassName: "ui-active",
@@ -106,7 +107,7 @@ $.event.special.activate = {
  *       outsideDeactivate: false
  *     })
  */
-$.Controller.extend('Mxui.Nav.Selectable',{
+can.Control('can.ui.nav.Selectable',{
     defaults : {
         // what can be selected
 		selectOn: "[tabindex]",
@@ -138,7 +139,7 @@ $.Controller.extend('Mxui.Nav.Selectable',{
 				
 			// if there's a click, keypress, or activate event 
 			// outside of us ... deactivate
-			var active = this.find("." + this.options.activatedClassName);
+			var active = this.element.find("." + this.options.activatedClassName);
 			if(active.length){
 				active.trigger('deactivate');
 				this.element.trigger('outsideDeactivate', [ $(ev.target) ]);
@@ -237,7 +238,7 @@ $.Controller.extend('Mxui.Nav.Selectable',{
 			if(el.hasClass(this.options.activatedClassName)){
 				el.trigger("deactivate");
 			}else{
-				var activated = this.find("."+this.options.activatedClassName);
+				var activated = this.element.find("."+this.options.activatedClassName);
 				if(el.models){
 					el.trigger("activate", [ activated.add(el).models() ]);
 				}else{

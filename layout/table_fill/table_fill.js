@@ -1,10 +1,11 @@
-steal('mxui/layout/fill',
-	'mxui/util/scrollbar_width',
-	'jquery/controller').then(function(){
-	
+steal('can/control',
+	'can/construct/super',
+	'canui/layout/fill',
+	'canui/util/scrollbar_width').then(function(){
+
 //makes a table fill out it's parent
 
-$.Controller('Mxui.Layout.TableFill',{
+can.Control('can.ui.layout.TableFill',{
 	setup : function(el, options){
 		//remove the header and put in another table
 		el = $(el);
@@ -29,7 +30,7 @@ $.Controller('Mxui.Layout.TableFill',{
 			options.parent = this.options.parent;
 			options.filler = this.options.filler;
 		}
-		this.element.mxui_layout_fill(options).css('overflow','auto');
+		this.element.can_ui_layout_fill(options).css('overflow','auto');
 		
 	},
 	// listen on resize b/c we want to do this right away
@@ -43,7 +44,7 @@ $.Controller('Mxui.Layout.TableFill',{
 		
 		// is it scrolling vertically
 		if(el.offsetHeight < el.scrollHeight){
-			table.outerWidth(this.element.width() - Mxui.scrollbarWidth)
+			table.outerWidth(this.element.width() - can.ui.scrollbarWidth)
 		} else {
 			table.outerWidth(this.element.width() )
 		}

@@ -117,9 +117,9 @@
                 src='../../../steal/steal.js'>   
         </script>
 		<script type='text/javascript'>
-		steal('mxui/nav/selectable').then(function(){
+		steal('canui/nav/selectable').then(function(){
 
-			$('#menu, #nested_menu, #overflow_menu, #table').mxui_nav_selectable();
+			new can.ui.nav.Selectable($('#menu, #nested_menu, #overflow_menu, #table'));
 			$('#overflow_menu .selectable').each(function(i, el){
 				$(el).attr("tabindex", "0");
 			});

@@ -1,8 +1,8 @@
 steal('funcunit',function(){
 	
-module('Mxui.Nav.Selectable', {
+module('can.ui.nav.Selectable', {
 	setup : function(){
-		S.open("//mxui/nav/selectable/selectable.html")
+		S.open("//canui/nav/selectable/selectable.html")
 	}
 })
 	
@@ -16,9 +16,6 @@ test('clicking activates', function(){
 		
 		ok(S('#menu span:eq(1)').hasClass('selected'),"selected moved" )
 	});
-	
-	
 });
-
 
 })

@@ -6,10 +6,13 @@ steal(
 	'canui/layout/positionable',
 	'canui/layout/block',
 	'canui/layout/split',
-	'canui/layout/resize'
+	'canui/layout/resize',
+	'canui/layout/table_scroll',
+	'canui/layout/modal'
 ).then(
 	'canui/nav/accordion',
-	'canui/nav/slider'
+	'canui/nav/slider',
+	'canui/nav/selectable'
 ).then(
 	'canui/util/scrollbar_width'
 )

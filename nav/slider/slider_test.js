@@ -1,6 +1,6 @@
 steal('funcunit').then(function(){
-	
-module("slider test", { 
+
+module("can.ui.nav.Slider", {
 	setup: function(){
 		S.open("//canui/nav/slider/slider.html");
 	}

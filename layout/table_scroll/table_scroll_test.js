@@ -1,8 +1,8 @@
 steal('funcunit').then(function(){
 	
-module("mxui/layout/table_scroll", { 
+module("can.ui.layout.TableScroll", {
 	setup: function(){
-        S.open("//mxui/layout/table_scroll/table_scroll.html");
+        S.open("//canui/layout/table_scroll/table_scroll.html");
 		
 		// helps compare columns
 		this.compareCols = function(i, size){

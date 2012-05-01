@@ -8,6 +8,8 @@ to be extended and mixed for richness.
 
 Here's what's inside:
 
+  - [jQuery.fn.can\_ui\_layout\_wrap Wrap] - Wrap elements
+  - [jQuery.fn.can\_ui\_layout\_fill Fill] - makes complex layouts easy.
   - [can.ui.nav.Accordion Accordion] - an accordion widget.
   - [can.ui.layout.Sortable Sortable] - sort elements.
   - [can.ui.nav.Slider Slider] - a slider
@@ -16,14 +18,9 @@ Here's what's inside:
   - [can.ui.layout.Split Split] - a splitter widget
   - [can.ui.layout.Block Block] - makes an element fill up another element or window.
   - [can.ui.layout.Resize Resize] - allows resizing of widgets
-  - [jQuery.fn.can\_ui\_layout\_wrap Wrap] - Wrap elements
-  - [jQuery.fn.can\_ui\_layout\_fill Fill] - makes complex layouts easy.
-
-// TODO
-
-  - [Mxui.Layout.Modal Modal] - creates a modal
-  - [Mxui.Nav.Selectable Selectable] - keyboard and mouse navigation.
-  - [Mxui.Layout.TableScroll TableScroll] - makes a tbody scroll.
+  - [can.ui.layout.TableScroll TableScroll] - makes a tbody scroll.
+  - [can.ui.layout.Modal Modal] - creates a modal
+  - [can.ui.nav.Selectable Selectable] - keyboard and mouse navigation.
 
 ## Demo
 

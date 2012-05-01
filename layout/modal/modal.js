@@ -1,23 +1,28 @@
-steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', './modal.css').then(function($){
+steal('can/construct/super',
+	'can/construct/proxy',
+	'can/control',
+	'jquery/event/resize',
+	'canui/layout/positionable',
+	'./modal.css').then(function($){
 	/**
-	 * @class Mxui.Layout.Modal
-	 * @parent Mxui
-	 * @test mxui/layout/modal/funcunit.html
+	 * @class can.ui.layout.Modal
+	 * @parent canui
+	 * @test canui/layout/modal/funcunit.html
 	 * 
 	 * @description A basic modal implementation. 
 	 * A basic modal implementation. 
 	 * 
 	 * ## Use
 	 *
-	 * Call `mxui_layout_modal` method on any jQuery object.
+	 * Create a new Modal control instance:
 	 *
-	 *		$('#modal').mxui_layout_modal();
+	 *		new can.ui.layout.Modal($('#modal'));
 	 *
 	 * This will take the jQuery object and place it centered
 	 * on the window. If you want an overlay over the page behind the modal, use
 	 * the overlay option:
 	 *
-	 *		$('modal').mxui_layout_modal({
+	 *		new can.ui.layout.Modal($('modal'), {
 	 *			overlay: true
 	 *		});
 	 *
@@ -36,7 +41,7 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 	 * You can either overwrite that CSS in your stylesheet, or you
 	 * can use pass the overlay class as an option to the mxui_layout_modal:
 	 *
-	 *		$('modal').mxui_layout_modal({
+	 *		new can.ui.layout.Modal($('modal'), {
 	 *			overlay: true, 
 	 *			overlayClass: 'my-overlay-class'
 	 *		});
@@ -44,7 +49,7 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 	 * Alternatively, if you'd like to use a custom element as your overlay,
 	 * simply pass it in the overlay option:
 	 *
-	 *		$('modal').mxui_layout_modal({
+	 *		new can.ui.layout.Modeal($('modal', {
 	 *			overlay: $(".custom_overlay")
 	 *		});
 	 *
@@ -52,7 +57,7 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 	 * on the modal element. If you want to destroy the modal (and overlay) you can pass
 	 * true to the destroyOnHide option:
 	 *
-	 *		$('modal').mxui_layout_modal({
+	 *		new can.ui.layout.Modal($('modal'), {
 	 *			destroyOnHide: true
 	 *		});
 	 *
@@ -62,7 +67,7 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 	 * Modals can also be attached to an element rather than the window using
 	 * the `of` option.
 	 *
-	 *		$('modal').mxui_layout_modal({
+	 *		new can.ui.layout.Modal($('modal'), {
 	 *			of : $("#box"),
 	 *			overlay: true
 	 *		});
@@ -72,7 +77,7 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 	 * they will be hidden one by one in the reverse order they were created.
 	 *
 	 * ## Demo
-	 * @demo mxui/layout/modal/modal.html
+	 * @demo canui/layout/modal/modal.html
 	 * @constructor
 	 * 
 	 * @param {Object} [options] Values to configure the behavior of modal:
@@ -89,14 +94,14 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 	 *	- `destroyOnHide` - `{Boolean}` - If `true`, the modal will be
 	 *	destroyed when it's `hide` method is called.
 	 *
-	 * @return {mxui.layout.modal}
+	 * @return {can.ui.layout.Modal}
 	 */
 	
 	/* Starting z-index for modals. We use stack variable to keep open models in order */
 	
 	var zIndex = 9999, stack = [];
 	
-	Mxui.Layout.Positionable("Mxui.Layout.Modal", {
+	can.ui.layout.Positionable("can.ui.layout.Modal", {
 		defaults: {
 			// Mxui.Layout.Positionable options
 			my: 'center center',
@@ -111,15 +116,14 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 			overlayClass : "mxui_layout_modal-overlay",
 			// close modal if overlay is clicked
 			overlayClick: true
-		},
-		listensTo: ["show", "hide", "move"]
-	}, 
+		}
+	},
 	/*
 	 * @prototype
 	 */
 	{
 		setup: function(el, options) {
-			var opts = $.extend({}, this.Class.defaults, options)
+			var opts = $.extend({}, this.constructor.defaults, options)
 			if ( opts.overlay ) {
 				if ( opts.overlay === true ) {
 					options.overlayElement = $('<div />', {
@@ -184,11 +188,14 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 			}
 			stack.splice(stack.indexOf(this.stackId), 1);
 		},
+		' hide' : function() {
+			this.hide();
+		},
 		/**
 		 * Show modal element and overlay if overlay exists
 		 */
 		show : function(){
-			if($.inArray(this.stackId, this.Class.stack) == -1){
+			if($.inArray(this.stackId, this.constructor.stack) == -1){
 				stack.unshift(this.stackId);
 			} else {
 				stack.splice(stack.indexOf(this.stackId), 1);
@@ -203,7 +210,10 @@ steal('jquery/controller', 'jquery/event/resize', 'mxui/layout/positionable', '.
 			this.element.css({'display': 'block', 'z-index': ++zIndex});
 			this._super();
 			this.element.css('position', this.options.overlayPosition );
-			this.closeOnEscapeCb = this.callback(this.closeOnEscape);
+			this.closeOnEscapeCb = this.proxy(this.closeOnEscape);
+		},
+		' show' : function() {
+			this.show();
 		},
 		"{document} keyup" : function(el, ev){
 			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId){
