@@ -1,9 +1,9 @@
 steal('jquery',
 	'jquery/controller',
-	'mxui/layout/wrap',
+	'canui/layout/wrap',
 	'jquery/event/drag',
 	'jquery/dom/dimensions',
-	'mxui/layout/fill')
+	'canui/layout/fill')
      .then(function(){
 	 	//we need to check we aren't evil and have overflow size our container
 		
@@ -20,8 +20,8 @@ steal('jquery',
 		
 		
 		/**
-		 * @class Mxui.Layout.Resize
-		 * @parent Mxui
+		 * @class can.ui.layout.Resize
+		 * @parent canui
 		 * @test mxui/layout/resize/funcunit.html
 		 * 
 		 * @description Makes an element resizable.
@@ -88,7 +88,7 @@ steal('jquery',
 		 *
 		 *
 		 * ## Demo
-		 * @demo mxui/layout/resize/resize.html
+		 * @demo canui/layout/resize/resize.html
 		 *
 		 * @param {Object} options Object literal defining the minimum height
 		 * and width the element should be allowed to be resized to.
@@ -99,7 +99,7 @@ steal('jquery',
 		 *	resize to.
 		 */
 
-		$.Controller("Mxui.Layout.Resize",
+		can.Control("can.ui.layout.Resize",
 		{
 			/*
 			 * - minHeight - The minimum height the element will be allowed to

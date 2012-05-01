@@ -1,6 +1,5 @@
 @page canui CanUI
-@parent index 1
-@tag beta
+@parent index 4
 
 Mxui is a __BETA__ UI library for 
 jQueryMX.  It's designed to be lightweight, 

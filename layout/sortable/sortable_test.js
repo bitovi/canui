@@ -1,7 +1,7 @@
 steal('funcunit').then(function(){
-module("mxui/sortable", { 
+module("can.ui.layout.Sortable", {
 	setup: function(){
-        S.open("//mxui/layout/sortable/sortable.html");
+        S.open("//canui/layout/sortable/sortable.html");
 	}
 })
 

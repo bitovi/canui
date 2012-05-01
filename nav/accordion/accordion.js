@@ -1,7 +1,7 @@
 /**
  * @class Mxui.Nav.Accordion
  */
-steal('jquery/controller',
+steal('can/control',
 	  'jquery/dom/dimensions',
 	  'jquery/event/drag',
 	  'jquery/event/resize',
@@ -73,7 +73,7 @@ steal('jquery/controller',
  *   - activateFirstByDefault (true) - activate the first title
  *   - clickToActivate (true) - use click to activate
  */
-$.Controller("Mxui.Nav.Accordion",{
+can.Control("can.ui.nav.Accordion",{
 	defaults : {
 		title : "h3",
 		duration : "fast",
@@ -309,7 +309,7 @@ $.Controller("Mxui.Nav.Accordion",{
 	// Occurs when an item was dropped over a title.
 	"{title} dropover" : function(el)
 	{
-		this._timer = setTimeout(this.callback('titleOver', el),200);
+		this._timer = setTimeout(this.proxy('titleOver', el),200);
 	},
 	
 	// Occurs when an item was dropped out.
