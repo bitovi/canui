@@ -4,7 +4,9 @@ steal(
 	'canui/layout/fill',
 	'canui/layout/bgiframe',
 	'canui/layout/positionable',
-	'canui/layout/block'
+	'canui/layout/block',
+	'canui/layout/split',
+	'canui/layout/resize'
 ).then(
 	'canui/nav/accordion',
 	'canui/nav/slider'

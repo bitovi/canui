@@ -37,11 +37,11 @@ function( $ ) {
 	 * 
 	 * The following will create the splitter widget:
 	 * 
-	 *     $('#container').mxui_layout_split();
+	 *     new can.ui.layout.Split($('#container'));
 	 * 
 	 * You can also provide the direction explicitly:
 	 * 
-	 *     $('#container').mxui_layout_split({ direction: 'vertical' });
+	 *     new can.ui.layout.Split($('#container'), { direction: 'vertical' });
 	 * 
 	 * The `direction` parameter refers to the splitter bar: `vertical` bars mean that the panels are arranged
 	 * from left-to-right, and `horizontal` bars mean the panels are arranged from top-to-bottom.
@@ -54,7 +54,7 @@ function( $ ) {
 	 * The splitter widget uses a number of CSS classes that permit fine-grained control over the look
 	 * and feel of various elements. The most commonly used are the following:
 	 * 
-	 *   - `.mxui_layout_split`: the container itself
+	 *   - `.can_ui_layout_split`: the container itself
 	 *     - `.splitter`: splitter bars
 	 *     - `.vsplitter`: only vertical splitter bars
 	 *     - `.hsplitter`: only horizontal splitter bars
@@ -63,7 +63,7 @@ function( $ ) {
 	 *     - `.right-collapse`: only right collapser buttons
 	 * 
 	 * You can see the standard styles for the splitter widget
-	 * [https://github.com/jupiterjs/mxui/blob/master/layout/split/split.css here].
+	 * [https://github.com/jupiterjs/canui/blob/master/layout/split/split.css here].
 	 * 
 	 * Additionally, the `panelClass` initialization option allows you to specify which subelements of
 	 * the container should be interpreted as panel elements, and the `hover` option specifies a CSS class
@@ -83,11 +83,11 @@ function( $ ) {
 	 * 
 	 * ## Demo
 	 * 
-	 * @demo mxui/layout/split/demo.html
+	 * @demo canui/layout/split/demo.html
 	 * 
 	 * ## More Examples
 	 * 
-	 * For some larger, more complex examples, see [//mxui/layout/split/split.html here].
+	 * For some larger, more complex examples, see [//canui/layout/split/split.html here].
 	 * 
 	 * @param {HTMLElement} element an HTMLElement or jQuery-wrapped element.
 	 * @param {Object} options options to set on the split:
@@ -153,7 +153,7 @@ function( $ ) {
 			}
 
 			$.Drag.distance = this.options.dragDistance;
-			this.dirs = this.Class.directionMap[this.options.direction];
+			this.dirs = this.constructor.directionMap[this.options.direction];
 			this.usingAbsPos = c.eq(0).css('position') == "absolute";
 			
 			if(this.usingAbsPos){

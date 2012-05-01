@@ -11,18 +11,18 @@ Here's what's inside:
   - [can.ui.nav.Accordion Accordion] - an accordion widget.
   - [can.ui.layout.Sortable Sortable] - sort elements.
   - [can.ui.nav.Slider Slider] - a slider
-  - [jQuery.fn.can\_ui\_layout\_wrap Wrap] - Wrap elements
   - [can.ui.layout.Bgiframe Bgiframe] - adds a background iframe to stop IE's input element 'bleed' problem.
   - [can.ui.layout.Positionable Positionable] - Allows you to position an element relative to another element.
+  - [can.ui.layout.Split Split] - a splitter widget
+  - [can.ui.layout.Block Block] - makes an element fill up another element or window.
+  - [can.ui.layout.Resize Resize] - allows resizing of widgets
+  - [jQuery.fn.can\_ui\_layout\_wrap Wrap] - Wrap elements
+  - [jQuery.fn.can\_ui\_layout\_fill Fill] - makes complex layouts easy.
 
 // TODO
 
-  - [Mxui.Layout.Block Block] - makes an element fill up another element or window.
-  - [jQuery.fn.mxui\_layout\_fill Fill] - makes complex layouts easy.
   - [Mxui.Layout.Modal Modal] - creates a modal
-  - [Mxui.Layout.Resize Resize] - allows resizing of widgets
   - [Mxui.Nav.Selectable Selectable] - keyboard and mouse navigation.
-  - [Mxui.Layout.Split Split] - a splitter widget
   - [Mxui.Layout.TableScroll TableScroll] - makes a tbody scroll.
 
 ## Demo

@@ -1,5 +1,6 @@
 steal('jquery',
 	'can/construct/super',
+	'can/construct/proxy',
 	'can/control',
 	'jquery/event/drag',
 	'jquery/dom/dimensions',
@@ -13,7 +14,9 @@ steal('jquery',
 		
 		
 		$(function(){
-			var container =$("<div style='height: 18px; padding: 0; margin: 0'><div style='height: 20px; padding: 0; margin: 0'></div></div>").appendTo(document.body)
+			var container =$("<div style='height: 18px; padding: 0; margin: 0'>" +
+				"<div style='height: 20px; padding: 0; margin: 0'></div></div>")
+				.appendTo(document.body)
 			$.support.correctOverflow = container.height() == 18;
 			container.remove();
 			container = null;
@@ -146,12 +149,10 @@ steal('jquery',
 			 */
 			init : function(el, options){
 				//draw in resizeable
-				/*
 				this.element.height( this.element.height() );
 				this.element.prepend( $.map( this.options.handles, this.proxy( function( dir ) {
 					return "<div class='ui-resizable-" + [ dir, this.options.className ].join(" ") + "'/>";
 				})).join("") );
-				*/
 			},
 			getDirection : function(el){
 				return el[0].className.match(/ui-resizable-(se|s|e)/)[1]

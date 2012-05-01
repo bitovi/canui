@@ -3,7 +3,8 @@ steal('funcunit')
 	'./layout/sortable/sortable_test.js',
 	'./layout/wrap/wrap_test.js',
 	'./layout/fill/fill_test.js',
-	'./layout/block/block_test.js'
+	'./layout/block/block_test.js',
+	'./layout/split/split_test.js'
 ).then(
 	'./nav/slider/slider_test.js',
 	'./nav/accordion/accordion_test.js'

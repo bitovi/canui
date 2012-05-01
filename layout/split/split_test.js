@@ -1,9 +1,9 @@
 steal('funcunit').then(function(){
 
-	module("MXUI.Layout.Split", {
+	module("can.ui.layout.Split", {
 		setup: function(){
-			S.open("//mxui/layout/split/split.html");
-			S('.mxui_layout_split').exists();
+			S.open("//canui/layout/split/split.html");
+			S('.can_ui_layout_split').exists();
 			S.wait(10); // so things can get settled ...
 		}
 	});
