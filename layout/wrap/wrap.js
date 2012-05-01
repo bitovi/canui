@@ -1,6 +1,14 @@
 steal('jquery').then(function ($) {
 	/**
-	 * Wraps an element with another element .. returns new element
+	 * @function jQuery.fn.can_ui_layout_wrap
+	 * @parent canui
+	 * @plugin canui/layout/wrap
+	 * @test canui/layout/wrap/qunit.html
+	 *
+	 * Wraps an element with another element, keeps all margins and
+	 * returns the new element.
+	 *
+	 * @return {jQuery} The new element
 	 */
 	var tags = /canvas|textarea|input|select|button|img/i
 	$.fn.can_ui_layout_wrap = function () {

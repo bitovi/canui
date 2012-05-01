@@ -1,6 +1,3 @@
-/**
- * @class Mxui.Nav.Accordion
- */
 steal('can/control',
 	  'jquery/dom/dimensions',
 	  'jquery/event/drag',
@@ -10,10 +7,11 @@ steal('can/control',
 // Future Improvements:
 //  - Make work with selectable (after it can use tab).
 //  - clickToActivate should check if selectable is on, then use it.
+
 /**
- * @class Mxui.Nav.Accordion
- * @parent Mxui
- * @test mxui/nav/accordion/funcunit.html
+ * @class can.ui.nav.Accordion
+ * @parent canui
+ * @test canui/nav/accordion/funcunit.html
  * 
  * Provides basic accordion vertical accordion functionality.
  * 
@@ -34,15 +32,15 @@ steal('can/control',
  * 
  * The following will make the list sortable:
  * 
- *     $('#accordion').mxui_nav_accordion()
+ *     new can.ui.nav.Accordion($('#accordion'))
  * 
  * ## Demo
  * 
- * @demo mxui/nav/accordion/demo.html
+ * @demo canui/nav/accordion/demo.html
  * 
  * ## Events
  * 
- * The accordion trigger 'show' events on content elements when shown.
+ * The accordion triggers 'show' events on content elements when shown.
  * 
  * ## HTML Considerations
  * 
@@ -147,12 +145,9 @@ can.Control("can.ui.nav.Accordion",{
 	 * Expands the content for the `title` element
 	 * without animating.
 	 * 
-	 *     $('#accordion').mxui_nav_accordion(
-	 *       'activate',
-	 *       $('#accordion ul:eq(3)')
-	 *     )
-	 * 
-	 * 
+	 *     new can.ui.nav.Accordion.expand($('#accordion'))
+	 *          .activate($('#accordion ul:eq(3)'));
+	 *
 	 * @param {jQuery} title the jQuery wrapped title element
 	 * @param {Array} [args] optional aditional arguments to pass to show event.
 	 */
@@ -187,12 +182,9 @@ can.Control("can.ui.nav.Accordion",{
 	/**
 	 * Expand and animate the content of the title that was clicked.
 	 * 
-	 *     $('#accordion').mxui_nav_accordion(
-	 *       'expand',
-	 *       $('#accordion ul:eq(3)')
-	 *     )
-	 * 
-	 * 
+	 *     var accordion = new can.ui.nav.Accordion($('#accordion'));
+	 *     accordion.expand($('#accordion ul:eq(3)'));
+	 *
 	 * @param {jQuery} title the jQuery-wrapped title element.
 	 */
 	expand : function(title)

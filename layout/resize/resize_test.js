@@ -2,7 +2,7 @@ steal('funcunit').then(function(){
 
 module("resize",{
 	setup : function(){
-		S.open("//mxui/layout/resize/resize.html");
+		S.open("//canui/layout/resize/resize.html");
 	}
 })
 

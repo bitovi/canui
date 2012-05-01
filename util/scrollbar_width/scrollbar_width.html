@@ -15,14 +15,14 @@
 	</head>
 	<body>
 		<script type='text/javascript' 
-                src='../../steal/steal.js?steal[app]=mxui/scrollbar_width&steal[env]=development'>   
+                src='../../../steal/steal.js?canui/util/scrollbar_width'>
         </script>
 		<script type='text/javascript'>
-			$(function(){
+			steal(function(){
 				setTimeout(function(){
-					alert("Mxui.scrollbarWidth =" +Mxui.scrollbarWidth)
-				})
-			})
+					alert("can.ui.scrollbarWidth = " + can.ui.scrollbarWidth)
+				});
+			});
 		</script>
 	</body>
 </html>

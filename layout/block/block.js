@@ -1,12 +1,12 @@
-steal('jquery/controller',
-	'mxui/layout/positionable',
-	'mxui/layout/bgiframe',
-	'mxui/layout/fill').then(function($){
+steal('can/control',
+	'can/construct/super',
+	'canui/layout/positionable',
+	'canui/layout/fill').then(function($){
 	/**
-	 * @class Mxui.Layout.Block
-	 * @parent Mxui
-	 * @plugin mxui/block
-	 * @test mxui/layout/block/funcunit.html
+	 * @class can.ui.layout.Block
+	 * @parent canui
+	 * @plugin canui/layout/block
+	 * @test canui/layout/block/funcunit.html
 	 * 
 	 * Blocks the browser screen or element from user interaction.
 	 * 
@@ -18,22 +18,21 @@ steal('jquery/controller',
 	 * To block the browser screen just attach Mxui.Block to an element you
 	 * wish to act as a blocker:
 	 * 
-	 *		$("#blocker").mxui_layout_block();
+	 *		new can.ui.layout.Block($("#blocker"));
 	 *
 	 * If you'd like to block a specifc element, simply pass it as the argument
 	 * to the Mxui.Block call:
 	 *
-	 *		$("#blocker").mxui_layout_block( $("#parent") );
+	 *		new can.ui.layout.Block($("#blocker"), $("#parent"));
 	 *
 	 * You can also simply pass a string selector as the argument to determine
 	 * the parent
 	 *
-	 *		$("#blocker").mxui_layout_block("#parent");
+	 *		new can.ui.layout.Block($("#blocker"), "#parent");
 	 *
-	 * 
-	 * @demo mxui/layout/block/block.html
+	 * @demo canui/layout/block/block.html
 	 */	
-	$.Controller("Mxui.Layout.Block", {
+	can.Control("can.ui.layout.Block", {
 		defaults : {
 			zIndex: 9999
 		},
@@ -55,7 +54,7 @@ steal('jquery/controller',
 		},
 		init : function() {
 
-			this.element.show().mxui_layout_positionable();
+			new can.ui.layout.Positionable(this.element.show());
 
 			// If the block element is styled with a width or height of zero,
 			// this will still work
@@ -81,11 +80,10 @@ steal('jquery/controller',
 					left: "0px" , 
 					zIndex: this.options.zIndex
 				})
-				.mxui_layout_fill({
+				.can_ui_layout_fill({
 					all: true, 
 					parent: this.options.parent
-				})
-				.mxui_layout_bgiframe();	
+				});
 			
 		},
 		update : function(options){

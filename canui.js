@@ -1,0 +1,13 @@
+steal(
+	'canui/layout/sortable',
+	'canui/layout/wrap',
+	'canui/layout/fill',
+	'canui/layout/bgiframe',
+	'canui/layout/positionable',
+	'canui/layout/block'
+).then(
+	'canui/nav/accordion',
+	'canui/nav/slider'
+).then(
+	'canui/util/scrollbar_width'
+)

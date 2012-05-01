@@ -1,35 +1,27 @@
 steal('funcunit').then(function(){
 
-module("mxui/block test",{ 
+module("can.ui.layout.Block",{
 	setup: function(){
-        S.open("//mxui/layout/block/block.html");
-		S("#blocker").exists();
+        S.open("//canui/layout/block/block.html");
 	}
-})
+});
 
-test("Block Test", function(){
-    
-	S("#blocker").exists(function(){
-		ok(/0/.test(S("#blocker").width()), "Initial blocker width is correct.") 
-		ok(/0/.test( S("#blocker").height() ), "Initial blocker height is correct.") 
-	});
+test("Block window", function() {
+	S('#blocker1').exists().height(0, 'Blocker has no height');
+	S('#block').click();
+	S('#blocker1').exists().height(function() {
+		return S.win.$(this).height() == S.win.$(S.win).height();
+	}, 'Blocker has full window height')
+		.css('z-index', '9999', 'Z-Index set high');
+});
 
-	S("#block").click()
-	
-	var winWidth, 
-		winHeight;
-	
-	S("#blocker").offset( function(offset) {
-		return (offset.left == 0 && offset.top == 0)
-	} , function(){
-
-		equals(S("#blocker").width(), S(S.window).width(),"width is correct")
-		equals(S("#blocker").height(), S(S.window).height(),"height is correct")
-		
-		equals(S("#blocker").css( "zIndex"),  9999, "zIndex is high")
-	});
-	
-
+test("Block element", function() {
+	S('#blocker2').exists().height(0, 'Blocker has no height');
+	S('#block2').click();
+	S('#blocker2').height(function() {
+		return S.win.$(this).height() == S.win.$('#block-div').height();
+	}, '#blocker2 covers whole div')
+		.css('z-index', '9999', 'Z-Index set high');
 });
 
 });

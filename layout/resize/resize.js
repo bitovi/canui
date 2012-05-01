@@ -1,8 +1,9 @@
 steal('jquery',
-	'jquery/controller',
-	'canui/layout/wrap',
+	'can/construct/super',
+	'can/control',
 	'jquery/event/drag',
 	'jquery/dom/dimensions',
+	'canui/layout/wrap',
 	'canui/layout/fill')
      .then(function(){
 	 	//we need to check we aren't evil and have overflow size our container
@@ -22,7 +23,7 @@ steal('jquery',
 		/**
 		 * @class can.ui.layout.Resize
 		 * @parent canui
-		 * @test mxui/layout/resize/funcunit.html
+		 * @test canui/layout/resize/funcunit.html
 		 * 
 		 * @description Makes an element resizable.
 		 *
@@ -74,7 +75,7 @@ steal('jquery',
 		 *
 		 *	You can make the textarea resizable using the following code:
 		 *
-		 *		$("textarea").mxui_layout_resize({
+		 *		$("textarea").can_ui_layout_resize({
 		 *			minHeight : 40,
 		 *			minWidth: 120
 		 *		});
@@ -116,10 +117,10 @@ steal('jquery',
 		},
 		{
 			setup : function(el, options){
-				var diff = $(el).mxui_layout_wrap()[0]
+				var diff = $(el).can_ui_layout_wrap()[0]
 				this._super(diff, options)
 				if(diff != el){
-					this.original = $(el).mxui_layout_fill({all: true}); //set to fill
+					this.original = $(el).can_ui_layout_fill({all: true}); //set to fill
 				}
 			},
 			directionInfo: {
@@ -145,10 +146,12 @@ steal('jquery',
 			 */
 			init : function(el, options){
 				//draw in resizeable
+				/*
 				this.element.height( this.element.height() );
 				this.element.prepend( $.map( this.options.handles, this.proxy( function( dir ) {
 					return "<div class='ui-resizable-" + [ dir, this.options.className ].join(" ") + "'/>";
 				})).join("") );
+				*/
 			},
 			getDirection : function(el){
 				return el[0].className.match(/ui-resizable-(se|s|e)/)[1]

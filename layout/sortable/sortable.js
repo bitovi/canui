@@ -87,18 +87,19 @@ steal('can/control',
 	 * placeholder.
 	 *
 	 * 	new can.ui.layout.Sortable($("#vegetables"), {
-	 *			makePlaceHolder : function(el, ev, drop, drag){
-	 *				var css = {
-	 *							"visibility":"hidden",
-	 *							"position" : "",
-	 *							"float" : "left"
-	 *						},
-	 *						placeholders = $(drag.movingElement).clone().css(css);
-	 *				$.each($.find('.draggables').not(drag.movingElement), function(i, child) {
-	 *					placeholders = placeholders.add($(child).clone().css(css));
-	 *				});
-	 *				return placeholders;
-	 *			}
+	 * 	    makePlaceHolder : function(el, ev, drop, drag){
+	 *		var css = {
+	 *			"visibility":"hidden",
+	 *			"position" : "",
+	 *			"float" : "left"
+	 *		},
+	 *      placeholders = $(drag.movingElement).clone().css(css);
+	 *		$.each($.find('.draggables').not(drag.movingElement),
+	 *          function(i, child) {
+	 *			    placeholders = placeholders.add($(child).clone().css(css));
+	 *          });
+	 *			return placeholders;
+	 *		}
 	 * 	});
 	 *
 	 * @constructor

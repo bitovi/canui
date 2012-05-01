@@ -42,7 +42,6 @@
 				left: 300px;
 			}	
         </style>
-       <link type="text/css" href="../../../mxui/combobox/combobox.css" rel="stylesheet" />
 	</head>
 	<body>
 		<div id='fitter' class="fittable">Demo Fittable</div>
@@ -78,7 +77,7 @@
                 src='../../../steal/steal.js'>   
         </script>
         <script type='text/javascript'>
-            steal("mxui/layout/fit").then(function($){
+            steal("canui/layout/fit").then(function($){
 				
 				var items = function(n) {
 					var items = ["<ul>"];
@@ -89,40 +88,38 @@
 					return items.join("");					
 				}
 			
-				$("#fittable1")//.css("opacity",1)
-				//	.css("position", "absolute")
-				.html( items(5));				
+				$("#fittable1").html( items(5));
 				$("#target1").click(function(ev){
-					$("#fittable1").fit({
+					$("#fittable1").can_ui_layout_fit({
 						within:300,
 						of:$("#target1")
 					}).css("opacity",1);
 				});
-				
-				$("#fittable2")//.css("opacity",0)
-				.html( items(30));				
-				$("#target2").click(function(ev){
-					$("#fittable2").fit({
-						within:300,
-						of:$("#target2")
-					})
-				});
-				
-				$("#fittable3").html( items(30));				
-				$("#target3").click(function(ev){
-					$("#fittable3").fit({
-						within:300,
-						of:$("#target3")
-					});
-				});
-				
-				$("#fittable4").html( items(20));				
-				$("#target4").click(function(ev){
-					$("#fittable4").fit({
-						within:300,
-						of:$("#target4")
-					});
-				});								
+
+//				$("#fittable2")//.css("opacity",0)
+//				.html( items(30));
+//				$("#target2").click(function(ev){
+//					$("#fittable2").can_ui_layout_fit({
+//						within:300,
+//						of:$("#target2")
+//					})
+//				});
+//
+//				$("#fittable3").html( items(30));
+//				$("#target3").click(function(ev){
+//					$("#fittable3").can_ui_layout_fit({
+//						within:300,
+//						of:$("#target3")
+//					});
+//				});
+//
+//				$("#fittable4").html( items(20));
+//				$("#target4").click(function(ev){
+//					$("#fittable4").can_ui_layout_fit({
+//						within:300,
+//						of:$("#target4")
+//					});
+//				});
 			});
 		</script>
 	</body>

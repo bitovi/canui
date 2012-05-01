@@ -1,13 +1,14 @@
 steal(
-	'jquery/controller', 
+	'can/construct/proxy',
+	'can/control',
 	'jquery/event/drag/limit', 
 	'jquery/event/drag/step'
 ).then(function( $ ) {
 
 	/**
-	 * @class Mxui.Nav.Slider
-	 * @test mxui/nav/slider/slider_test.js
-	 * @parent Mxui
+	 * @class can.ui.nav.Slider
+	 * @test canui/nav/slider/slider_test.js
+	 * @parent canui
 	 *
 	 * @description Creates a slider with `min`, `max` and `interval` options.
 	 * Creates a slider with `min`, `max` and `interval` options.
@@ -20,7 +21,7 @@ steal(
 	 *
 	 * You can create a slider with the following code:
 	 *
-	 *		$("#slider").mxui_nav_slider({
+	 *      var slider = new can.ui.nav.Slider($('#slider'), {
 	 *			interval: 1, 
 	 *			min: 1, 
 	 *			max: 10, 
@@ -31,11 +32,11 @@ steal(
 	 *	box of it's parent element. You can then call the val method to
 	 *	retrieve it's current value:
 	 *
-	 *		$("#slider").mxui_nav_slider("val"); // 4
+	 *	    slider.val() // 4
 	 *
 	 *	You can also use the `val` method as a setter:
 	 *
-	 *		$("#slider").mxui_nav_slider("val", 6);
+	 *		slider.val(6)
 	 *
 	 *	Alternatively, you can subscribe to the `change` event on the slider,
 	 *	which will pass the value as the second argument to the event handler.
@@ -45,7 +46,7 @@ steal(
 	 *		});
 	 *
 	 * ## Demo
-	 * @demo mxui/nav/slider/slider.html
+	 * @demo canui/nav/slider/slider.html
 	 *
 	 * @param {Object} options - An object literal describing the range,
 	 * interval and starting value of the slider
@@ -56,7 +57,7 @@ steal(
 	 *	by when being moved.	
 	 *	- `val` {Number} - The initial starting value of the slider.
 	 */
-	$.Controller("Mxui.Nav.Slider", 
+	can.Control("can.ui.nav.Slider",
 		/**
 		 * @hide
 		 * @static

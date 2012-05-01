@@ -8,11 +8,12 @@
  * Version 2.1.1
  */
 
-steal('jquery/controller').then(function( $ ) {
+steal('can/control').then(function( $ ) {
 
 /**
- * @class Mxui.Layout.Bgiframe
- * @parent Mxui
+ * @class can.ui.layout.Bgiframe
+ * @parent canui
+ *
  * The bgiframe is chainable and applies the iframe hack to get 
  * around zIndex issues in IE6. It will only apply itself in IE6 
  * and adds a class to the iframe called `bgiframe`. The iframe
@@ -30,7 +31,7 @@ steal('jquery/controller').then(function( $ ) {
  * borders. Some have reported it is due to the opacity filter. All 
  * these settings can be changed if needed as explained below.
  *
- *		$('div').bgiframe();
+ *		new can.ui.layout.Bgiframe($('div'));
  * 
  *		<div><p>Paragraph</p></div>
  * 
@@ -76,7 +77,7 @@ steal('jquery/controller').then(function( $ ) {
  */
 
 
-$.Controller("Mxui.Layout.Bgiframe",{
+$.Controller("can.ui.layout.Bgiframe",{
 	init : function(s){
 		if ( $.browser.msie && /msie 6\.0/i.test(navigator.userAgent )) {
 			s = $.extend({

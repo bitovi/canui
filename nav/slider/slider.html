@@ -37,18 +37,18 @@
                 src='../../../steal/steal.js'>   
         </script>
 		<script type='text/javascript'>
-			steal('mxui/nav/slider', function(){
+			steal('canui/nav/slider', function(){
 				var value = $('#value');
-				$("#slider").mxui_nav_slider({
+				new can.ui.nav.Slider($("#slider"), {
 					interval: 1, 
 					min: 1, 
 					max: 10, 
 					val: 5
-				}).bind("changing change", function( ev, newValue ) {
-					value.val( newValue );
+				});
+				$('#slider').on("changing change", function( ev, newValue ) {
+					value.val(newValue);
 				});
 			})
-			
 		</script>
 	</body>
 </html>

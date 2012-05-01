@@ -1,8 +1,8 @@
 steal('funcunit').then(function(){
 	
-module("mxui/layout/fill",{ 
+module("jQuery.fn.can_ui_layout_fill",{
 	setup: function(){
-        S.open("//mxui/layout/fill/fill.html");
+        S.open("//canui/layout/fill/fill.html");
 	}
 })
 
@@ -44,7 +44,6 @@ test("Filler Tests", function(){
 		height3 = S("#fill3 .fill").height();
 	});
 	
-	
 	S("#fill1 .ui-resizable-se").visible().drag("+0 +50");
 	S("#fill2 .ui-resizable-se").visible().drag("+0 +50");
 	S("#fill3 .ui-resizable-se").visible().drag("+0 +50", function(){
@@ -54,7 +53,6 @@ test("Filler Tests", function(){
 		
 		ok(withinAPixel(height3+50, S("#fill3 .fill").height()),"heights are close")
 	});
-	
 })
 
 

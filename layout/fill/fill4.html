@@ -18,24 +18,15 @@
         </style>
 	</head>
 	<body>
-  <!--<ul id="tabs">-->
-    <!--<li href="#panel">test</li>-->
-  <!--</ul>-->
   <div id="panel">
     <div class="filler"> <center>this element height lacks 2em</center></div>
   </div>
 <script type='text/javascript' src='../../../steal/steal.js'></script>
 <script type='text/javascript'>
-	steal(//'mxui/nav/tabs',
-    'mxui/layout/fill').then(function(){
-      $("#panel").mxui_layout_fill()
-//      .bind('show', function(){
-//        $(this).show().parent().trigger('resize', false)
-//      })
-//    $('#tabs').mxui_ui_tabs()
-
-    $('.filler').mxui_layout_fill()
-
+	steal(
+    'canui/layout/fill').then(function(){
+		$("#panel").can_ui_layout_fill()
+		$('.filler').can_ui_layout_fill()
 	})
 </script>
 	</body>
