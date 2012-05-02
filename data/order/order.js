@@ -1,4 +1,6 @@
-steal('jquery/controller','mxui/data').then(function($){
+steal(
+	'can/control',
+	'canui/data').then(function($){
 
 var sortName = function(el){
 	return el[0].className.match(/([^ ]+)-sort/)[1];
@@ -8,7 +10,7 @@ var sortName = function(el){
  * @class Mxui.Data.Order
  * Adds sort ordering to widgets
  */
-$.Controller('Mxui.Data.Order',
+can.Control('can.ui.data.Order',
 /* @Static */
 {
 	defaults : {
@@ -32,10 +34,10 @@ $.Controller('Mxui.Data.Order',
 		this._addSortClass(order)
 	},
 	_addSortClass: function(order){
-		this.find(this.options.clicker).each(function(){
+		this.element.find(this.options.clicker).each(function(){
 			var el = $(this),
 				attr = sortName(el);
-			
+
 			if($.inArray(attr+" asc", order) > -1) {
 				el.addClass('asc').removeClass('desc')
 			} else if( $.inArray(attr+" desc", order) > -1 ){
@@ -51,9 +53,7 @@ $.Controller('Mxui.Data.Order',
 			i = 0,
 			order = (this.options.params.attr('order') || []).slice(0),
 			current;
-		
-		
-		
+
 		//see if we might already have something with this
 		while ( i < order.length ) {
 			if ( order[i].indexOf(attr + " ") == 0 ) {
@@ -63,15 +63,15 @@ $.Controller('Mxui.Data.Order',
 				i++;
 			}
 		}
-		
+
 		var index = $.inArray(current, this.options.order)
-		
+
 		current = this.options.order[index+1];
 		if(!current && !this.options.canUnsort){
 			current = this.options.order[0]
 		}
-		
-		
+
+
 		if(current){
 			var newOrder = attr+" "+current;
 			if(!this.options.multiSort){
@@ -80,7 +80,7 @@ $.Controller('Mxui.Data.Order',
 				order.unshift(newOrder)
 			}
 		}
-		this.options.params.attrs({
+		this.options.params.attr({
 			'order' : order,
 			offset: 0})
 	}

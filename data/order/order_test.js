@@ -1,8 +1,8 @@
 steal('funcunit').then(function(){
 
-module("Mxui.Data.Order", { 
+module("can.ui.data.Order", {
 	setup: function(){
-		S.open("//mxui/data/order/order.html");
+		S.open("//canui/data/order/order.html");
 	}
 });
 

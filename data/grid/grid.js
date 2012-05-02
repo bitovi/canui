@@ -1,14 +1,18 @@
-steal('mxui/layout/table_scroll',
-	'mxui/data',
-	'jquery/controller/view',
-	'jquery/view/ejs',
-	'mxui/data/order',
-	'mxui/nav/selectable')
+steal(
+	'can/view/ejs',
+	'can/view/view_steal.js',
+	'can/control/view',
+	'can/control/plugin',
+	'canui/layout/table_scroll',
+	'canui/data',
+	'canui/data/order',
+	'canui/nav/selectable')
 	.then('./views/th.ejs','./views/init.ejs','./views/list.ejs')
 	.then(function($){
+
 /**
- * @class Mxui.Data.Grid
- * @parent Mxui
+ * @class can.ui.data.Grid
+ * @parent canui
  * 
  * A simple data grid that is paginate-able and sortable.
  * 
@@ -16,7 +20,7 @@ steal('mxui/layout/table_scroll',
  * 
  * Add the grid to a div (or other element) like:
  * 
- *     $('#grid').mxui_data_grid({
+ *     new can.ui.data.Grid($('#grid'), {
  *     
  *       model : Recipe,		   // a model to use to make requests
  *       
@@ -29,7 +33,7 @@ steal('mxui/layout/table_scroll',
  *         title : "Title",
  *         date : "Date"
  *       }
- *     })
+ *     });
  *   
  * The grid will automatically 'fill'
  * its parent element's height.
@@ -42,10 +46,10 @@ steal('mxui/layout/table_scroll',
  * 
  */
 
-$.Controller.extend("Mxui.Data.Grid",{
+can.Control("can.ui.data.Grid", {
 	defaults: {
 		columns: {},
-		params: new Mxui.Data,
+		params: new can.ui.Data,
 		row : null,
 		model : null,
 		noItems : "No Items",
@@ -57,7 +61,7 @@ $.Controller.extend("Mxui.Data.Grid",{
 		offsetEmpties: true,
 		// set to false to turn off the filler
 		filler: true,
-		
+
 		// immediately uses the  model to request items for the grid
 		loadImmediate: true,
 		selectable : true
@@ -67,8 +71,8 @@ $.Controller.extend("Mxui.Data.Grid",{
 {
 	setup : function(el, options){
 		// check params has attrs
-		if(options && options.params && typeof options.params.attrs != 'function'){
-			options.params = new Mxui.Data(options.params)
+		if(options && options.params && !options.params.constructor){
+			options.params = new can.ui.Data(options.params)
 		}
 		this._super.apply(this, arguments);
 	},
@@ -78,61 +82,62 @@ $.Controller.extend("Mxui.Data.Grid",{
 		for(var name in this.options.columns){
 			count++;
 		}
-		this.element.append( this.view({columns: this.options.columns, count: count}) )
-		
-		this.element.children('table').mxui_layout_table_scroll({
+		this.element.append( this.view('//canui/data/grid/views/init.ejs',
+			{columns: this.options.columns, count: count}) )
+
+		this.element.children('table').can_ui_layout_table_scroll({
 			filler: this.options.filler
 		});
-		this.$ = this.element.children(":first").controller(Mxui.Layout.TableScroll).elements()
-		
-		
-		this.$.thead.mxui_data_order({
+		this.$ = this.element.children(":first").control(can.ui.layout.TableScroll).elements()
+
+
+		this.$.thead.can_ui_data_order({
 			params: this.options.params,
-			multiSort: this.options.multiSort, 
+			multiSort: this.options.multiSort,
 			canUnsort: this.options.canUnsort
 		})
-		
-		this.options.selectable && this.$.tbody.mxui_nav_selectable();
+
+		this.options.selectable && this.$.tbody.can_ui_nav_selectable();
 		//this.scrollable.cache.thead.mxui_layout_resizer({selector: "th"});
 		this.element.addClass("grid");
 		if (this.options.filler) {
-			this.element.mxui_layout_fill();
+			this.element.can_ui_layout_fill();
 		}
 		//this.setFixedAndColumns()
-		
+
 		// add jQuery UI stuff ...
 		this.element.find(".header table").attr('cellSpacing', '0').attr('cellPadding', '0');
-		
+
 		var ths = this.$.thead.find('th').addClass("ui-helper-reset ui-state-default");
-		
+
 		ths.eq(0).addClass('ui-corner-left')
 		ths.eq(-1).addClass('ui-corner-right')
 
-		
+
 		if(this.options.loadImmediate){
 			this.options.model.findAll(this.options.params.attrs(), this.callback('list', true))
 		}
-		
+
 	},
 	/**
-	 * 
+	 *
 	 * @param {Object} clear if this is true, clear the grid and create a new one, else insert
 	 * @param {Object} items
 	 */
 	list : function(clear, items){
 		this.curentParams = this.options.params.attrs();
-		
+
 		this.options.params.attr('updating', false);
-		
-		var trs = $(this.view('list',{
+
+		var trs = $(this.view('//canui/data/grid/views/list.ejs',{
 			row : this.options.row,
 			items: items
 		}));
-		
+
 		if(clear){
 			this.empty();
 		}
-		
+
 		this.append(trs);
 		// update the items
 		this.options.params.attr('count',items.count)
@@ -146,10 +151,10 @@ $.Controller.extend("Mxui.Data.Grid",{
 		}
 	},
 	newRequest : function(attr, val){
-		var clear = true; 
+		var clear = true;
 		if(!this.options.offsetEmpties && attr == "offset"){ // if offset changes and we have offsetEmpties false
 			clear = false;
-		} 
+		}
 		this.options.model.findAll(this.options.params.attrs(), this.callback('list', clear))
 	},
     /**
@@ -165,7 +170,7 @@ $.Controller.extend("Mxui.Data.Grid",{
 		this.element.resize()
     },
     "{model} created" : function(model, ev, item){
-        var newEl = $($.View("//mxui/data/grid/views/list",{
+        var newEl = $(can.View("//canui/data/grid/views/list",{
             items : [item],
             row: this.options.row
         }))
@@ -196,13 +201,13 @@ $.Controller.extend("Mxui.Data.Grid",{
 			newEls = row;
 			row = undefined;
 		}
-		this.element.children(":first").mxui_layout_table_scroll("append",  newEls, row)
+		this.element.children(":first").can_ui_layout_table_scroll("append",  newEls, row)
 	},
 	/**
 	 * Remove all children from the table
 	 */
 	empty: function(){
-		this.element.children(":first").mxui_layout_table_scroll("empty")
+		this.element.children(":first").can_ui_layout_table_scroll("empty")
 	},
 	"select" : function(el, ev){
 		ev.preventDefault();

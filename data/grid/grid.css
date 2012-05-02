@@ -1,7 +1,7 @@
 body .grid {
 	overflow: auto;
 }
-.mxui_filler {
+.can_ui_filler {
 	overflow: hidden;
 }
 
@@ -37,7 +37,7 @@ body .grid {
 	border-top: solid 1px gray;
 	overflow: hidden;
 }
-.mxui_data_grid div {
+.can_ui_data_grid div {
 	position: relative;
 }
 .pagelisting {
@@ -68,18 +68,18 @@ body .grid {
 .pagenumber {
 	font-size: 10px;
 }
-.mxui_paginator_page {
+.can_ui_paginator_page {
 
 }
-.mxui_paginator_page .toolbar_button {
+.can_ui_paginator_page .toolbar_button {
 	display:inline;
 	cursor: pointer;
 	margin: 0px 2px;
 }
-.mxui_paginator_page .active{
+.can_ui_paginator_page .active{
 		cursor: pointer;
 }
-.mxui_paginator_page .toolbar_range {
+.can_ui_paginator_page .toolbar_range {
 	
 }
 .pages{

@@ -56,17 +56,18 @@
     </script>
 	<script type='text/javascript'>
 		steal('jquery/dom/fixture', 
-			'mxui/data/grid',
-			'mxui/layout/resize').then(function(){
+			'canui/data/grid',
+			'canui/layout/resize').then(function(){
 		
-		//want this as simple as possible
-		//provide it titles and 
-		// table contents
-			var params = new Mxui.Data({limit : 30})
+			//want this as simple as possible
+			//provide it titles and
+			// table contents
+			var params = new can.ui.Data({limit : 30})
 			
-			$.Model('Thing',{
+			can.Model('Thing',{
 				attributes : {birthday: "date"}
-			},{})
+			},{});
+
 			$.fixture.make('thing', 1000, function(i){
 				return {
 					id: i,
@@ -75,11 +76,9 @@
 					foo : "bar"
 				}
 			})
-			
-			
-			
+
 			// we need to also provide the grid with data ...
-			$("#grid").mxui_data_grid({
+			new can.ui.data.Grid($("#grid"), {
 				model : Thing,
 				params : params,
 				columns: {
@@ -89,18 +88,17 @@
 				},
 				row : "rowEjs"
 			})
-				
-			
+
 			$('#next').click(function(){
 				params.next();
 			});
-			
+
 			$('#prev').click(function(){
 				params.prev();
 			});
-			
-			$('.wrapper').mxui_layout_resize();
-			
+
+			new can.ui.layout.Resize($('.wrapper'));
+
 			params.bind("updated.attr", function(){
 				if(!this.canMoveNext()){
 					$('#next').addClass('disabled')
@@ -113,10 +111,11 @@
 					$('#prev').removeClass('disabled')
 				}
 			})
-			var paramsScroll = new Mxui.Data({limit : 30, offset: 0})
-			
+
+			var paramsScroll = new can.ui.Data({limit : 30, offset: 0})
+
 			// Forever Scroll
-			$("#forever").mxui_data_grid({
+			new can.ui.data.Grid($("#forever"), {
 				model : Thing,
 				params : paramsScroll,
 				columns: {
@@ -127,14 +126,13 @@
 				row : "rowEjs",
 				offsetEmpties: false
 			})
-			
+
 			$("#forever .scrollBody").bind("scroll", function(){
 				if(this.clientHeight+this.scrollTop + 70 >= this.scrollHeight && !paramsScroll.updating){
-					
+
 					paramsScroll.attr('offset', paramsScroll.offset + 30)
 				}
 			})
-			
 		});
 	</script>
 </body>

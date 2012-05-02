@@ -1,6 +1,6 @@
-steal('jquery/dom/fixture', 'jquery/model',function(){
+steal('jquery/dom/fixture', 'can/model',function(){
 
-$.Model('Item');
+can.Model('Item');
 
 var folderIds = [],
 	rand = $.fixture.rand,

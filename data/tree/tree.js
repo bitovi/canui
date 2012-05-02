@@ -1,31 +1,31 @@
-steal( 'jquery/controller',
-	   'jquery/view/ejs',
-	   'jquery/lang/observe/delegate',
-	   'jquery/controller/view',
-	   'jquery/view/ejs',
-	   'mxui/data' )
+steal( 'can/control',
+	   'can/view/ejs',
+	   'can/observe/delegate',
+	   'can/control/view',
+	   'canui/data' )
 	.then( './views/init.ejs', function($){
 
 /**
- * @class Mxui.Data.Tree
- * @parent Mxui
+ * @class can.ui.data.Tree
+ * @parent canui
+ *
  * API
  *     
  *     // create
- *     $('#tree').mxui_data_tree({model: Item});
+ *     var tree = new can.ui.data.Tree($('#tree'), {model: Item});
  *     
  *     // activate - highlights a single item
- *     $('#tree').mxui_data_tree('activate',itemId)
- * 
+ *     tree.activate(itemId);
+ *
  *     // expand - opens the content for a single item (pass in nothing for root)
- *     $('#tree').mxui_data_tree('expand',itemId)
- *     
+ *     tree.expand(itemId);
+ *
  *     // collapse - closes the content for a single item
- *     $('#tree').mxui_data_tree('collapse',itemId)
- *     
+ *     tree.collapse(itemId);
+ *
  *     // move - moves one item to another folder
- *     $('#tree').mxui_data_tree('move', itemId, folderId);
- *     
+ *     tree.move(itemId, folderId);
+ *
  *     // toggle, rename, inline-create?
  *     
  * State ...
@@ -35,7 +35,7 @@ steal( 'jquery/controller',
  *      selected: {id : true},
  *      renaming: id }
  */
-$.Controller('Mxui.Data.Tree',
+can.Control('can.ui.data.Tree',
 /** @Static */
 {
 	defaults : {
@@ -156,7 +156,7 @@ $.Controller('Mxui.Data.Tree',
 /**
  * Used to create lists 
  */
-$.Controller('Mxui.Data.Tree.List',{
+can.Control('can.ui.data.Tree.List',{
 	
 })
 

@@ -26,14 +26,32 @@
 					</th>
 				</tr>
 			</thead>
+			<tbody>
+				<tr>
+					<td>1</td>
+					<td>ZZZ</td>
+					<td>Test</td>
+				</tr>
+				<tr>
+					<td>3</td>
+					<td>AAA</td>
+					<td>Test 2</td>
+				</tr>
+				<tr>
+					<td>2</td>
+					<td>BBB</td>
+					<td>Test 3</td>
+				</tr>
+			</tbody>
 		</table>
 		<script type='text/javascript' 
-                src='../../../steal/steal.js?mxui/data/order'>
+                src='../../../steal/steal.js?canui/data/order'>
         </script>
 		<script type='text/javascript'>
-			var params = new Mxui.Data();
-			
-			$('#order').mxui_data_order({params : params});
+			steal(function() {
+				var params = new can.ui.Data();
+				new can.ui.data.Order($('#order'), {params : params});
+			});
 		</script>
 	</body>
 </html>

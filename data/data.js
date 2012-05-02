@@ -1,9 +1,9 @@
-steal('jquery/model').then(function(){
+steal('can/observe/attributes', 'can/model').then(function(){
 
 /**
  * A model that widgets in data use as params to request data.
  */
-$.Model("Mxui.Data",{
+can.Model("can.ui.Data",{
 	attributes : {
 		limit : "number",
 		offset : "number",
@@ -50,9 +50,6 @@ $.Model("Mxui.Data",{
 	canMovePrev : function(){
 		var offset = this.attr('offset');
 		return offset > 0;
-	},
-	toggleSort : function(){
-		
 	}
 })
 	
