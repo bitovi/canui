@@ -1,6 +1,7 @@
-steal('jquery/controller/subscribe',
-	  'jquery/view/ejs', 
-	  'mxui/data')
+steal('can/construct/proxy',
+	'can/control',
+	'can/view/ejs',
+	'canui/data')
 .then('./views/list.ejs')
 .then(function($){
 
@@ -24,12 +25,12 @@ var same = function(a, b){
 /**
  * A reusable list widget
  */
-$.Controller('Mxui.Data.List',
+can.Control('can.ui.data.List',
 {
     defaults : {
         model : null,
         activateEvent : "click",
-        list : "//mxui/data/list/views/list.ejs",
+        list : "//canui/data/list/views/list.ejs",
         show : null,
         params : {},
         className : "",
@@ -53,7 +54,7 @@ $.Controller('Mxui.Data.List',
     update : function(options){
         // if the params are the exact same, don't query
         var oldParams = $.extend({},this.options.params);
-        this._super(options || {});
+	    $.extend(true, this.options, options || {});
         if(options && same(oldParams, this.options.params)){ //cache?
             this.options.callback && this.options.callback(this.items)
         }else{
@@ -64,7 +65,7 @@ $.Controller('Mxui.Data.List',
         if(this.options.items){
             this.list(this.options.items);
         }else{
-            this.options.model.findAll(this.options.params, this.callback('list'))
+            this.options.model.findAll(this.options.params, this.proxy('list'))
         }
     },
     list : function(items){
@@ -104,7 +105,7 @@ $.Controller('Mxui.Data.List',
         }
     },
     "{model} created" : function(model, ev, item){
-        var newEl = $($.View(this.options.list,{
+        var newEl = $(can.view(this.options.list,{
             items : [item],
             options: this.options
         })).hide()
