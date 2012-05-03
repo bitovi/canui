@@ -1,7 +1,6 @@
-steal(
+steal('can/construct/proxy',
 	'can/view/ejs',
-	'can/view/view_steal.js',
-	'can/control/view',
+	'can/view/modifiers',
 	'can/control/plugin',
 	'canui/layout/table_scroll',
 	'canui/data',
@@ -82,8 +81,9 @@ can.Control("can.ui.data.Grid", {
 		for(var name in this.options.columns){
 			count++;
 		}
-		this.element.append( this.view('//canui/data/grid/views/init.ejs',
-			{columns: this.options.columns, count: count}) )
+
+		this.element.append('//canui/data/grid/views/init.ejs',
+			{columns: this.options.columns, count: count});
 
 		this.element.children('table').can_ui_layout_table_scroll({
 			filler: this.options.filler
@@ -115,7 +115,7 @@ can.Control("can.ui.data.Grid", {
 
 
 		if(this.options.loadImmediate){
-			this.options.model.findAll(this.options.params.attrs(), this.callback('list', true))
+			this.options.model.findAll(this.options.params.attr(), this.proxy('list', true))
 		}
 
 	},
@@ -125,11 +125,11 @@ can.Control("can.ui.data.Grid", {
 	 * @param {Object} items
 	 */
 	list : function(clear, items){
-		this.curentParams = this.options.params.attrs();
+		this.curentParams = this.options.params.attr();
 
 		this.options.params.attr('updating', false);
 
-		var trs = $(this.view('//canui/data/grid/views/list.ejs',{
+		var trs = $(can.view('//canui/data/grid/views/list.ejs',{
 			row : this.options.row,
 			items: items
 		}));
@@ -147,7 +147,7 @@ can.Control("can.ui.data.Grid", {
 			//want to throttle for rapid updates
 			params.attr('updating', true)
 			clearTimeout(this.newRequestTimer,100)
-			this.newRequestTimer = setTimeout(this.callback('newRequest', attr, val))
+			this.newRequestTimer = setTimeout(this.proxy('newRequest', attr, val))
 		}
 	},
 	newRequest : function(attr, val){
@@ -155,7 +155,7 @@ can.Control("can.ui.data.Grid", {
 		if(!this.options.offsetEmpties && attr == "offset"){ // if offset changes and we have offsetEmpties false
 			clear = false;
 		}
-		this.options.model.findAll(this.options.params.attrs(), this.callback('list', clear))
+		this.options.model.findAll(this.options.params.attr(), this.proxy('list', clear))
 	},
     /**
      * Listen for updates and replace the text of the list
@@ -170,7 +170,7 @@ can.Control("can.ui.data.Grid", {
 		this.element.resize()
     },
     "{model} created" : function(model, ev, item){
-        var newEl = $(can.View("//canui/data/grid/views/list",{
+        var newEl = $(can.view("//canui/data/grid/views/list",{
             items : [item],
             row: this.options.row
         }))

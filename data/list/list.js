@@ -45,7 +45,8 @@ can.Control('can.ui.data.List',
 		remove: null,
 		insert: null, 
 		// what each row should be wrapped with
-		nodeType: "li"
+		nodeType: "li",
+	    dataKey : 'can_ui_data_list_item'
     }
 },
 {
@@ -81,18 +82,18 @@ can.Control('can.ui.data.List',
 		if(el.hasClass("activated")){
 			this._deactivate(el)
 		} else {
-			var old = this.find(".activated");
+			var old = this.element.find(".activated");
 			this._deactivate(old);
 			this._activate(el);
 		}
 	},
 	_deactivate: function(el){
 		el.removeClass("activated");
-		el.trigger("deactivate", el.model());
+		el.trigger("deactivate", el.data(this.options.dataKey));
 	},
 	_activate: function(el){
 		el.addClass("activated");
-		el.trigger("activate", el.model());
+		el.trigger("activate", el.data(this.options.dataKey));
 	},
     /**
      * Listen for updates and replace the text of the list

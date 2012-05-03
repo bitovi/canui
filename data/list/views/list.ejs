@@ -1,5 +1,5 @@
-<% for(var i =0 ; i < items.length;i ++){ %>
-  <<%=options.nodeType%> <%= items[i]%> class='item <%= options.className%>'>
-        <%== $.View(options.show, items[i]) %>
+<% can.each(items, function(item) { %>
+  <<%=options.nodeType%> <%= (el) -> el.data(options.dataKey, item) %> class='item <%= options.className%>'>
+        <%== can.view.render(options.show, item) %>
   </<%=options.nodeType%>>
-<% } %>
+<% }) %>

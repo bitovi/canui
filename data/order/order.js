@@ -7,7 +7,7 @@ var sortName = function(el){
 };
 
 /**
- * @class Mxui.Data.Order
+ * @class can.ui.data.Order
  * Adds sort ordering to widgets
  */
 can.Control('can.ui.data.Order',
@@ -48,12 +48,11 @@ can.Control('can.ui.data.Order',
 		})
 	},
 	"{clicker} click": function( el, ev ) {
-
 		var attr = sortName(el),
 			i = 0,
 			order = (this.options.params.attr('order') || []).slice(0),
 			current;
-
+		console.log(order);
 		//see if we might already have something with this
 		while ( i < order.length ) {
 			if ( order[i].indexOf(attr + " ") == 0 ) {

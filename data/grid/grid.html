@@ -55,27 +55,29 @@
             src='../../../steal/steal.js'>   
     </script>
 	<script type='text/javascript'>
-		steal('jquery/dom/fixture', 
+		steal('can/util/fixture',
 			'canui/data/grid',
 			'canui/layout/resize').then(function(){
 		
 			//want this as simple as possible
 			//provide it titles and
 			// table contents
-			var params = new can.ui.Data({limit : 30})
-			
+			var params = new can.ui.Data({limit : 30}),
+				things = can.fixture.make(1000, function(i){
+					return {
+						id: i,
+						name : "thing "+i,
+						birthday : Math.round(new Date()*Math.random()),
+						foo : "bar"
+					}
+				});
+
 			can.Model('Thing',{
-				attributes : {birthday: "date"}
+				attributes : {birthday: "date"},
+				findAll : 'GET things'
 			},{});
 
-			$.fixture.make('thing', 1000, function(i){
-				return {
-					id: i,
-					name : "thing "+i,
-					birthday : Math.round(new Date()*Math.random()),
-					foo : "bar"
-				}
-			})
+			can.fixture('things', things.findAll);
 
 			// we need to also provide the grid with data ...
 			new can.ui.data.Grid($("#grid"), {
@@ -87,7 +89,7 @@
 					foo : "Thisisaverylongtitle"
 				},
 				row : "rowEjs"
-			})
+			});
 
 			$('#next').click(function(){
 				params.next();

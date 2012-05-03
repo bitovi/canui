@@ -10,4 +10,6 @@ steal('funcunit')
 	'./nav/slider/slider_test.js',
 	'./nav/accordion/accordion_test.js',
 	'./nav/selectable/selectable_test.js'
+).then(
+	'./data/list/list_test.js'
 );

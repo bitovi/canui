@@ -2,7 +2,7 @@
 	<thead>
 		<tr>
 		<%for(var col in columns){%>
-			<%== view('//canui/data/grid/views/th', {name: col, title: columns[col]}) %>
+			<%== can.view.render('//canui/data/grid/views/th', {name: col, title: columns[col]}) %>
 		<%}%>
 		</tr>
 	</thead>
@@ -10,7 +10,7 @@
 		<tr class='loading'>
 			<td colspan='<%=count %>'>Loading ...</td>
 		</tr>
-		
+
 	</tbody>
-	
+
 </table>
