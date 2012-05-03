@@ -41,7 +41,7 @@
 				.then('./list.css')
 				.then(function(){
 
-				can.Model('can.ui.List.File');
+				can.Model('can.ui.List.File', {}, {});
 
 				can.fixture.make('file', 10, function(i){
 					return {

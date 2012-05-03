@@ -1,4 +1,5 @@
 steal('can/construct/proxy',
+	'can/view/modifiers',
 	'can/control',
 	'can/view/ejs',
 	'canui/data')
