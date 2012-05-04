@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>MXUI Demo</title>
-	 <link type="text/css" href="smoothness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />          
+    <title>CanUI Demo</title>
+	<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" />  
 	<link type="text/css" href="layout/resize/resize.css" rel="stylesheet" />                       
     <style type='text/css'>
         body {font-family: verdana}
@@ -78,29 +78,29 @@
 <body>
 <div id='resize'>
 	The <span class='green'>green</span> div is a 
-	<a href="#!Mxui.Layout.Resize">Resize</a>. 
+	<a href="#!can.ui.Layout.Resize">Resize</a>. 
 	The <span class='red'>red</span> div is a 
-	<a href='#!Mxui.Layout.Fill'>Fill</a> 
-	and a <a href='#!Mxui.Layout.Split'>Split</a>.
+	<a href='#!can.ui.Layout.Fill'>Fill</a> 
+	and a <a href='#!can.ui.Layout.Split'>Split</a>.
 	<div id='fill'>
 		<div id='accordion'>
 			<h3>Accordion</h3>
 			<div>
 				This is a panel within an 
-				<a href='#!Mxui.Nav.Accordion'>Accordion</a>.
+				<a href='#!can.ui.Nav.Accordion'>Accordion</a>.
 			</div>
 			<h3>Block</h3>
 			<div>
 				Click <a href="javascript://" id='cb'>this</a>
 				to create a 
-				<a href='#!Mxui.Layout.Block'>Block</a>
+				<a href='#!can.ui.Layout.Block'>Block</a>
 				on a hidden <code>#block</code> div.
 			</div>
 			<h3>Modal</h3>
 			<div>
 				Click <a href="javascript://" id='cm'>this</a>
 				to create a 
-				<a href='#!Mxui.Layout.Modal'>Modal</a> on
+				<a href='#!can.ui.Layout.Modal'>Modal</a> on
 				a hidden <code>#modal</code> div.
 			</div>
 		</div>
@@ -116,7 +116,7 @@
 				<tbody>
 					<tr><td>This table</td>
 						<td>is a</td>
-						<td><a href="#!Mxui.Layout.TableScroll">
+						<td><a href="#!can.ui.Layout.TableScroll">
 							Table Scroll</a>.</td></tr>
 					<tr><td>It makes</td>
 						<td>a table</td>
@@ -126,7 +126,7 @@
 						<td>making grids.</td></tr>
 					<tr><td>This table is</td>
 						<td>also a mxui</td>
-						<td><a href='#!Mxui.Nav.Selectable'>
+						<td><a href='#!can.ui.Nav.Selectable'>
 							Selectable</a>.</td></tr>
 					<tr><td>Selectable</td>
 						<td>handles key</td>
@@ -146,12 +146,12 @@
 				</tbody>
 			</table>
 			<ul id='sortable'><li>This</li><li>is</li><li>a</li><li>Mxui</li><li>
-				 <a href='#!Mxui.Layout.Sortable'>Sortable</a></li></ul>
+				 <a href='#!can.ui.Layout.Sortable'>Sortable</a></li></ul>
 		</div>
 	</div>
 	<div id='slider-container'>
 		<div id='slider'>
-			&larr;<a href="!#Mxui.Nav.Slider">Slider</a>&rarr;
+			&larr;<a href="!#can.ui.Nav.Slider">Slider</a>&rarr;
 		</div>
 	</div>
 	<div id='modal'>I am a modal.
@@ -168,29 +168,29 @@
             src='../steal/steal.js'>   
     </script>
     <script type='text/javascript'>
-steal("mxui/layout/resize",
-	  "mxui/layout/fill",
-	  "mxui/nav/slider",
-	  "mxui/layout/split",
-	  "mxui/nav/accordion",
-	  "mxui/layout/modal",
-	  "mxui/layout/block",
-	  "mxui/layout/sortable",
-	  "mxui/layout/table_scroll",
-	  "mxui/nav/selectable",
+steal("can/control/plugin", "canui/layout/resize",
+	  "canui/layout/fill",
+	  "canui/nav/slider",
+	  "canui/layout/split",
+	  "canui/nav/accordion",
+	  "canui/layout/modal",
+	  "canui/layout/block",
+	  "canui/layout/sortable",
+	  "canui/layout/table_scroll",
+	  "canui/nav/selectable",
 	  function($){
     
-	$("#resize").mxui_layout_resize()
+	$("#resize").can_ui_layout_resize()
     
-	$("#fill").mxui_layout_fill()
-		.mxui_layout_split({direction: "vertical"});
+	$("#fill").can_ui_layout_fill()
+		.can_ui_layout_split({direction: "vertical"});
     
-	$("#slider").mxui_nav_slider();
-	$("#accordion").mxui_nav_accordion();
+	$("#slider").can_ui_nav_slider();
+	$("#accordion").can_ui_nav_accordion();
 	
 	// create a modal
 	$("#cm").click(function(){
-		$("#modal").mxui_layout_modal()
+		$("#modal").can_ui_layout_modal()
 	})
 	$("#hm").click(function(){
 		$("#modal").hide()
@@ -198,20 +198,20 @@ steal("mxui/layout/resize",
 	
 	// create a block
 	$("#cb").click(function(){
-		$("#block").mxui_layout_block()
+		$("#block").can_ui_layout_block()
 	})
 	$("#hb").click(function(){
 		$("#block").hide()
 	})
 	
-	$("#sortable").mxui_layout_sortable({
+	$("#sortable").can_ui_layout_sortable({
 		sortable: "li"
 	})
 	
-	$('#table_scroll').mxui_layout_table_scroll();
+	$('#table_scroll').can_ui_layout_table_scroll();
 	$('tbody td').attr('tabindex',"0");
 	
-	$('tbody').mxui_nav_selectable();
+	$('tbody').can_ui_nav_selectable();
 	
 	
 	// make links change parent window

@@ -26,10 +26,10 @@ steal('can/construct/super',
 	 *			overlay: true
 	 *		});
 	 *
-	 * This will create <div class="mxui_layout_modal-overlay"></div> element 
+	 * This will create <div class="can_ui_layout_modal-overlay"></div> element
 	 * and display it over the page. Default CSS applied to the overlay is:
 	 * 
-	 *		.mxui_layout_modal-overlay {
+	 *		.can_ui_layout_modal-overlay {
 	 *			background: rgba(0,0,0,0.5);
 	 *			position: fixed;
 	 *			top: 0;
@@ -39,7 +39,7 @@ steal('can/construct/super',
 	 *		}
 	 *
 	 * You can either overwrite that CSS in your stylesheet, or you
-	 * can use pass the overlay class as an option to the mxui_layout_modal:
+	 * can use pass the overlay class as an option to the can_ui_layout_modal:
 	 *
 	 *		new can.ui.layout.Modal($('modal'), {
 	 *			overlay: true, 
@@ -49,7 +49,7 @@ steal('can/construct/super',
 	 * Alternatively, if you'd like to use a custom element as your overlay,
 	 * simply pass it in the overlay option:
 	 *
-	 *		new can.ui.layout.Modeal($('modal', {
+	 *		new can.ui.layout.Modal($('modal', {
 	 *			overlay: $(".custom_overlay")
 	 *		});
 	 *
@@ -103,7 +103,6 @@ steal('can/construct/super',
 	
 	can.ui.layout.Positionable("can.ui.layout.Modal", {
 		defaults: {
-			// Mxui.Layout.Positionable options
 			my: 'center center',
 			at: 'center center',
 			of: window,
@@ -113,7 +112,7 @@ steal('can/construct/super',
 			// show overlay if true
 			overlay: false,
 			// class that will be applied to the overlay element
-			overlayClass : "mxui_layout_modal-overlay",
+			overlayClass : "can_ui_layout_modal-overlay",
 			// close modal if overlay is clicked
 			overlayClick: true
 		}

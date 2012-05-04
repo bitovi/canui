@@ -1,4 +1,4 @@
-steal('jquery/controller','jquery/event/key').then(function(){
+steal('can/control' , 'jquery/event/key').then(function(){
 	//get the start selection / cursor
 	$.fn.selectionStart = function(){
 		var el = this[0];
@@ -40,7 +40,7 @@ steal('jquery/controller','jquery/event/key').then(function(){
 	/**
 	 * Only allows what matches the regexp.
 	 */
-	$.Controller.extend("Mxui.KeyValidator",{
+	can.Control("can.ui.form.KeyValidator",{
 		defaults : {
 			//can be a regexp or a function
 			test : /.*/,

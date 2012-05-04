@@ -35,16 +35,16 @@
 
 		<script type='text/javascript' src='../../../steal/steal.js'></script>
 		<script type='text/javascript'>
-			steal('mxui/nav/tooltip', function(){
+			steal('canui/nav/tooltip', function(){
 				var themes = [ "info", "huawei", "success", "error", "notice" ],
 					dirs = [ "n", "ne", "en", "e", "es", "se", "s", "sw", "ws", "w", "wn", "nw" ];
 
 				$(".target").each(function( i, target ) {
-					$(target).mxui_nav_tooltip({
+					new can.ui.nav.Tooltip($(target), {
 						content: [ themes[ i % themes.length ], dirs[ i % dirs.length ] ].join(" "),
 						theme: themes[ i % themes.length ],
 						position: dirs[ i % dirs.length ]
-					}).mxui_nav_tooltip("show");
+					}).show();
 				});
 
 			})

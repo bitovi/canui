@@ -40,11 +40,11 @@
     	<input id="combobox7a" class="combobox" type="text" name="name6a" />		
 				
         <script type='text/javascript' 
-                src='../../steal/steal.js'>   
+                src='../../../steal/steal.js'>
         </script>
         <script type='text/javascript'>
-            steal("mxui/form/combobox/select",
-			              "mxui/form/combobox/ajax",
+            steal("canui/form/combobox/select",
+			              "canui/form/combobox/ajax",
 			              "jquery/dom/fixture").then(function($){
             
 				/*
@@ -73,12 +73,11 @@
 				 *  7a Tests that if item with lowercase text is searched by keying the first character capitalized, 
 				 *  the item shows up in the filtered list. 
 				 */					
-                $("#combobox7a").mxui_form_combobox({
+                $("#combobox7a").can_ui_form_combobox({
                     	items: createItems(6)
 					});					
 			                    
 			});
-     		steal.start();            
         </script>
     </body>
 </html>

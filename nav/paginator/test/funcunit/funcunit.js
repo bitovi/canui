@@ -1,3 +1,1 @@
-steal
- .plugins("funcunit/functional")
- .then("tests/basic")
+steal("funcunit").then("./tests/basic.js")

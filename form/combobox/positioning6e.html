@@ -50,11 +50,11 @@
 		</div>			
 				
         <script type='text/javascript' 
-                src='../../steal/steal.js'>   
+                src='../../../steal/steal.js'>
         </script>
         <script type='text/javascript'>
-            steal("mxui/form/combobox/select",
-			              "mxui/form/combobox/ajax",
+            steal("canui/form/combobox/select",
+			              "canui/form/combobox/ajax",
 			              "jquery/dom/fixture").then(function($){
             
 				/*
@@ -84,12 +84,12 @@
 				 *  and the dropdown doesnt fit the space available 
 				 *  the dropdown opens bellow to fit the space avaialble. 
 				 */					
-                $("#combobox6e").mxui_form_combobox({
+                $("#combobox6e").can_ui_form_combobox({
                     	items: createItems(12)
 					});					
 			                    
 			});
-     		steal.start();            
+
         </script>
     </body>
 </html>

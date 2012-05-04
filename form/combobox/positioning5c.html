@@ -37,11 +37,11 @@
 		</div>		
 				
         <script type='text/javascript' 
-                src='../../steal/steal.js'>   
+                src='../../../steal/steal.js'>
         </script>
         <script type='text/javascript'>
-            steal("mxui/form/combobox/select",
-			              "mxui/form/combobox/ajax",
+            steal("canui/form/combobox/select",
+			              "canui/form/combobox/ajax",
 			              "jquery/dom/fixture").then(function($){
             
 				/*
@@ -71,12 +71,12 @@
 				 *  4c Tests if the space above is greater than the space below and  dropdown fits in space above,
 				 *  the dropdown opens above with full height.
 				 */					
-                $("#combobox5c").mxui_form_combobox({
+                $("#combobox5c").can_ui_form_combobox({
                     	items: createItems(15)
 					});					
 			                    
 			});
-     		steal.start();            
+
         </script>
     </body>
 </html>

@@ -1,13 +1,18 @@
-steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jquery/event/key')
-	.then('./controllers/dropdown_controller','./controllers/selectable_controller',function() {
+steal('can/construct/super',
+		'can/construct/proxy',
+		'can/control/plugin',
+		'can/util/json.js',
+		'canui/util/scrollbar_width',
+		'jquery/event/key')
+	.then('canui/form/combobox/dropdown',
+		'canui/form/combobox/selectable',function() {
 
 	/**
-	 * @class Mxui.Form.Combobox
-	 * @plugin mxui_form_combobox
-	 * @test mxui/form/combobox/funcunit.html
-	 * @parent Mxui
+	 * @class can.ui.form.Combobox
+	 * @test canui/form/combobox/funcunit.html
+	 * @parent canui
 	 * 
-	 * Combobox progressively enhances an &lt;input&gt; field.  This constructor accepts an Object of [Mxui.Combobox.static.defaults options] used to customize the Combobox.
+	 * Combobox progressively enhances an &lt;input&gt; field.  This constructor accepts an Object of [can.ui.form.Combobox.static.defaults options] used to customize the Combobox.
 	 * 
 	 * Features:
 	 * 
@@ -18,16 +23,16 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 	 *   * Allows the user to make a non-selection.
 	 *   * Customizable show/hide animations.
 	 * 
-	 * @demo mxui/form/combobox/comboboxdemo1.html
+	 * @demo canui/form/combobox/comboboxdemo1.html
 	 * @param {Object} options Options used to customize the Combobox
 	 */
-	$.Controller.extend("Mxui.Form.Combobox", 
+	can.Control("can.ui.form.Combobox",
 	/* @static */
 	{
 		/**
 		 * Default setttings for the Combobox.  These can all be overridden.
 		 *
-		 *   * __classNames__: _String._ When mxui\_form\_combobox is called on an 
+		 *   * __classNames__: _String._ When can_ui\_form\_combobox is called on an
 		 *     element, it is wrapped in a div.  The element is given the class that 
 		 *     is defined by `classNames`.
 		 *   * __filterEnabled__: _Boolean._ Controls whether autocompletion is enabled on the combobox.
@@ -46,7 +51,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 *   * __noItemsMsg__: _String._ Text to show when no items are available in an autocomplete-enabled field.
 		 *   * __render__: _Object._ This method defines the HTML that wraps a Combobox item.  To override, initialize the Combobox with a function like so:
 		 * 
-		 *         $("input").mxui_form_combobox({
+		 *         $("input").can_ui_form_combobox({
 		 *           render: {
 		 *             'itemTemplate': function(item, val){
 		 *               // HTML wrapping logic goes here
@@ -58,7 +63,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 * 
 		 */
 		defaults: {
-			classNames: "mxui_form_combobox_wrapper",
+			classNames: "can_ui_form_combobox_wrapper",
 			
 			render: {
 				"itemTemplate": function( item , val) {
@@ -162,7 +167,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 			if ( this.options.displayHTML ) {
 				//this.oldElement.width("0");  WHY WAS THIS HERE
 				this.oldElement.hide();
-				this.find(".viewbox").show();
+				this.element.find(".viewbox").show();
 			}
 		},
 		
@@ -199,7 +204,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
         	var value = this.val();
             if ((value === null || value === "") &&
              !this.options.showNoSelectionOption && this.options.watermarkText) {
-				this.find("input[type='text']").val(this.options.watermarkText);
+				this.element.find("input[type='text']").val(this.options.watermarkText);
 			}
 		},
 		/**
@@ -208,7 +213,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 * Only remove the text if it is the watermarkText.
 		 */
 		clearWatermark: function() {
-			var input = this.find("input[type='text']");
+			var input = this.element.find("input[type='text']");
 			if ( input.val() == this.options.watermarkText ) {
 				input.val("");
 			}
@@ -217,18 +222,18 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		/**
 		 * Turn the Combobox into a Dropdown.
 		 * 
-		 * Internally, this creates and caches a mxui\_form\_combobox\_dropdown.
+		 * Internally, this creates and caches a can_ui\_form\_combobox\_dropdown.
 		 * 
-		 * @return This Controller's instance of mxui_form_combobox_dropdown.
+		 * @return This Controller's instance of can_ui_form_combobox_dropdown.
 		 */
 		dropdown: function() {
 			if (!this._dropdown ) {
-				this._dropdown = $("<div/>").mxui_form_combobox_dropdown($.extend({parentElement : this.element}, this.options)).hide();
+				this._dropdown = $("<div/>").can_ui_form_combobox_dropdown($.extend({parentElement : this.element}, this.options)).hide();
 				this.element.after(this._dropdown[0]);
 
 				//if there are items, load
 				if ( this.options.items ) {
-					this.dropdown().controller().draw(this.modelList);
+					this.dropdown().control().draw(this.modelList);
 				}
 				this.dropdown().hide();
 			}
@@ -385,7 +390,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 */
 		_toggleComboboxView: function( el ) {
 			el.hide();
-			var input = this.find("input[type='text']");
+			var input = this.element.find("input[type='text']");
 			input.show();
 			input[0].focus();
 			input[0].select();
@@ -397,7 +402,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 */
 		showDropdown : function(callback){
 			this.clearWatermark()
-			this.dropdown().controller().show(callback);
+			this.dropdown().control().show(callback);
 		},
 		/**
 		 * @hide
@@ -409,7 +414,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		showDropdownIfHidden : function(callback){
 			if (!this.dropdown().is(":visible") ) {
 				this.showDropdown(callback);
-				//this.dropdown().children("ul").controller().showSelected();
+				//this.dropdown().children("ul").control().showSelected();
 			}else{
 				callback && callback();
 			}
@@ -431,13 +436,13 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 */
 		"input keyup": function( el, ev ) {
 			var key = ev.keyName(),
-				selectable = this.dropdown().children("ul").controller();
+				selectable = this.dropdown().children("ul").control();
 			
 			switch(key){
 				
 				case "escape" : 
 					// close dropdown 
-					this.dropdown().controller().hide();
+					this.dropdown().control().hide();
 					return false;
 				
 				case  "down" : 
@@ -457,13 +462,13 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 				case "enter" : 
 					//get the selected element
 					if(this.dropdown().is(":visible")){
-						var selected = this.dropdown().children("ul").controller().selected();
-						this.dropdown().controller().selectElement(selected);
+						var selected = this.dropdown().children("ul").control().selected();
+						this.dropdown().control().selectElement(selected);
 					}else{
 						this.showDropdown()
 					}
 					
-					//this.find('input:visible')[0].select();
+					//this.element.find('input:visible')[0].select();
 					return;
 				default :
 					if(this.options.filterEnabled){
@@ -503,7 +508,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
                 });
             }
 			
-			this.dropdown().controller().draw(matches, val);
+			this.dropdown().control().draw(matches, val);
 			
 			this.showDropdownIfHidden();
 			
@@ -565,9 +570,9 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 				} else {
 					//activate current item
 					if(this.currentItem){
-						var current = this.dropdown().controller()._getEl(this.currentItem.item);
+						var current = this.dropdown().control()._getEl(this.currentItem.item);
 						if(current.length){
-							this.dropdown().controller().list.controller().selected(current, false);
+							this.dropdown().control().list.control().selected(current, false);
 						}
 					}
 					this.showDropdown();
@@ -602,18 +607,18 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		_setViewboxHtmlAndShow: function( html ) {
 
 			if ( this.options.displayHTML ) {
-				this.find("input[type=text]").hide();
-				this.find(".viewbox").show().html(html || "");
+				this.element.find("input[type=text]").hide();
+				this.element.find(".viewbox").show().html(html || "");
 			}
 		},
 		".toggle click": function( el, ev ) {
 			if ( this.dropdown().is(":visible") ) {
-				this.dropdown().controller().hide();
+				this.dropdown().control().hide();
 			} else {
-				this.focusInputAndShowDropdown(this.find("input[type=text]"));
+				this.focusInputAndShowDropdown(this.element.find("input[type=text]"));
 			}
 
-			var viewbox = this.find(".viewbox");
+			var viewbox = this.element.find(".viewbox");
 			if ( viewbox.is(":visible") ) {
 				this._toggleComboboxView(viewbox);
 			}
@@ -649,7 +654,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 	         * Fix inspired in:
 	         * http://stackoverflow.com/questions/2284541/form-input-loses-focus-on-scroll-bar-click-in-ie
 	         */
-			this.closeDropdownOnBlurTimeout = setTimeout(this.callback('blurred'), 100);
+			this.closeDropdownOnBlurTimeout = setTimeout(this.proxy('blurred'), 100);
 		},
 		
 		/**
@@ -663,7 +668,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 				// update viewbox with current item html
 				this._setViewboxHtmlAndShow(this.options.render.itemTemplate(this.currentItem.item));
 			}
-			this.dropdown().controller().hide();
+			this.dropdown().control().hide();
 		},
 		/**
 		 * @hide
@@ -679,11 +684,11 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		".toggle dblclick": function( el ) {
 			if ( $.browser.msie ) {
 				if(this.dropdown().is(":visible")){
-					this.dropdown().controller().hide()
+					this.dropdown().control().hide()
 				}else{
 					this.showDropdown()
 				}
-				this.focusInputAndShowDropdown(this.find("input[type=text]"));
+				this.focusInputAndShowDropdown(this.element.find("input[type=text]"));
 			}
 		},
 		
@@ -716,7 +721,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 * @return {String} The currently selected value.
 		 */
 		textVal: function() {
-			return this.find("input[type=text]").val();
+			return this.element.find("input[type=text]").val();
 		},
 		/**
 		 * 
@@ -767,14 +772,14 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 							delete clone[field];
 						}
 					}
-					this.find("input[type=hidden]")[0].value = $.toJSON(clone);
+					this.element.find("input[type=hidden]")[0].value = can.toJSON(clone);
 				} else { // just store the value
-					this.find("input[type=hidden]")[0].value = this.currentItem.value;
+					this.element.find("input[type=hidden]")[0].value = this.currentItem.value;
 				}
 
 				//if we have a dropdown ... update it
 				if ( this._dropdown ) {
-					this.dropdown().controller().draw(this.modelList);
+					this.dropdown().control().draw(this.modelList);
 				}
 
 	            if (this.valueSet) {
@@ -803,7 +808,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 			if ( item ) {
 				item.forceHidden = false;
 				// delegate item selection on dropdown				
-				this.dropdown().controller().selectItem(item);
+				this.dropdown().control().selectItem(item);
 			}
 		},
 		/**
@@ -811,9 +816,9 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 */
 		clearSelection: function() {
 			if ( this.currentItem.item ) {
-				this.find("input[type='text']").val("");
+				this.element.find("input[type='text']").val("");
 				// let dropdown handle element style cleaning
-				this.dropdown().controller().clearSelection(this.currentItem.item);
+				this.dropdown().control().clearSelection(this.currentItem.item);
 				// delete current element references
 				this.currentItem = {
 					"value": null,
@@ -843,14 +848,14 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		getItems: function() {
 			return this.modelList || [];
 		},
-		// This method should probably be under mxui/form/combobox/ajax.
+		// This method should probably be under canui/form/combobox/ajax.
 		/**
 		 * Forces the Ajax Combobox to fetch data from the server.
 		 * 
 		 * @param {Function} callback The callback to be triggered after items are loaded into Combobox. 
 		 */
 		populateItems: function( callback ) {
-			this.find("input[type='text']").trigger("show:dropdown", [this, callback]);
+			this.element.find("input[type='text']").trigger("show:dropdown", [this, callback]);
 		},
 		/**
 		 * Finds an array of Combobox item `value`s where the `text` property contains the string defined in the `text` argument.
@@ -861,7 +866,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 		 * @return {Array} An array of strings. 	
 		 * 
 		 * @codestart
-		 * $("#combobox_demo").mxui_form_combobox({
+		 * $("#combobox_demo").can_ui_form_combobox({
 
 			items: [{ value: "1", text: "hola", enabled: "true", selected: true,
 				children: [  { value: "5", text: "chicago", enabled: "true", children: [] },
@@ -870,7 +875,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 					
 					] });
 					
-			var result = $("#combobox_demo").controller().query('los');
+			var result = $("#combobox_demo").control().query('los');
 			
 			// result is "7"
 			
@@ -918,7 +923,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 			var item = this.modelListMatches("value", value)[0];
 			if ( item ) {
 				// delegate show/hide items on dropdown_controller				
-				this.dropdown().controller().showItem(item);
+				this.dropdown().control().showItem(item);
 				item.forceHidden = false;
 			}
 		},
@@ -934,7 +939,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 					this.clearSelection();
 				}
 				// delegate show/hide items on dropdown_controller					
-				this.dropdown().controller().hideItem(item);
+				this.dropdown().control().hideItem(item);
 				item.forceHidden = true;
 			}
 		},
@@ -948,7 +953,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 			var item = this.modelListMatches("value", value)[0];
 			if ( item ) {
 				item.enabled = true;
-				this.dropdown().controller().enable(item);
+				this.dropdown().control().enable(item);
 			}
 		},
 		
@@ -962,7 +967,7 @@ steal('jquery/controller', 'jquery/lang/json', 'canui/util/scrollbar_width', 'jq
 			if ( item ) {
 				item.enabled = false;
 				item.activated = false;
-				this.dropdown().controller().disable(item);
+				this.dropdown().control().disable(item);
 			}
 		}
 	});

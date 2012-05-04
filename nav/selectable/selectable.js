@@ -170,15 +170,15 @@ can.Control('can.ui.nav.Selectable',{
 	/**
 	 * Gets or sets the selected element.
 	 * 
-	 * Get the current selected element:
-	 * 
-	 *     $('#selectable').controller.selected()
-	 *     
 	 * Set the current selected element:
-	 * 
-	 *     $('#selectable').mxui_nav_selectable("selected",
-	 *                                        $('.selectable:eq(1)'))
-	 * 
+	 *
+	 *     var selectable = new can.ui.nav.Selectable($('#selectable'));
+	 *     selectable.selected($('.selectable:eq(1)'));
+	 *
+	 * Get the current selected element:
+	 *
+	 *     selectable.selected()
+	 *
 	 * @param {jQuery} el - the element to select.
 	 * @param {Boolean} [autoFocus=false] should the selected element be
 	 * focused.  It's focused if the user is using keyboard navigation.
@@ -213,8 +213,8 @@ can.Control('can.ui.nav.Selectable',{
 	/**
 	 * Activates an element.
 	 * 
-	 *     $('#selectable').mxui_nav_selectable("activated",
-	 *                                          $('.selectable:eq(1)'))
+	 *     var selectable = new can.ui.nav.Selectable('#selectable');
+	 *     selectable.activated($('.selectable:eq(1)'));
 	 * 
 	 * @param {jQuery} el the jQuery-wrapped element to select
 	 * @param {Event} [ev] an event used to test if ctrlKey or shiftKey was held.

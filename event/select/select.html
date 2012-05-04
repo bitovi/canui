@@ -33,30 +33,32 @@
 		</div>
 		<a href='#' id='remove'>Remove</a>
 		<script type='text/javascript' 
-                src='../../../steal/steal.js?steal[app]=jquery/event/select&steal[env]=development'>   
+                src='../../../steal/steal.js'>
         </script>
 		<script type='text/javascript'>
-			var s = {
-				'selectin' : function(ev, previous){
+			steal('can/util', 'canui/event/select').then(function() {
+				var s = {
+					'selectin' : function(ev, previous){
+						console.log('selectin',ev, previous)
+						$(this).addClass('selected')
+					},
+					'selectout' : function(ev, to){
+						console.log('selectout',ev, to)
+						$(this).removeClass('selected')
+					}
+				}
+				$(".select").bind(s)
+				$("#container").delegate('.selectme','selectin',function(ev, previous){
 					console.log('selectin',ev, previous)
 					$(this).addClass('selected')
-				},
-				'selectout' : function(ev, to){
-					console.log('selectout',ev, to)
+				});
+				$("#container").delegate('.selectme','selectout',function(ev, previous){
+					console.log('selectout',ev, previous)
 					$(this).removeClass('selected')
-				}
-			}
-			$(".select").bind(s)
-			$("#container").delegate('.selectme','selectin',function(ev, previous){
-				console.log('selectin',ev, previous)
-				$(this).addClass('selected')
-			});
-			$("#container").delegate('.selectme','selectout',function(ev, previous){
-				console.log('selectout',ev, previous)
-				$(this).removeClass('selected')
-			});
-			$("#remove").click(function(){
-				$("#container").remove();
+				});
+				$("#remove").click(function(){
+					$("#container").remove();
+				})
 			})
 		</script>
 	</body>

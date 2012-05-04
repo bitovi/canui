@@ -1,5 +1,5 @@
-steal('jquery/controller', 'jquery/event/default').then(function($){
-	$.Controller.extend("Mxui.Layout.Tree",
+steal('can/control', 'jquery/event/default').then(function($){
+	can.Control("can.ui.layout.Tree",
 	{
 		defaults : {
 			lastNode: "last-child",
@@ -49,7 +49,7 @@ steal('jquery/controller', 'jquery/event/default').then(function($){
 				ev.preventDefault();
 			}
 			ev.stopPropagation();
-			this.find("."+this.options.selected).removeClass(this.options.selected)
+			this.element.find("."+this.options.selected).removeClass(this.options.selected)
 			el.addClass(this.options.selected)
 			//make sure we aren't already active
 			if(el.hasClass(this.options.active)){

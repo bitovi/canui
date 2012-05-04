@@ -8,11 +8,11 @@ steal(
 	'canui/layout/split',
 	'canui/layout/resize',
 	'canui/layout/table_scroll',
-	'canui/layout/modal'
-).then(
+	'canui/layout/modal',
 	'canui/nav/accordion',
 	'canui/nav/slider',
-	'canui/nav/selectable'
-).then(
-	'canui/util/scrollbar_width'
+	'canui/nav/selectable',
+	'canui/util/scrollbar_width',
+	'canui/form/combobox',
+	'canui/data/grid'
 )

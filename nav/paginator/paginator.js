@@ -1,5 +1,6 @@
-steal('jquery/controller','jquery/view/ejs','jquery/event/default').then(function(){
-	$.Controller.extend("Mxui.Paginator",{
+steal('can/construct/super', 'can/control','can/view/ejs','jquery/event/default')
+.then('//canui/nav/paginator/views/init.ejs', function(){
+	can.Control("can.ui.nav.Paginator",{
 		defaults : {
 			buttonClass: "toolbar_button",
 			rangeClass: "toolbar_range",
@@ -30,13 +31,13 @@ steal('jquery/controller','jquery/view/ejs','jquery/event/default').then(functio
 			this.setOffsetLimit()
 		},
 		update : function(options){
-			this._super(options)
+			can.extend(true, this.options, options);
 			this.setOffsetLimit()
 		},
 		setOffsetLimit : function(){
 			this.options.prevActive = this.options.offset > 0
 			this.options.nextActive = this.options.offset+this.options.limit < this.options.count
-			this.element.html(this.view("init"))
+			this.element.html(can.view('//canui/nav/paginator/views/init.ejs', this));
 		},
 		".next_record.active click" : function(el, ev){
 			
@@ -78,5 +79,4 @@ steal('jquery/controller','jquery/view/ejs','jquery/event/default').then(functio
 			this.update(data)
 		}
 	})
-})
-.views("//mxui/paginator/views/init.ejs");
+});

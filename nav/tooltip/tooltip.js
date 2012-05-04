@@ -1,7 +1,8 @@
-steal(
-	'jquery/controller',
-	'jquery/view/ejs',
-	'mxui/layout/positionable',
+steal('can/construct/proxy',
+	'can/construct/super',
+	'can/control',
+	'can/view/ejs',
+	'canui/layout/positionable',
 	'steal/less'
 ).then(
 	'./tooltip.less',
@@ -24,7 +25,7 @@ steal(
 		}());
 
 
-	$.Controller("Mxui.Nav.Tooltip", {
+	can.Control("can.ui.nav.Tooltip", {
 		positions: {
 			n : {
 				my: "bottom",
@@ -68,7 +69,7 @@ steal(
 		setup : function( el, options ) {
 			options = $.extend( this.constructor.defaults, options || {} );
 			options.$ = {
-				tooltip : $( $.View( "./views/tooltip.ejs", options ) )
+				tooltip : $( can.view( "./views/tooltip.ejs", options ) )
 			}
 			$.each( ["outer", "inner", "arrow"], this.proxy( function( i, className ) {
 				options.$[ className ] = options.$.tooltip.find( "." + className );
@@ -199,7 +200,7 @@ steal(
 			// ZOMG double each, thats like, O(n^2)
 			$.each( parts, this.proxy( function( i, part ) {
 				$.each( this.options.position.split(""), function( i, c ) {
-					positionArrays[part].push( Mxui.Nav.Tooltip.positions[ c ][part] );
+					positionArrays[part].push( can.ui.nav.Tooltip.positions[ c ][part] );
 				});
 
 				// Have to do this craziness because the jQuery UI position
@@ -212,7 +213,7 @@ steal(
 			} ));
 
 			this.position = $.extend({},
-				Mxui.Nav.Tooltip.positions[ this.options.position.charAt(0) ],
+				can.ui.nav.Tooltip.positions[ this.options.position.charAt(0) ],
 				position
 			);
 
@@ -235,7 +236,7 @@ steal(
 		},
 
 		setPosition: function() {
-			var isHidden = this.options.$.tooltip.css("display") == "none";
+			var isHidden = this.options.$.tooltip.css("display") == "none", positionable;
 
 			if ( isHidden ) {
 				this.options.$.tooltip.css({
@@ -243,7 +244,7 @@ steal(
 					display: "block"
 				})
 
-				this.options.$.tooltip.mxui_layout_positionable(
+				positionable = new can.ui.layout.Positionable(this.options.$.tooltip,
 					$.extend({
 						of : this.element,
 						collision : "none"
@@ -255,7 +256,7 @@ steal(
 					display: "none"
 				})
 			} else {
-				this.options.$.tooltip.mxui_layout_positionable(
+				positionable = new can.ui.layout.Positionable(this.options.$.tooltip,
 					$.extend({
 						of : this.element,
 						collision : "none",
@@ -265,7 +266,7 @@ steal(
 					}, this.position )
 				);
 			}
-			this.options.$.tooltip.mxui_layout_positionable("move");
+			positionable.move();
 		},
 
 		show : function() {

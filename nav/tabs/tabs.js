@@ -1,4 +1,4 @@
-steal('mxui/nav/menuable').then(function($){
+steal('canui/nav/menuable').then(function($){
 	//problem with this is it will search and find everything ...
 	Mxui.Nav.Menuable("Mxui.Nav.Tabable",
 	{

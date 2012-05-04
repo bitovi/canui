@@ -8,14 +8,16 @@
 	<body>
 	    <div id='paginator'></div>
 		<script type='text/javascript' 
-                src='../../steal/steal.js?steal[app]=mxui/paginator&steal[env]=development'>   
+                src='../../../steal/steal.js?canui/nav/paginator'>
         </script>
 		<script type='text/javascript'>
-			$("#paginator").mxui_paginator({offset: 0, limit: 100, count: 1000})
-						   .bind("paginate", function(ev, data){
-						   		console.log(ev, data)
-							
-						   })
+			steal(function() {
+				new can.ui.nav.Paginator("#paginator", {offset: 0, limit: 100, count: 1000});
+			   $('#paginator').bind("paginate", function(ev, data){
+			        console.log(ev, data)
+
+			   });
+			});
 		</script>
 	</body>
 </html>

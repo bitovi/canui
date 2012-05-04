@@ -6,14 +6,13 @@
 	</head>
 	<body>
 		<input id='validate'>
-		<script type='text/javascript' src='../../steal/steal.js?mxui/key_validator/key_validator.js'></script>
+		<script type='text/javascript' src='../../../steal/steal.js?canui/form/key_validator/key_validator.js'></script>
 		<script type='text/javascript'>
-			$(function(){
-				$('#validate')
-					.mxui_key_validator({
+			steal(function(){
+				new can.ui.form.KeyValidator('#validate', {
 						test: /^[\-+]?[0-9]*\.?([0-9]+)?$/
 					})
-					.focus();
+				$('#validate').focus();
 			});
 		</script>
 	</body>

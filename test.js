@@ -12,4 +12,6 @@ steal('funcunit')
 	'./nav/selectable/selectable_test.js'
 ).then(
 	'./data/list/list_test.js'
+).then(
+	'./util/rpc/test/qunit/rpc_test.js'
 );

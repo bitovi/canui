@@ -1,4 +1,4 @@
-steal.plugins('jquery','jquery/lang/json').then(function($){
+steal('can/util/json.js').then(function($){
 	
 	var waiting = [], 
 		timeout,
@@ -11,7 +11,7 @@ steal.plugins('jquery','jquery/lang/json').then(function($){
 	 * @param {Function} error The error handler callback
 	 * @param {String} fixture A fixture to use
 	 */
-	$.rpc = function(method, params, success, error, fixture){
+	can.rpc = function(method, params, success, error, fixture){
 		//if no url
 		if(typeof method !== 'string'){
 			fixture = error;
@@ -58,7 +58,7 @@ steal.plugins('jquery','jquery/lang/json').then(function($){
 						"id": (request.id = id++)
 					}
 					request.order = i;
-					if(request.fixture && $.fixture){
+					if(request.fixture && can.fixture){
 						//rpc.fixture = ;
 						fixtures.push(request)
 					}else
@@ -69,7 +69,7 @@ steal.plugins('jquery','jquery/lang/json').then(function($){
 				var getNextFixture, 
 					getBatch, 
 					runResults = function(){
-						$.rpc.numberOfRequests ++;
+						can.rpc.numberOfRequests ++;
 						for(var i=0; i < results.length;i++){
 							if(results[i].error && sent[i].error){
 								sent[i].error(results[i].error)
@@ -97,7 +97,7 @@ steal.plugins('jquery','jquery/lang/json').then(function($){
 					var settings = $.extend({},fixtures.shift());;
 					settings.success= processFixtureAjax;
 					settings.dataType = 'json'
-					if($.fixture["-handleFunction"](settings)){
+					if(can.fixture["-handleFunction"](settings)){
 						return;
 					}else{
 						var url = settings.fixture;
@@ -112,7 +112,7 @@ steal.plugins('jquery','jquery/lang/json').then(function($){
 				}
 				getBatch = function(){
 					if(batch.length){
-						$.post($.rpc.url,$.toJSON(batch),function(data){
+						$.post($.rpc.url,can.toJSON(batch),function(data){
 							//start filling in results
 							for (var i = 0; i < results.length; i++) {
 								if(!results[i]){
@@ -133,13 +133,13 @@ steal.plugins('jquery','jquery/lang/json').then(function($){
 				}else{
 					getBatch();
 				}
-			},$.rpc.timeout)
+			},can.rpc.timeout)
 		}
 	}
 	
 	
 	
-	$.extend($.rpc,{
+	can.extend(can.rpc,{
 		timeout : 20, //a blink of the eye
 		url: "/rpc",
 		numberOfRequests : 0 //for testsing

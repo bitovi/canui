@@ -1,6 +1,6 @@
 module("combobox4 test", { 
 	setup: function(){
-        S.open("//mxui/combobox/positioning4e.html");
+        S.open("//canui/form/combobox/positioning4e.html");
 	}
 })
 

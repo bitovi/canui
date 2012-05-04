@@ -1,21 +1,22 @@
-steal('mxui/layout/fit').then(function () {
+steal('can/construct/proxy',
+	'canui/layout/fit',
+	'can/control/plugin').then(function () {
 
-	
 	/**
 	 * @hide
 	 * @class DropdownController
-	 * @plugin mxui/form/combobox/dropdown_controller
+	 * @plugin canui/form/combobox/dropdown_controller
 	 * 
 	 * This class creates a dropdown UI component.  Used internally by `Combobox`.  It manages the dropdown by animating and drawing it.
 	 * 
 	 * @codestart
-	 *    $("&lt;div&gt;").mxui_form_combobox_dropdown();
+	 *    $("&lt;div&gt;").can_ui_form_combobox_dropdown();
 	 * @codeend
 	 *
 	 * @param {Object} options Options used to customize the Dropdown
 	 */
 	
-    $.Controller.extend("Mxui.Form.Combobox.DropdownController", 
+    can.Control("can.ui.form.Combobox.Dropdown",
 	/* @static */
 	{}, 
 	/* @prototype */
@@ -77,7 +78,7 @@ steal('mxui/layout/fit').then(function () {
             if (this.isFirstPass) {
                 // apply custom style to item
                 var self = this;
-                this.find(".item").each(function (i, el) {
+                this.element.find(".item").each(function (i, el) {
                     el = $(el);
                     var item = this._getModel(el);
                     el.removeClass(self.options.activatedClassName);
@@ -112,10 +113,10 @@ steal('mxui/layout/fit').then(function () {
                 }
                 this.list = this.element.html(html)
 					.children("ul")
-					.mxui_form_combobox_selectable({
+					.can_ui_form_combobox_selectable({
 					    selectedClassName: "selected"
 					})
-					.mxui_form_combobox_selectable("cache");
+					.can_ui_form_combobox_selectable("cache");
             }
             
             var modelHash = {};
@@ -142,7 +143,7 @@ steal('mxui/layout/fit').then(function () {
 					else {
 						// if we have an autosuggest, pick the first one
 						if (!first && val) {
-							this.list.controller().selected(el, false);
+							this.list.control().selected(el, false);
 							first = true
 						}
 						el.find('.item-content').html(this.options.render.itemTemplate(item, val));
@@ -176,7 +177,7 @@ steal('mxui/layout/fit').then(function () {
         _getEl: function(item) {
             // id = 0 can be a valid value
             if (!item || item.id === undefined) return $([])
-            return this.find(".dropdown_" + item.id);
+            return this.element.find(".dropdown_" + item.id);
         },
         /**
          * @hide
@@ -264,7 +265,7 @@ steal('mxui/layout/fit').then(function () {
             var item = this._getModel(el);
             if (item) {
                 // set combobox new value
-                this.options.parentElement.controller().val(item.value, el.html());
+                this.options.parentElement.control().val(item.value, el.html());
 
                 // then hide dropdown            
                 this.element.hide();
@@ -296,7 +297,7 @@ steal('mxui/layout/fit').then(function () {
             // (we don't want all hidden dropdowns on the page to suddenly open on resize)
             if (this.element.is(":visible")) {
                 this.style();
-                this.element.mxui_layout_fit({
+                this.element.can_ui_layout_fit({
                     within: 300,
                     of: this.options.parentElement,
                     maxHeight: this.options.maxHeight,
@@ -309,7 +310,7 @@ steal('mxui/layout/fit').then(function () {
         *		 Dropdown Public API		*
         ************************************/
         // when item is selected through the api simulate click  
-        // to let mxui/selectable manage element's activation
+        // to let canui/layout/selectable manage element's activation
 		
 		/**
 		 * Programmatcally select the Dropdown item represented by `item`.
@@ -341,7 +342,6 @@ steal('mxui/layout/fit').then(function () {
 		 * @param {Object} currentItem
 		 */
         clearSelection: function(currentItem) {
-            // TODO: this cleanup should probably be a feature of mxui/selectable
             this._getEl(currentItem).removeClass(this.options.activatedClassName);
         },
 		
@@ -371,14 +371,14 @@ steal('mxui/layout/fit').then(function () {
 		 * Animate the Dropdown out of view and reset the watermark.
 		 */
         hide: function() {
-            this.options.parentElement.controller().resetWatermark();
+            this.options.parentElement.control().resetWatermark();
             if (this.element.data().fitAbove) {
                 var offTop = this.options.parentElement.offset().top;
                 this.element.animate({
                     top: offTop,
                     height: 1
-                }, "fast", this.callback("_hidden"));
-                this.element.hide(this.callback("_hidden"));
+                }, "fast", this.proxy("_hidden"));
+                this.element.hide(this.proxy("_hidden"));
             } else {
                 this.element.slideUp("fast");
             }
@@ -405,7 +405,7 @@ steal('mxui/layout/fit').then(function () {
 
             // knows WAY too much
 
-            this.element.mxui_layout_fit({
+            this.element.can_ui_layout_fit({
                 within: 300,
                 of: this.options.parentElement,
                 maxHeight: this.options.maxHeight,
@@ -413,9 +413,9 @@ steal('mxui/layout/fit').then(function () {
             });
 
             if (this.element.data().fitAbove) {
-                this._slideUp(this.element, this.callback("_shown", callback));
+                this._slideUp(this.element, this.proxy("_shown", callback));
             } else {
-                this.element.hide().slideDown("fast", this.callback("_shown", callback));
+                this.element.hide().slideDown("fast", this.proxy("_shown", callback));
             }
         },
 		
@@ -478,7 +478,7 @@ steal('mxui/layout/fit').then(function () {
             var self = this;
             setTimeout(function () {
                 self.style();
-                self.element.children("ul").controller().showSelected();
+                self.element.children("ul").control().showSelected();
                 callback && callback()
             }, 1);
             this.options.parentElement.trigger("open");

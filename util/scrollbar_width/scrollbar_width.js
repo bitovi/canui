@@ -22,10 +22,14 @@ steal('jquery').then(function ($) {
 	window.can || (window.can = {});
 	window.can.ui || (window.can.ui = {});
 	/**
-	 * @attribute scrollbarWidth
+	 * @parent canui
+	 * @attribute can.ui.scrollbarWidth
 	 * @type {Number}
 	 *
-	 * Stores the width of the browsers scrollbars in can.ui.scrollbarWith.
+	 * Stores the width of the browsers scrollbars in can.ui.scrollbarWidth.
+	 *
+	 *      $('#element').width($('#element').width()
+	 *          - can.ui.scrollbarWidth);
 	 */
 	window.can.ui.scrollbarWidth = w1 - w2;
 });

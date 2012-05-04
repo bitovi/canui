@@ -1,9 +1,9 @@
-steal('mxui/form/combobox')
+steal('canui/form/combobox')
     .then(function ($)
     {
 
 
-        $.Controller.extend("Mxui.Form.Combobox.Ajax", {
+        can.Control("can.ui.form.Combobox.Ajax", {
             defaults: {
                 loadingMessage: "Loading ...",
                 process: function (data)
@@ -32,7 +32,7 @@ steal('mxui/form/combobox')
                 el.remove();
 				
 				$.extend(options, {overrideDropdown: true});
-                input.mxui_form_combobox(options);
+                input.can_ui_form_combobox(options);
                 this._super(input[0], options);
             }
         },
@@ -41,9 +41,9 @@ steal('mxui/form/combobox')
             if ( !this.notFirstFocus )
             {
 				combobox.dropdown().html("<span class='loadingText'>" + this.options.loadingMessage + "</span>");
-				combobox.dropdown().controller().isfirstPass = false;
+				combobox.dropdown().control().isfirstPass = false;
 				combobox.dropdown().show();
-				combobox.dropdown().controller().style();
+				combobox.dropdown().control().style();
                 this.loadDataFromServer( combobox, callback );
                 this.notFirstFocus = true;
             }
@@ -57,8 +57,8 @@ steal('mxui/form/combobox')
                 //data: params || "loadOnDemand",
                 data: this.options.data,
                 contentType: "application/json; charset=utf-8",
-                success: this.callback('showData', combobox, isAutocompleteData, callback),
-                error: this.callback('loadDataFromServerError'),
+                success: this.proxy('showData', combobox, isAutocompleteData, callback),
+                error: this.proxy('loadDataFromServerError'),
                 fixture: "-items"
             })
         },
@@ -77,10 +77,10 @@ steal('mxui/form/combobox')
 			combobox.clearSelection();
 			// dropdown_controller will ignore us if we dont force firstPass
 			// when ajax combobox is prepopulated (already had a first pass you see)
-			combobox.dropdown().controller().isFirstPass = true;
+			combobox.dropdown().control().isFirstPass = true;
 							
             combobox.loadData( this.options.process( data ) );
-			combobox.dropdown().controller().draw( combobox.modelList );
+			combobox.dropdown().control().draw( combobox.modelList );
 			
 			// lets see if new data had a selected item
 			newSelectedValue = combobox.currentItem.value;
@@ -93,7 +93,7 @@ steal('mxui/form/combobox')
 				}
 			}
 
-			combobox.dropdown().controller().show();
+			combobox.dropdown().control().show();
 			combobox.options.overrideDropdown = false;
 		
             this.dataAlreadyLoaded = true;

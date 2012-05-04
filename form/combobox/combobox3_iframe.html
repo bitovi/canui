@@ -68,11 +68,11 @@
 		</div>		
 		
         <script type='text/javascript' 
-                src='../../steal/steal.js'>   
+                src='../../../steal/steal.js'>
         </script>
         <script type='text/javascript'>
-            steal("mxui/form/combobox/select",
-			              "mxui/form/combobox/ajax",
+            steal("canui/form/combobox/select",
+			              "canui/form/combobox/ajax",
 			              "jquery/dom/fixture").then(function($){
             
 				/*
@@ -93,12 +93,12 @@
 				/*
 				 *  1. Combobox appended to <div> - <div> is not positioned
 				 */					
-                $("#combobox1").mxui_form_combobox({
+                $("#combobox1").can_ui_form_combobox({
                     	items: createItems(6)
 					});
 				// get the dropdown's height and store in input[id=combobox1_dropdown_height]
 				// so we can use this value from the funcunit tests					
-				/*$("#combobox1").controller().dropdown().controller().show(function(){
+				/*$("#combobox1").control().dropdown().control().show(function(){
 					var h = $("#combobox1_dropdown").outerHeight();
 					$("#combobox1_dropdown_height").val(h);
 					$("#combobox1_dropdown").hide();					
@@ -107,12 +107,12 @@
 				/*
 				 * 2. Combobox appended to <div> - <div> is positioned (absolute)
 				 */
-                $("#combobox2").mxui_form_combobox({
+                $("#combobox2").can_ui_form_combobox({
                     	items: createItems(15)
 					});
 				// get the dropdown's height and store in input[id=combobox2_dropdown_height]
 				// so we can use this value from the funcunit tests					
-				/*$("#combobox2").controller().dropdown().controller().show(function(){
+				/*$("#combobox2").control().dropdown().control().show(function(){
 					var h = $("#combobox2_dropdown").outerHeight();
 					$("#combobox2_dropdown_height").val(h);
 					$("#combobox2_dropdown").hide();							
@@ -121,7 +121,7 @@
 			
 			                    
 			});
-     		steal.start();            
+
         </script>
     </body>
 </html>

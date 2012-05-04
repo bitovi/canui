@@ -71,11 +71,11 @@
 		<iframe id="iframe1" src="combobox2_iframe.html" name="iframe1"></iframe>
 		
         <script type='text/javascript' 
-                src='../../steal/steal.js'>   
+                src='../../../steal/steal.js'>
         </script>
         <script type='text/javascript'>
-            steal("mxui/form/combobox/select",
-			              "mxui/form/combobox/ajax",
+            steal("canui/form/combobox/select",
+			              "canui/form/combobox/ajax",
 			              "jquery/dom/fixture").then(function($){
             
 				/*
@@ -96,7 +96,7 @@
 				/*
 				 *  1. Combobox appended to document
 				 */
-                $("#combobox1").mxui_form_combobox({
+                $("#combobox1").can_ui_form_combobox({
                     	items: createItems(10)
 					})/*.click(function(){
 						$("#combobox1_log").append("click!&nbsp;")
@@ -106,21 +106,21 @@
 				/*
 				 *  2. Combobox appended to <div> - <div> is not positioned
 				 */					
-                $("#combobox2").mxui_form_combobox({
+                $("#combobox2").can_ui_form_combobox({
                     	items: createItems(6)
 					})
 					
 				/*
 				 * 3. Combobox appended to <div> - <div> is positioned (absolute)
 				 */
-                $("#combobox3").mxui_form_combobox({
+                $("#combobox3").can_ui_form_combobox({
                     	items: createItems(15)
 					})				
 					
 			
 			                    
 			});
-     		steal.start();            
+
         </script>
     </body>
 </html>

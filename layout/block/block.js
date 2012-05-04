@@ -11,17 +11,17 @@ steal('can/control',
 	 * Blocks the browser screen or element from user interaction.
 	 * 
 	 * Sometimes it is necessary to block the browser from user interaction such as when a spinner image
-	 * is giving the user feedback that a request for data is taking place. Mxui.Block attaches to an 
+	 * is giving the user feedback that a request for data is taking place. can.ui.layout.Block attaches to an
 	 * element sets its width and height to the window's width and height and sets its z-index to a 
 	 * configurable value (default is 9999).
 	 * 
-	 * To block the browser screen just attach Mxui.Block to an element you
+	 * To block the browser screen just attach can.ui.layout.Block to an element you
 	 * wish to act as a blocker:
 	 * 
 	 *		new can.ui.layout.Block($("#blocker"));
 	 *
 	 * If you'd like to block a specifc element, simply pass it as the argument
-	 * to the Mxui.Block call:
+	 * to the can.ui.layout.Block call:
 	 *
 	 *		new can.ui.layout.Block($("#blocker"), $("#parent"));
 	 *

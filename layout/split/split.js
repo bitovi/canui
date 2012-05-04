@@ -97,7 +97,7 @@ function( $ ) {
 	 *   - __dragDistance__ (def. `5`) - maximum number of pixels away from the slider to initiate a drag
 	 *   - __panelClass__ - CSS class that indicates a child element is a panel of this container
 	 *      					(by default any child is considered a panel)
-	 * @return {Mxui.Layout.Split}  
+	 * @return {can.ui.layout.Split}
 	 */
 	can.Control("can.ui.layout.Split",
 	/** 
@@ -250,7 +250,8 @@ function( $ ) {
 		 * Given a `container`, iterate over its panels and collect their content:
 		 * 
 		 *     var content = '';
-		 *     container.mxui_layout_split('panels').each(function(el){
+		 *     var split = new can.ui.layout.Split('#container');
+		 *     split.panels().each(function(el){
 		 *       content += el.text();
 		 *     });
 		 * 
@@ -553,7 +554,7 @@ function( $ ) {
 		 * 
 		 * Given some `container`, cause its last panel to be shown:
 		 * 
-		 *     container.mxui_layout_split('showPanel', container.find('.panel:last'));
+		 *     split.showPanel(container.find('.panel:last'));
 		 *
 		 * @param {Object} panel
 		 * @param {Object} width
@@ -589,7 +590,7 @@ function( $ ) {
 		 * 
 		 * Given some `container`, cause its last panel to be hidden:
 		 * 
-		 *     container.mxui_layout_split('hidePanel', container.find('.panel:last'));
+		 *     split.hidePanel(container.find('.panel:last'));
 		 *
 		 * @param {Object} panel
 		 * @param {Object} keepSplitter

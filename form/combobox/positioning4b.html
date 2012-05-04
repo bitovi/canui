@@ -38,11 +38,11 @@
     	<input id="combobox4b" class="combobox" type="text" name="name4b" />		
 				
         <script type='text/javascript' 
-                src='../../steal/steal.js'>   
+                src='../../../steal/steal.js'>
         </script>
         <script type='text/javascript'>
-            steal("mxui/form/combobox/select",
-			              "mxui/form/combobox/ajax",
+            steal("canui/form/combobox/select",
+			              "canui/form/combobox/ajax",
 			              "jquery/dom/fixture").then(function($){
             
 				/*
@@ -71,12 +71,12 @@
 				/*
 				 *  4b Tests that if the element can be positioned with scrolling greater than min height, the dropdown opens bellow with height equal the space available.
 				 */					
-                $("#combobox4b").mxui_form_combobox({
+                $("#combobox4b").can_ui_form_combobox({
                     	items: createItems(30)
 					});					
 			                    
 			});
-     		steal.start();            
+
         </script>
     </body>
 </html>

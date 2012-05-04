@@ -1,6 +1,6 @@
-steal('mxui/form/combobox').then(function(){
+steal('canui/form/combobox').then(function(){
 
-    $.Controller.extend("Mxui.Form.Combobox.Select", {
+    can.Control("can.ui.form.Combobox.Select", {
     },
 	{
         setup: function(el, options){
@@ -30,7 +30,7 @@ steal('mxui/form/combobox').then(function(){
 				})
 				el.after(input);
 				el.remove();
-				input.mxui_form_combobox(
+				input.can_ui_form_combobox(
 					 $.extend( options, { items: items } )               
 				 );
 

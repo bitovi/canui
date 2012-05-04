@@ -77,7 +77,7 @@ steal('can/control').then(function( $ ) {
  */
 
 
-$.Controller("can.ui.layout.Bgiframe",{
+can.Control("can.ui.layout.Bgiframe",{
 	init : function(s){
 		if ( $.browser.msie && /msie 6\.0/i.test(navigator.userAgent )) {
 			s = $.extend({

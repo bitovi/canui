@@ -13,14 +13,16 @@
 	<body>
 	    <div id='log'></div>
 		<script type='text/javascript' 
-                src='../../../steal/steal.js?steal[app]=jquery/event/offline&steal[env]=development'>   
+                src='../../../steal/steal.js'>
         </script>
 		<script type='text/javascript'>
-			var logger = function(ev){
-				$('#log').append("<p>"+ev.type+":"+(this == window ? "window" : this.nodeName)+"</p>")
-			}
-			$(document.body).bind("offline", logger)
-			$(document.body).bind("online", logger)
+			steal('can/util', 'canui/event/offline').then(function() {
+				var logger = function(ev){
+					$('#log').append("<p>"+ev.type+":"+(this == window ? "window" : this.nodeName)+"</p>")
+				}
+				$(document.body).bind("offline", logger)
+				$(document.body).bind("online", logger)
+			});
 		</script>
 	</body>
 </html>

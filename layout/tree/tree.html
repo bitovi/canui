@@ -49,23 +49,24 @@
 		
 		
 		<script type='text/javascript' 
-                src='../../../steal/steal.js?mxui/layout/tree'>   
+                src='../../../steal/steal.js?canui/layout/tree'>
         </script>
 		<script type='text/javascript'>
-			$("#menu1").mxui_layout_tree();
-			
-			$("#menu2").mxui_layout_tree().bind("select", function(ev){
-				//console.log("selecting ...", ev.target)
-				var li = $(ev.target)
-				console.log(li, li.children().length)
-				if(li.children().length <= 1){
-					$(this).controller().styleUL(
-						$("<ul><li><a>Item1</a></li><li><a>Item2</a></li></ul>")
-					).appendTo(ev.target)
-				}
+			steal(function() {
+				new can.ui.layout.Tree('#menu1');
+
+				new can.ui.layout.Tree("#menu2")
+				$('#menu2').bind("select", function(ev){
+					//console.log("selecting ...", ev.target)
+					var li = $(ev.target)
+					console.log(li, li.children().length)
+					if(li.children().length <= 1){
+						$(this).controller().styleUL(
+								$("<ul><li><a>Item1</a></li><li><a>Item2</a></li></ul>")
+						).appendTo(ev.target)
+					}
+				});
 			});
-			
-			
 		</script>
 	</body>
 </html>

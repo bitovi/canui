@@ -1,12 +1,12 @@
 steal(
-'jquery/controller',
+'can/control',
 'jquery/event/default',
 'jquery/event/drag',
 'jquery/dom/dimensions').then(function($){
 
 //Resizer is like a splitter, but it does not do resizing, only sends mesages
 
-$.Controller.extend("Mxui.Layout.Resizer",{
+can.Control("can.ui.layout.Resizer",{
 	defaults: {
 		selector: "th",
 		distance : 8

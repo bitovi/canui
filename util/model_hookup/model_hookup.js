@@ -1,6 +1,6 @@
-steal('jquery/controller')
+steal('can/control')
      .then(function(){
-         $.Controller.extend("Mxui.ModelHookup",{
+         can.Control("can.ui.util.ModelHookup",{
         },
         {
             init : function(){

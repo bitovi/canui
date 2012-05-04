@@ -1,11 +1,11 @@
-steal('jquery/controller', './input_watermark.css')
+steal('can/control', 'can/construct/super', './input_watermark.css')
 	.then(function($)
 {
 
 	/**
 	 * Watermark Plugin to allow a input box to have default text and then removed when a user focuses in on the element.
 	 */
-	$.Controller.extend("MXUI.Form.InputWatermark",
+	can.Control.extend("can.ui.form.InputWatermark",
 	{
 		defaults:
 		{

@@ -152,12 +152,12 @@
 				src='../../../steal/steal.js'>
 		</script>
 		<script type='text/javascript'>
-			steal("mxui/form/combobox/select",
-						  "mxui/form/combobox/ajax",
+			steal("canui/form/combobox/select",
+						  "canui/form/combobox/ajax",
 						  "jquery/dom/fixture").then(function($){
 
 				// SELECT COMBOBOX DEMO
-				$("#expirationBehavior").mxui_form_combobox_select();
+				$("#expirationBehavior").can_ui_form_combobox_select();
 
 				 $("#expirationBehavior").change(function(){
 				 	var el = $('.change_count'),
@@ -179,26 +179,26 @@
 					return data;
 				}
 				/* Combobox "No Selection" demo */
-				$("#combobox_no_selection").mxui_form_combobox({
+				$("#combobox_no_selection").can_ui_form_combobox({
 					items: createItems(10),
 					showNoSelectionOption:true });
 
 				$("#enableNoSelection").click( function(ev) {
 					var value = 1;
-					$("#combobox_no_selection").controller().enableNoSelection( value );
+					$("#combobox_no_selection").control().enableNoSelection( value );
 				});
 				$("#disableNoSelection").click( function(ev) {
 					var value = null;
-					$("#combobox_no_selection").controller().enableNoSelection( value );
+					$("#combobox_no_selection").control().enableNoSelection( value );
 				});
 
 
 				/* Combobox slow demo */
-				$("#combobox_slow").mxui_form_combobox({
+				$("#combobox_slow").can_ui_form_combobox({
 					items: createItems(1000),
 					maxHeight: 300 });
 				// NESTED COMBOBOX DEMO (TEXT MODE)
-				$("#combobox_demo").mxui_form_combobox({
+				$("#combobox_demo").can_ui_form_combobox({
 					items: [{ value: "1", text: "hola", enabled: "true", selected: true,
 								children: [  { value: "5", text: "chicago", enabled: "true", children: [] },
 											  { value: "6", text: "kansas", enabled: "true",
@@ -210,18 +210,18 @@
 
 				// get/set API demo
 				$("#getValue").bind("click", function(ev) {
-					var value = $("#combobox_demo").controller().val();
+					var value = $("#combobox_demo").control().val();
 					$("#log2").html("<span>" + value + "</span>");
 				})
 				$("#setValue").bind("click", function(ev) {
 					var value = $("input#someValue").val();
-					$("#combobox_demo").controller().val(value);
+					$("#combobox_demo").control().val(value);
 				})
 
 				// query API demo
 				$("#query").bind("click", function(ev) {
 					var text = $("input#someValue").val();
-					var values = $("#combobox_demo").controller().query(text);
+					var values = $("#combobox_demo").control().query(text);
 					if (values.length) {
 						$("#log").html("");
 						for (var i = 0; i < values.length; i++) {
@@ -233,37 +233,37 @@
 				// enable/disable API demo
 				$("#enable").click( function(ev) {
 					var value = $("#someValue").val();
-					$("#combobox_demo").controller().enable(value);
+					$("#combobox_demo").control().enable(value);
 				});
 				$("#disable").click( function(ev){
 					var value = $("#someValue").val();
-					$("#combobox_demo").controller().disable(value);
+					$("#combobox_demo").control().disable(value);
 				});
 
 				$("#showItem").click( function(ev) {
 					var value = $("#someValue").val();
-					$("#combobox_demo").controller().showItem( value );
+					$("#combobox_demo").control().showItem( value );
 				});
 				$("#hideItem").click( function(ev){
 					var value = $("#someValue").val();
-					$("#combobox_demo").controller().hideItem( value );
+					$("#combobox_demo").control().hideItem( value );
 				});
 				$("#select").bind("click", function(ev) {
 					var value = $("input#someValue").val();
-					$("#combobox_demo").controller().selectItem( value );
+					$("#combobox_demo").control().selectItem( value );
 				});
 				$("#getItem").bind("click", function(ev) {
 					var value = $("input#someValue").val();
-					var item = $("#combobox_demo").controller().getItem( value );
+					var item = $("#combobox_demo").control().getItem( value );
 					$("#log2").html("<span>" + item.text + "</span>");
 				});
 				$("#clearSelection").bind("click", function(ev) {
 					var value = $("input#someValue").val();
-					$("#combobox_demo").controller().clearSelection();
+					$("#combobox_demo").control().clearSelection();
 				});
 
 				$("#getItems").bind("click", function(ev) {
-					var items = $("#combobox_demo").controller().getItems();
+					var items = $("#combobox_demo").control().getItems();
 					var html = [];
 					for(var i=0;i<items.length;i++) {
 						html.push( items[i].text );
@@ -289,7 +289,7 @@
 
 
 				// NESTED COMBOBOX DEMO (HTML MODE)
-				$("#color_picker").mxui_form_combobox({
+				$("#color_picker").can_ui_form_combobox({
 					render: {
 						"itemTemplate" : function(item) {
 							var html = [];
@@ -398,12 +398,12 @@
 				}
 
 
-				$("#ajax_demo").mxui_form_combobox_ajax({
+				$("#ajax_demo").can_ui_form_combobox_ajax({
 					url: "/Archer/Service/DiscussionForumServiceJS.svc/GetForumsForCommunity"
 				});
 
 				$("#populateItems").bind("click", function(ev) {
-					$("#ajax_demo").controller().populateItems( function( items ) {
+					$("#ajax_demo").control().populateItems( function( items ) {
 						var html = [];
 						for(var i=0;i<items.length;i++) {
 							html.push( items[i].text );
@@ -415,23 +415,23 @@
 
 				$("#ajax_showItem").click( function(ev) {
 					var value = $("#ajax_someValue").val();
-					$("#ajax_demo").controller().showItem( value );
+					$("#ajax_demo").control().showItem( value );
 				});
 				$("#ajax_hideItem").click( function(ev){
 					var value = $("#ajax_someValue").val();
-					$("#ajax_demo").controller().hideItem( value );
+					$("#ajax_demo").control().hideItem( value );
 				});
 				$("#ajax_select").bind("click", function(ev) {
 					var value = $("input#ajax_someValue").val();
-					$("#ajax_demo").controller().select( value );
+					$("#ajax_demo").control().select( value );
 				});
 				$("#ajax_clearSelection").bind("click", function(ev) {
 					var value = $("input#ajax_someValue").val();
-					$("#ajax_demo").controller().clearSelection();
+					$("#ajax_demo").control().clearSelection();
 				});
 
 				$("#ajax_getItems").bind("click", function(ev) {
-					var items = $("#ajax_demo").controller().getItems();
+					var items = $("#ajax_demo").control().getItems();
 					var html = [];
 					for(var i=0;i<items.length;i++) {
 						html.push( items[i].text );
@@ -444,17 +444,17 @@
 				/*
 				 *  Pre-loaded Ajax Demo
 				 */
-			   $("#preloaded_ajax_demo").mxui_form_combobox_ajax({
+			   $("#preloaded_ajax_demo").can_ui_form_combobox_ajax({
 			   		items: [{ value: "0", text: "dir0", selected: true}],
 					url: "/Archer/Service/DiscussionForumServiceJS.svc/GetForumsForCommunity"
 				});
 
-				$("#selectable").mxui_form_combobox_selectable()
+				$("#selectable").can_ui_form_combobox_selectable()
 				$("#select_next").click(function(){
-					$("#selectable").mxui_form_combobox_selectable("selectNext")
+					$("#selectable").can_ui_form_combobox_selectable("selectNext")
 				})
 				$("#select_prev").click(function(){
-					$("#selectable").mxui_form_combobox_selectable("selectPrev")
+					$("#selectable").can_ui_form_combobox_selectable("selectPrev")
 				})
 			});
 
