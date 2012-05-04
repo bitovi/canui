@@ -1,8 +1,8 @@
 steal('funcunit').then(function(){
 
-module("mxui/nav/menuable", { 
+module("can.ui.nav.Menuable", {
 	setup: function(){
-        S.open("//mxui/nav/menuable/menuable.html");
+        S.open("//canui/nav/menuable/menuable.html");
 		// a little fuzz
 		S.wait(100);
 	}

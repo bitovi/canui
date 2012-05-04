@@ -3,7 +3,7 @@
 <html lang="en">
 	<head>
 		<title>menu</title>
-        <link type="text/css" href="../../smoothness/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" />
         <style type='text/css'>
             body {font-family: verdana}
             .error {border: solid 1px red;}
@@ -85,9 +85,9 @@
                 src='../../../steal/steal.js'>   
         </script>
         <script type='text/javascript'>
-            steal('mxui/nav/menu').then(function(){
-				$("#menu1").mxui_nav_menu();
-            	$("#menu2").mxui_ui_menu().show().trigger("move", {top: 60, left: 280});
+            steal('can/control/plugin', 'canui/nav/menu').then(function(){
+				$("#menu1").can_ui_nav_menu();
+            	$("#menu2").can_ui_ui_menu().show().trigger("move", {top: 60, left: 280});
 			});
         </script>
 	</body>

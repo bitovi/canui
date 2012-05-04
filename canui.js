@@ -14,5 +14,6 @@ steal(
 	'canui/nav/selectable',
 	'canui/util/scrollbar_width',
 	'canui/form/combobox',
-	'canui/data/grid'
+	'canui/data/grid',
+	'canui/data/tree'
 )

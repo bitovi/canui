@@ -1,4 +1,4 @@
-steal('mxui/layout/positionable','mxui/nav/menuable','jquery/event/hover').then(function($){
+steal('canui/layout/positionable','canui/nav/menuable','jquery/event/hover').then(function($){
 	
 	/**
 	 * A general Menu System.
@@ -18,7 +18,7 @@ steal('mxui/layout/positionable','mxui/nav/menuable','jquery/event/hover').then(
 	 * "show" -> shows the menu
 	 */
 	
-	Mxui.Nav.Menuable.extend("Mxui.Nav.Menu",
+	can.ui.nav.Menuable("can.ui.nav.Menu",
 	{
 		defaults : {
 			/**

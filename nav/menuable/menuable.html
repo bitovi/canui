@@ -18,7 +18,7 @@
 	</head>
 	<body>    
 	<h1>Basic Menuable</h1>
-		<pre>$("#menu1").mxui_menuable()</pre>
+		<pre>new can.ui.nav.Menuable($("#menu1"))</pre>
         <ul id='menu1'>
             <li><a>Option 1</a>
                 <ul>
@@ -70,76 +70,80 @@
 			</li>
         </ul>
 		<script type='text/javascript' 
-                src='../../../steal/steal.js?mxui/nav/menuable'>   
+                src='../../../steal/steal.js'>   
         </script>
 		<script type='text/javascript'>
-			$("#menu1").mxui_nav_menuable()
-				.find("ul").mxui_nav_menuable().hide()
-				.bind("show", function(ev){
-					ev.pause()
-					$(this).show(function(){
-						ev.resume();
+			steal('can/util', 'can/control/plugin', 'canui/nav/menuable').then(function() {
+				var menu1 = $("#menu1");
+				new can.ui.nav.Menuable(menu1);
+				menu1.find("ul").can_ui_nav_menuable().hide()
+					.bind("show", function(ev){
+						ev.pause()
+						$(this).show(function(){
+							ev.resume();
+						});
+					})
+					.bind("hide", function(ev){
+						ev.pause()
+						$(this).hide(function(){
+							ev.resume();
+						});
 					});
-				})
-				.bind("hide", function(ev){
-					ev.pause()
-					$(this).hide(function(){
-						ev.resume();
-					});
-				});
-				
-        	$("#menu1").find("li").click(function(){
-				$(this).trigger("activate")
-			});
-			
-			
-			//menu with focus
-			$("#menu2").mxui_nav_menuable().find("ul").mxui_nav_menuable().hide()
-				.bind("show", function(ev){
-					ev.pause()
-					$(this).show(function(){
-						ev.resume();
-					});
-				})
-				.bind("hide", function(ev){
-					ev.pause()
-					$(this).hide(function(){
-						ev.resume();
-					});
-				});
-				
-        	$("#menu2").find("li").focus(function(){
-				$(this).trigger("select")
-			});
-			$("#menu2").find("li").keypress(function(ev){
-				if(ev.keyCode == 13 || ev.keyCode == 10)
+					
+	            $("#menu1").find("li").click(function(){
 					$(this).trigger("activate")
-			});
-			
-			
-			
-			
-			$("#menu3").mxui_nav_menuable().find("ul").mxui_nav_menuable().hide()
-			$('#menu3').delegate("ul", "show", function(ev){
-				ev.stopPropagation();
-				ev.pause();
-				$(this).fadeIn("slow",function(){
-					ev.resume();
-				});
-			})
-			$('#menu3').delegate("ul", "hide", function(ev){
-				ev.stopPropagation();
-				ev.pause();
-				$(this).fadeOut("slow",function(){
-					ev.resume();
 				});
 				
+				
+				//menu with focus
+				var menu2 = $("#menu2");
+				new can.ui.nav.Menuable(menu2);
+				menu2.find("ul").can_ui_nav_menuable().hide()
+					.bind("show", function(ev){
+						ev.pause()
+						$(this).show(function(){
+							ev.resume();
+						});
+					})
+					.bind("hide", function(ev){
+						ev.pause()
+						$(this).hide(function(){
+							ev.resume();
+						});
+					});
+					
+	            $("#menu2").find("li").focus(function(){
+					$(this).trigger("select")
+				});
+				$("#menu2").find("li").keypress(function(ev){
+					if(ev.keyCode == 13 || ev.keyCode == 10)
+						$(this).trigger("activate")
+				});
+				
+				
+				
+				
+				$("#menu3").can_ui_nav_menuable().find("ul").can_ui_nav_menuable().hide()
+				$('#menu3').delegate("ul", "show", function(ev){
+					ev.stopPropagation();
+					ev.pause();
+					$(this).fadeIn("slow",function(){
+						ev.resume();
+					});
+				})
+				$('#menu3').delegate("ul", "hide", function(ev){
+					ev.stopPropagation();
+					ev.pause();
+					$(this).fadeOut("slow",function(){
+						ev.resume();
+					});
+					
+				})
+				$('#menu3').find("li").click(function(ev, el){
+					ev.stopPropagation();
+					$(this).trigger("activate")
+				});
 			})
-			$('#menu3').find("li").click(function(ev, el){
-				ev.stopPropagation();
-				$(this).trigger("activate")
-			});
-			
 		</script>
 	</body>
 </html>

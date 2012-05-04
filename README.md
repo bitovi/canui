@@ -26,7 +26,7 @@ Here's what's inside:
 
 The following shows almost all of the above controls in action:
    
-@demo mxui/demo.html
+@demo canui/demo.html
 
 ## Installing
 

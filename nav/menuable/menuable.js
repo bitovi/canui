@@ -1,4 +1,4 @@
-steal('jquery/controller',
+steal('can/control',
 	'jquery/event/default',
 	'jquery/event/pause',
 	'jquery/dom/closest').then(function($){
@@ -21,7 +21,7 @@ steal('jquery/controller',
 	 * "hide" -> hides the menu
 	 * "show" -> shows the menu
 	 */
-	$.Controller('Mxui.Nav.Menuable',
+	can.Control('can.ui.nav.Menuable',
 	{
 		defaults : {
 			/**
@@ -53,79 +53,94 @@ steal('jquery/controller',
 		calculateSubmenuPosition : function(el, ev){
 			return el;
 		},
-		">{child_selector} activate" : function(el, ev){
-			if(el.hasClass(this.options.active))
-				return;
-			if(this.activating)
-				return;
-			this.activating = true;
-			var options = this.options, oldActive = this.find("."+options.active+":first"), self= this;
-			
-			ev.pause();
-			var doThis = function(){
-				oldActive.triggerAsync("deactivate", function(){
-					self.sub(el).triggerAsync('show',
-								self.calculateSubmenuPosition(el, ev),
-								function(){
-						ev.resume();
-					})
-				})
+		"{child_selector} activate" : function(el, ev){
+			if(el.parent().is(this.element)) {
+				if(el.hasClass(this.options.active))
+					return;
+				if(this.activating)
+					return;
+				this.activating = true;
+				var options = this.options, oldActive = this.element.find("."+options.active+":first"), self= this;
 
-			}
-			// if we are already selected
-			if(el.hasClass(this.options.select))
-				doThis();
-			else
-				// select us, after we have been selected, do everything ...
-				el.triggerAsync("select", function(){
+				ev.pause();
+				var doThis = function(){
+					oldActive.triggerAsync("deactivate", function(){
+						self.sub(el).triggerAsync('show',
+									self.calculateSubmenuPosition(el, ev),
+									function(){
+							ev.resume();
+						})
+					})
+
+				}
+				// if we are already selected
+				if(el.hasClass(this.options.select))
 					doThis();
-				});
-			
+				else {
+					// select us, after we have been selected, do everything ...
+					el.triggerAsync("select", function(){
+						doThis();
+					});
+				}
+			}
 		},
-		">{child_selector} default.activate" : function(el, ev){
-			el.addClass(this.options.active)
-			this.activating = false;
-			this.element.trigger("change")
+		"{child_selector} default.activate" : function(el, ev){
+			if(el.parent().is(this.element)) {
+				el.addClass(this.options.active)
+				this.activating = false;
+				this.element.trigger("change")
+			}
 		},
-		">{child_selector} deactivate" : function(el, ev ){
-			ev.pause();
-			this.sub(el).triggerAsync('hide', function(){
-				ev.resume();
-			})
+		"{child_selector} deactivate" : function(el, ev ){
+			if(el.parent().is(this.element)) {
+				ev.pause();
+				this.sub(el).triggerAsync('hide', function(){
+					ev.resume();
+				})
+			}
 		},
-		">{child_selector} default.deactivate" : function(el, ev){
-			el.removeClass(this.options.active)
+		"{child_selector} default.deactivate" : function(el, ev){
+			if(el.parent().is(this.element)) {
+				el.removeClass(this.options.active)
+			}
 		},
 		//there is no preventing this behavior ...
-		">{child_selector} select" : function(el, ev){
-			if(this.selecting)
-				return;
-			this.selecting = true;
-			ev.pause();
-			this.find("."+this.options.select+":first").triggerAsync('deselect',function(){
-				ev.resume(); // should hit your handler and the default behavior
-			})
-		
+		"{child_selector} select" : function(el, ev){
+			if(el.parent().is(this.element)) {
+				if(this.selecting)
+					return;
+				this.selecting = true;
+				ev.pause();
+				this.element.find("."+this.options.select+":first").triggerAsync('deselect',function(){
+					ev.resume(); // should hit your handler and the default behavior
+				})
+			}
 		},
-		">{child_selector} default.select" : function(el, ev){
-			el.addClass(this.options.select)
-			this.selecting = false;
+		"{child_selector} default.select" : function(el, ev){
+			if(el.parent().is(this.element)) {
+				el.addClass(this.options.select)
+				this.selecting = false;
+			}
 		},
-		">{child_selector} default.deselect" : function(el, ev ){
-			el.removeClass(this.options.select)
+		"{child_selector} default.deselect" : function(el, ev ){
+			if(el.parent().is(this.element)) {
+				el.removeClass(this.options.select)
+			}
 		},
 		/** 
 		 * Checks if we are the target for the hide, and hides any active submenus.
 		 * This could check that those submenu hides are ok, but doesnt .... yet.
 		 */
-		">hide" : function(el, ev){
-			var self = this;
-			ev.pause();
-			this.element.find("."+this.options.active).triggerAsync("deactivate", function(){
-				self.element.find("."+self.options.select).triggerAsync("deselect", function(){
-					ev.resume();
-				})
-			});
+		"hide" : function(el, ev){
+			if(el.parent().is(this.element)) {
+				var self = this;
+				ev.pause();
+				this.element.find("."+this.options.active).triggerAsync("deactivate", function(){
+					self.element.find("."+self.options.select).triggerAsync("deselect", function(){
+						ev.resume();
+					})
+				});
+			}
 		}
    });
 	

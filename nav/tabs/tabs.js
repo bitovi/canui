@@ -1,6 +1,6 @@
 steal('canui/nav/menuable').then(function($){
 	//problem with this is it will search and find everything ...
-	Mxui.Nav.Menuable("Mxui.Nav.Tabable",
+	can.ui.nav.Menuable("can.ui.nav.Tabable",
 	{
 		defaults: {
 			tab_class_names : "",
@@ -12,11 +12,11 @@ steal('canui/nav/menuable').then(function($){
 	},
 	{
 		init : function(){
-			var selected = this.find(this.options.child_selector+"."+this.options.active)
-			selected = selected.length ? selected : this.find(this.options.child_selector+":first")
+			var selected = this.element.find(this.options.child_selector+"."+this.options.active)
+			selected = selected.length ? selected : this.element.find(this.options.child_selector+":first")
 			var self = this;
 			//make sure everything is deactivated ...
-			this.find(this.options.child_selector).each(function(){
+			this.element.find(this.options.child_selector).each(function(){
 				
 				var sub = self.sub($(this).addClass(self.options.button_class_names))
 				$.each(self.options.types,function(){
@@ -24,7 +24,7 @@ steal('canui/nav/menuable').then(function($){
 				})
 
 				sub.addClass(self.options.tab_class_names);
-				if(!$(this).hasClass(self.options.active) && ! sub.triggerHandled("hide")){
+				if(!$(this).hasClass(self.options.active)){
 					$(sub).hide();
 				}
 			})
@@ -62,7 +62,7 @@ steal('canui/nav/menuable').then(function($){
 		
 		}
 	})
-	Mxui.Nav.Tabable("Mxui.Nav.Tabs",{},{
+	can.ui.nav.Tabable("can.ui.nav.Tabs",{},{
 	   "{child_selector} click" : function(el, ev){
 			ev.preventDefault();
 			el.trigger("activate")	  
@@ -80,7 +80,7 @@ steal('canui/nav/menuable').then(function($){
 	})
 	
 	
-	Mxui.Nav.Tabable("Mxui.UI.Tabs", {
+	can.ui.nav.Tabable("can.ui.nav.Tabs", {
 		defaults: {
 			tabs_container_class: "ui-tabs ui-widget ui-widget-content ui-corner-all",
 			tab_class_names: "ui-tabs-panel ui-widget-content ui-corner-bottom",
