@@ -61,7 +61,7 @@ steal('jquery/dom/dimensions').then(function ($) {
                 scrollableParent.append(dropdown);
             }
 
-            var scrollStyles = scrollableParent.curStyles(
+            var scrollStyles = scrollableParent.styles(
 					"borderTopWidth",
 					"paddingTop",
 					"paddingBottom"

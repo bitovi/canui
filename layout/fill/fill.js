@@ -11,7 +11,7 @@ steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 			if ( el[0] == window ) {
 				return false;
 			}
-			var styles = el.curStyles('borderBottomWidth', 'paddingBottom')
+			var styles = el.styles('borderBottomWidth', 'paddingBottom')
 			return !parseInt(styles.borderBottomWidth) && !parseInt(styles.paddingBottom)
 		},
 		//gets the bottom of this element
@@ -169,7 +169,7 @@ steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 						return false;
 					}
 
-					var get = $.curStyles(this, ['position', 'display']);
+					var get = $.styles(this, ['position', 'display']);
 					return get.position !== "absolute" && get.position !== "fixed" && get.display !== "none" && !jQuery.expr.filters.hidden(this)
 				}),
 				last = children.eq(-1),

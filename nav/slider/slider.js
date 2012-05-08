@@ -92,7 +92,7 @@ steal(
 			this.widthToMove = parent.width() - outerWidth;
 			this.widthOfSpot = this.widthToMove / spots;
 
-			styles = parent.curStyles("borderLeftWidth", "paddingLeft");
+			styles = parent.styles("borderLeftWidth", "paddingLeft");
 			leftSpace = parseInt(styles.borderLeftWidth) + parseInt(styles.paddingLeft) || 0;
 			this.leftStart = parent.offset().left + leftSpace - (this.options.contained ? 0 : Math.round(outerWidth / 2));
 		},
