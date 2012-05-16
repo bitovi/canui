@@ -1,3 +1,4 @@
+@hide
 @page canui CanUI
 @parent index 4
 
