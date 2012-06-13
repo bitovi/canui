@@ -28,13 +28,42 @@ vertical accordion functionality.
 
 ### resize `accordionElement.resize()`
 
+
+
 ## Block `new can.ui.Block( element, [blockedElement])`
 
 ### resize `blockedElement.resize()`
 
 Tells the modal to resize, if it needs to.
 
-## Grid
+
+
+## Grid `new can.ui.Grid( element, options )`
+
+Options:
+
+ - `list` - a [can.Observe.List] of items
+ - `emptyText` - what to show when there are no items
+ - `model` - model to use to retrieve data
+ - `columns` - columns to display
+
+Issues:
+ - filtering on list - 
+
+
+### list `grid.list( newList )`
+
+sets the list option.
+
+{% highlight javascript %}
+var items = new can.Observe.List();
+
+new can.ui.Grid("#todos", {
+  list : items
+});
+{% endhighlight %}
+
+### model `grid.model
 
 ## Key Validator
 
