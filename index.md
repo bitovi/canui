@@ -7,9 +7,32 @@ version: 1.0b
 
 ## Get CanUI
 
-## Accordion
+## Configuring CanUI
 
-## Block
+### Styles
+
+By default, CanUI uses themeroller styles.  You can overwrite CanUI to use other classNames like:
+
+{% highlight javascript %}
+can.ui.classNames.active = "ui-active-state";
+{% endhighlight %}
+
+## Accordion `new can.ui.Accordion( element, [options] )`
+
+[can.ui.Accordion](http://donejs.com/docs.html#!can.ui.Accordion) provides basic
+vertical accordion functionality.
+
+### activate `accordion.activate( titleElement )`
+
+### expand `accordion.expand( titleElement )`
+
+### resize `accordionElement.resize()`
+
+## Block `new can.ui.Block( element, [blockedElement])`
+
+### resize `blockedElement.resize()`
+
+Tells the modal to resize, if it needs to.
 
 ## Grid
 
