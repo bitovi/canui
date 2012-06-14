@@ -36,8 +36,6 @@ vertical accordion functionality.
 
 Tells the modal to resize, if it needs to.
 
-
-
 ## Grid `new can.ui.Grid( element, options )`
 
 Options:
@@ -48,7 +46,7 @@ Options:
 
 Issues:
  - filtering on list
- - adding widgets
+ - adding widgets / editors
 
 
 ### list `grid.list( newList )`
@@ -68,7 +66,23 @@ grid.list( Task.findAll({}) )
 
 {% endhighlight %}
 
+#### Forever Scroll
 
+{% highlight javascript %}
+var items = new can.Observe.List();
+
+var grid = new can.ui.Grid("#todos", {
+  list : items
+});
+
+$(grid.elements().scrollBody).bind("scroll", function(){
+  if( atBottom ){
+    Task.findAll(nextSet).then(function(tasks){
+      items.push(tasks);
+    })
+  }
+})
+{% endhighlight %}
 
 
 
