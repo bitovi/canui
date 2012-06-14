@@ -110,6 +110,21 @@ Options:
 
 ## Position
 
+Should update itself on it's element resizing.
+We probably need a "move" event too. jQuery++'s drag/drop should fire this. It should probably not bubble,
+but it should probably capture.  Basically if an element moves, 
+
+{% highlight javascript %}
+var position = can.ui.position("#foo", {
+  my : "left top",
+  at : "right top",
+  of : "#bar",
+  from : "#parent",
+  offset : "50 50",
+  collision : "flip"
+})
+{% endhighlight %}
+
 ## Resize
 
 ## Selectable
