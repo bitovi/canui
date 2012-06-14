@@ -44,28 +44,33 @@ Options:
 
  - `list` - a [can.Observe.List] of items
  - `emptyText` - what to show when there are no items
- - `model` - model to use to retrieve data
  - `columns` - columns to display
 
 Issues:
- - filtering on list - 
+ - filtering on list
+ - adding widgets
 
 
 ### list `grid.list( newList )`
 
-sets the list option.
+Sets the list option.  It can also accept a deferred that resolves to `can.Observe.List`.
 
 {% highlight javascript %}
 var items = new can.Observe.List();
 
-new can.ui.Grid("#todos", {
+var grid = new can.ui.Grid("#todos", {
   list : items
 });
+
+// update the list
+grid.list( Task.findAll({}) )
+    .emptyText("Loading tasks")
+
 {% endhighlight %}
 
-### model `grid.model
 
-## Key Validator
+
+
 
 ## Modal
 
