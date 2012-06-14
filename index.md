@@ -24,7 +24,11 @@ vertical accordion functionality.
 
 ### activate `accordion.activate( titleElement )`
 
+ - probably renmaed show
+
 ### expand `accordion.expand( titleElement )`
+
+ - probably renamed activate
 
 ### resize `accordionElement.resize()`
 
