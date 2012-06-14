@@ -66,6 +66,11 @@ grid.list( Task.findAll({}) )
 
 {% endhighlight %}
 
+
+### select
+
+### activate
+
 #### Forever Scroll
 
 {% highlight javascript %}
