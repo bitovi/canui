@@ -91,7 +91,18 @@ $(grid.elements().scrollBody).bind("scroll", function(){
 
 
 
-## Modal
+## Modal `new can.ui.Modal(element, options)`
+
+Options:
+
+ - overlay (should probably be renamed to block)
+ - overlayClass (should probably be configured elsewhere)
+ - of 
+ - destroyOnHide - ? be gone, you should just destroy.
+
+### show
+
+### hide
 
 ## Position
 
