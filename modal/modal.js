@@ -93,6 +93,10 @@ steal('can/construct/super',
 	 *	default is the `window`.
 	 *	- `destroyOnHide` - `{Boolean}` - If `true`, the modal will be
 	 *	destroyed when it's `hide` method is called.
+	 *	- `overlayClick`- `{Boolean}` - If `true`, when user clicks on the overlay
+	 *	modal's `hide` method will be called.
+	 *	- `autoShow`- `{Boolean}` - If `true`, modal will be shown immediately, otherwise it
+	 * will be hidden.
 	 *
 	 * @return {can.ui.Modal}
 	 */
@@ -114,7 +118,19 @@ steal('can/construct/super',
 			// class that will be applied to the overlay element
 			overlayClass : "modal-overlay",
 			// close modal if overlay is clicked
-			overlayClick: true
+			overlayClick: true,
+			autoShow : true,
+			hideOnEsc : true,
+			hide : function(el, overlay, cb){
+				el.hide();
+				overlay.hide();
+				cb();
+			},
+			show : function(el, position, overlay, cb){
+				overlay.show();
+				el.show().css(position);
+				cb();
+			}
 		}
 	},
 	/*
@@ -142,8 +158,6 @@ steal('can/construct/super',
 					options.overlayPosition = "absolute";
 					//console.log( 'there', options );
 				}
-
-
 				//console.log( options.overlayElement, options.overlayElement.parent() );
 				options.overlayElement.hide()
 
@@ -153,7 +167,7 @@ steal('can/construct/super',
 		init : function(){
 			this._super.apply(this, arguments);
 			this.stackId = "modal-" + (new Date()).getTime();
-			this.show();
+			this.options.autoShow ? this.show() : this.hide();
 		},
 		update : function(options){
 			if(options && options.overlay === true && typeof this.options.overlayElement == 'undefined'){
@@ -177,15 +191,22 @@ steal('can/construct/super',
 		 * Hide modal element and overlay if overlay exists
 		 */
 		hide : function(){
-			if(this.options.destroyOnHide){
-				this.element.remove();
-			} else {
-				this.element.css('display', 'none');
-				if(this.options.overlay){
-					$('.' + this.options.overlayClass).hide();
-				}
+			this.options.hide(this.element, this.overlay(), this.proxy('hideCb'))
+		},
+		hideCb : function(){
+			var stackIndex;
+			if((stackIndex = stack.indexOf(this.stackId)) > -1){
+				stack.splice(stackIndex, 1);
 			}
-			stack.splice(stack.indexOf(this.stackId), 1);
+			if(this.options.destroyOnHide){
+				this.element.trigger('hidden');
+				this.element.remove();
+				this.overlay().remove();
+			} else {
+				this.element.hide();
+				this.overlay().hide();
+				this.element.trigger('hidden');
+			}
 		},
 		' hide' : function() {
 			this.hide();
@@ -194,25 +215,36 @@ steal('can/construct/super',
 		 * Show modal element and overlay if overlay exists
 		 */
 		show : function(){
-			if($.inArray(this.stackId, this.constructor.stack) == -1){
+			this.moveToTop();
+			this.options.show(this.element, this.position(), this.overlay(), this.proxy('showCb'))
+		},
+		showCb : function(){
+			this.element.trigger('shown')
+		},
+		' show' : function() {
+			this.show();
+		},
+		/**
+		 * Move modal to the top of the stack.
+		 */
+		moveToTop : function(){
+			if($.inArray(this.stackId, stack) == -1){
 				stack.unshift(this.stackId);
 			} else {
 				stack.splice(stack.indexOf(this.stackId), 1);
 				stack.unshift(this.stackId);
 			}
 			if ( this.options.overlayElement ){
-				this.options.overlayElement.show().css({
+				this.options.overlayElement.css({
 					'z-index': ++zIndex, 
 					position: this.options.overlayPosition
 				})
 			}
-			this.element.css({'display': 'block', 'z-index': ++zIndex});
-			this._super();
+			this.element.css({'z-index': ++zIndex});
 			this.element.css('position', this.options.overlayPosition );
-			this.closeOnEscapeCb = this.proxy(this.closeOnEscape);
 		},
-		' show' : function() {
-			this.show();
+		overlay : function(){
+			return this.options.overlayElement ? this.options.overlayElement : $([]);
 		},
 		"{document} keyup" : function(el, ev){
 			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId){

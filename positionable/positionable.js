@@ -175,6 +175,29 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			  //clicks elsewhere should hide
 		},
 		move : function(el, ev, positionFrom){
+			var position = this.position.apply(this, arguments),
+				elem     = this.element,
+				options  = this.options;
+	
+			// if elem is hidden, show it before setting offset
+			var visible = elem.is(":visible")
+			if(!visible){
+				elem.css("opacity", 0)
+					.show()
+				
+			}
+
+			elem.offset( $.extend( position, { using: options.using } ) )
+			if(!visible){
+				elem.css("opacity", 1)
+					.hide();
+			}
+		},
+		update : function(options){
+			can.extend(this.options, options);
+			this.on();
+		},
+		position : function(el, ev, positionFrom){
 			var options  = $.extend({},this.options);
 				 options.of= positionFrom || options.of;
 			if(!options.of)	return;
@@ -314,23 +337,7 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 					});
 				}
 			});
-	
-			// if elem is hidden, show it before setting offset
-			var visible = elem.is(":visible")
-			if(!visible){
-				elem.css("opacity", 0)
-					.show()
-				
-			}
-			elem.offset( $.extend( position, { using: options.using } ) )
-			if(!visible){
-				elem.css("opacity", 1)
-					.hide();
-			}
-		},
-		update : function(options){
-			can.extend(this.options, options);
-			this.on();
+			return position
 		},
 		"{of} move" : function(el, ev){
 			clearTimeout(this._finalMove)
