@@ -1,19 +1,14 @@
 steal(
-	'canui/layout/sortable',
-	'canui/layout/wrap',
-	'canui/layout/fill',
-	'canui/layout/bgiframe',
-	'canui/layout/positionable',
-	'canui/layout/block',
-	'canui/layout/split',
-	'canui/layout/resize',
-	'canui/layout/table_scroll',
-	'canui/layout/modal',
-	'canui/nav/accordion',
-	'canui/nav/slider',
-	'canui/nav/selectable',
-	'canui/util/scrollbar_width',
-	'canui/form/combobox',
-	'canui/data/grid',
-	'canui/data/tree'
+	'canui/accordion',
+	'canui/block',
+	'canui/fills',
+//	'canui/grid',
+	'canui/modal',
+	'canui/positionable',
+//	'canui/resize',
+//	'canui/selectable',
+	'canui/slider',
+	'canui/split',
+	'canui/tooltip'
+//	'canui/table_scroll'
 )
