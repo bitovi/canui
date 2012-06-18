@@ -1,6 +1,1 @@
-steal(function() {
-	can.ui.style = {
-		table : 'table',
-		button : 'button'
-	}
-});
+steal('steal/less', 'canui/style/bootstrap/less/bootstrap.less');
