@@ -7,7 +7,7 @@
 		<style type="text/css">
 			body, legend, .demo {
 				font-family: Verdana, Tahoma, sans-serif;
-				overflow: hidden;
+				/*overflow: hidden;*/
 			}
 			div#parent {
 				width: 100px;
@@ -166,7 +166,7 @@
 							return elem.val();
 						}).join(" ");
 					});
-					options.offset = 0;
+					options.offset = $offset.val();
 					return options;
 				}
 
@@ -177,8 +177,10 @@
 		function position(using) {
 			var options = getOptions();
 			options.using = using || undefined;
+			options.of    = $parent
 
 			$positionable.each(function() {
+				var controls = $(this).data().controls;
 				new can.ui.layout.Positionable(this, options);
 				$(this).trigger( "move", $parent );
 			});
@@ -187,18 +189,21 @@
 		$positionable
 			.css("opacity", 0.7)
 			.bind("dragmove", function(event, ui) {
-				var elem = $(this);
+				var elem = $(this),
+					left = parseInt(ui.location[0]),
+					top  = parseInt(ui.location[1])
 				position(function(result) {
-					$offset.val( [ ui.location[0] - result.left, ui.location[1] - result.top ].join(" ") );
+					$offset.val( [ left - result.left, top - result.top ].join(" ") );
 					elem.offset( result );
 				});
 			});
 
 		// Update offset input on dragmove
-		$parent.bind('dragmove', function() { position(); });
+		$parent.bind('dragmove', function() { $(this).trigger('move') });
 
 		// Update the position when form controls change
 		$input.bind('change', function() {
+
 			position();
 		}).trigger("change");
 		

@@ -1,4 +1,4 @@
-steal('can/control', 'jquery').then('./position.js').then(function($){
+steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jquery/event/move').then('./position.js').then(function($){
 	/**
 	 * @class can.ui.layout.Positionable
 	 * @parent canui
@@ -20,7 +20,7 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 	 * following code:
 	 *
 	 *		// Initialize the positionable plugin
-	 *	    new can.ui.layout.Positionable($("#tooltip"), {
+	 *		 new can.ui.layout.Positionable($("#tooltip"), {
 	 *			my: "bottom",
 	 *			at: "top",
 	 *			of: $("#target")
@@ -91,9 +91,9 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 	 * current element against another.
 	 *
 	 *	- `my` {String} - String containing the edge of the positionable element to be
-	 *   used in positioning. Possbile values are:
+	 *	used in positioning. Possbile values are:
 	 *	- `at` {String} - String containing the edge of the target element to be
-	 *   used in positioning.
+	 *	used in positioning.
 	 *	- Possible values for both the `my` and `at` options include:
 	 *		- `"top"`
 	 *		- `"center"`
@@ -119,7 +119,7 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 	 * so you may refer to their documentation for more advanced usage.
 	 */
 	can.Control("can.ui.layout.Positionable",
-    {
+	 {
 		rhorizontal : /left|center|right/,
 		rvertical : /top|center|bottom/,
 		hdefault : "center",
@@ -158,26 +158,25 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 				width: within.width() < within[0].scrollWidth ? scrollbarWidth : 0
 			};
 		}
-    },
+	 },
 	/** 
 	 * @prototype
 	 */
-    {
-	   init : function(element, options) {
-           this.element.css("position","absolute");
-           if(!this.options.keep){
+	 {
+		init : function(element, options) {
+			this.element.css("position","absolute");
+			if(!this.options.keep){
 				this.element[0].parentNode.removeChild(this.element[0])
 				document.body.appendChild(this.element[0]);
-		   }
-       },
-       show : function(el, ev, position){
-		   this.move.apply(this, arguments)
-           //clicks elsewhere should hide
-       },
-	   move : function(el, ev, positionFrom){
-	
+			}
+		},
+		show : function(el, ev, position){
+			this.move.apply(this, arguments)
+			  //clicks elsewhere should hide
+		},
+		move : function(el, ev, positionFrom){
 			var options  = $.extend({},this.options);
-			    options.of= positionFrom || options.of;
+				 options.of= positionFrom || options.of;
 			if(!options.of)	return;
 			var target = $( options.of ),
 				collision = ( options.collision || "flip" ).split( " " ),
@@ -185,7 +184,6 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 				targetWidth,
 				targetHeight,
 				basePosition;
-		
 			if ( options.of.nodeType === 9 ) {
 				targetWidth = target.width();
 				targetHeight = target.height();
@@ -295,7 +293,6 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 						marginTop = parseInt( $.curCSS( elem[0], "marginTop", true ) ) || 0;
 						
 					var scrollInfo = getScrollInfo(within);
-						
 					$.ui.position[ collision[i] ][ dir ]( position, {
 						targetWidth: targetWidth,
 						targetHeight: targetHeight,
@@ -308,7 +305,7 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 						collisionWidth: elemWidth + marginLeft +
 							( parseInt( $.curCSS( elem[0], "marginRight", true ) ) || 0 ) + scrollInfo.width,
 						collisionHeight: elemHeight + marginTop +
-							( parseInt( $.curCSS( elem[0], "marginBottom", true ) ) || 0 ) + scrollInfo.height,
+						( parseInt( $.curCSS( elem[0], "marginBottom", true ) ) || 0 ) + scrollInfo.height,
 						elemWidth: elemWidth,
 						elemHeight: elemHeight,
 						offset: offset,
@@ -330,8 +327,22 @@ steal('can/control', 'jquery').then('./position.js').then(function($){
 				elem.css("opacity", 1)
 					.hide();
 			}
-	   }
-   })
+		},
+		update : function(options){
+			can.extend(this.options, options);
+			this.on();
+		},
+		"{of} move" : function(el, ev){
+			clearTimeout(this._finalMove)
+			this.move(this.element, ev, el);
+			this._finalMove = setTimeout(this.proxy(function(){
+				this.move(this.element, ev, el);
+			}), 1)
+		},
+		" move" : function(){
+			this.move.apply(this, arguments)
+		}
+	})
 
 
 });
