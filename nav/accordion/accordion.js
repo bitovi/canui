@@ -34,7 +34,7 @@ can.Control("can.ui.nav.Accordion",{
 		css: {
 			activated: "ui-state-active",
 			hover: "ui-state-hover",
-			selected: "ui-state-selected"
+			selected: "ui-state-hover"
 		},
 
 		/**
@@ -134,7 +134,8 @@ can.Control("can.ui.nav.Accordion",{
 		});
 		
 		if(this.options.fillSpace){
-			new can.ui.layout.Fill(this.element);
+			// fill is not working atm.
+			//new can.ui.layout.Fill(this.element);
 		}
 		
 		if(this.options.active){
@@ -169,10 +170,23 @@ can.Control("can.ui.nav.Accordion",{
 				duration: this.options.duration
 			};
 		
+		/**
+		 * @hide
+		 * If no other element is 'active',
+		 * just show the new one and return.
+		 */
 		if (!this.options.active) {
 			animation[dim] = "show";
 			to.animate(animation);
 			this.options.active = elm;
+			return;
+		}
+		
+		/**
+		 * @hide
+		 * If we click the same elm, return.
+		 */
+		if(this.options.active.is(elm)){
 			return;
 		}
 		
