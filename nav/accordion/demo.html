@@ -3,50 +3,58 @@
 <html lang="en">
 	<head>
 		<title>accordion</title>
-        <style type='text/css'>
-            body {font-family: verdana}
-            .error {border: solid 1px red;}
-            .error_text { color: red; font-size: 10px;}
-            td {padding: 3px;}
-			#accordion {
-				height: 200px;
-				width: 300px;
-				border: solid 1px #666;
-			}
-			ul {
-				margin: 0px;
-				overflow: auto;
-			}
-        </style>
-
 		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" />
 	</head>
-	<body>
+<body>
+	
 <div id="demo-html">
-<div id='accordion'>
-  <h3>Baked Goods</h3>
-  <ul>
-    <li>Cookies</li><li>Cake</li><li>Bread</li>
-	<li>Pie</li><li>Muffin</li><li>Loaf</li>
-	<li>Scones</li><li>Brownies</li><li>Tart</li>
-  </ul>
-  <h3>Americana</h3>
-  <ul>
-    <li>Hot Dog</li><li>Hamburger</li><li>Pie</li>
-  </ul>
-  <h3>Other</h3>
-  <div>I like Italian, Mexian, Thai,
-    Sushi, Chinese, Ethiopian.
-  </div>
+
+	<div class="accordion">
+		<!-- UL List -->
+		<h2>Aliquam tincidunt</h2>
+		<ul>
+			<li>lorem ipsum dolor</li>
+			<li>lorem ipsum dolor</li>
+			<li>lorem ipsum dolor</li>
+		</ul>
+		
+		<!-- Paragraphs -->
+		<h2>Sit amet</h2>
+		<p>lorem ipsum dolor.</p>
+	
+		<!-- Divs -->
+		<h2>Lorem ipsum</h2>
+		<div>
+			<p>lorem ipsum dolor....</p>
+			<p>lorem ipsum dolor....</p>
+		</div>
+		
+		<!-- CSS 3 -->
+		<h2><a href="css3">Lorem ipsum</a></h2>
+		<div id="css3">
+			<p>lorem ipsum dolor....</p>
+			<p>lorem ipsum dolor....</p>
+		</div>
+		
+		<!-- HTML5 -->
+		<details>
+			<summary>
+				<h2>Vestibulum auctor dapibus neque</h2>
+			</summary>
+			<p>Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. Aenean ultricies mi vitae est. Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, commodo vitae, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum.sis luctus, metus</p>
+		</details>
+		
+	</div>
+
 </div>	
-</div>	
+
 <script type='text/javascript' src='../../../steal/steal.js'></script>
 <script type='text/javascript'  id="demo-source">
 steal('canui/nav/accordion',function(){
 
-  new can.ui.nav.Accordion($('#accordion'));
+  new can.ui.nav.Accordion($('.accordion'));
 	
 });
 </script>
-	</body>
+</body>
 </html>

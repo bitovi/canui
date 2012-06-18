@@ -1,6 +1,7 @@
 steal(
 	'can/construct/proxy',
 	'can/control',
+	'can/observe/compute',
 	'jquery/event/drag/limit', 
 	'jquery/event/drag/step'
 ).then(function( $ ) {
@@ -66,35 +67,43 @@ steal(
 		defaults: {
 			min: 0,
 			max: 10,
+			step : 1,
 			// if the slider is contained in the parent
-			contained : true
+			contained : true,
+			val : undefined
 		}
 	}, 
 	/**
 	 * @prototype
 	 */
-	{
+	{		
 		init: function() {
-			this.element.css("position", 'relative')
-			if ( this.options.val ) {
-				this.val( this.options.val )
+			this.element.css("position", 'relative');
+			// convert options to computed
+			for(var optionName in this.options){
+				this.options[optionName] = can.compute(this.options[optionName])
+			}
+			// rebind
+			this.on();
+			if ( this.options.val() ) {
+				this.updatePosition()
 			}
 		},
 		resize: function() {
 			this.updatePosition();
 		},
 		getDimensions: function() {
-			var spots = this.options.max - this.options.min,
+			var spots = this.options.max() - this.options.min() + 1,
 				parent = this.element.parent(),
 				outerWidth = this.element.outerWidth(),
 				styles, leftSpace;
 
 			this.widthToMove = parent.width() - outerWidth;
-			this.widthOfSpot = this.widthToMove / spots;
+			this.widthOfSpot = this.widthToMove / (spots - 1);
 
 			styles = parent.styles("borderLeftWidth", "paddingLeft");
 			leftSpace = parseInt(styles.borderLeftWidth) + parseInt(styles.paddingLeft) || 0;
-			this.leftStart = parent.offset().left + leftSpace - (this.options.contained ? 0 : Math.round(outerWidth / 2));
+			this.leftStart = parent.offset().left + leftSpace - (this.options.contained() ? 0 : Math.round(outerWidth / 2));
 		},
 		"draginit": function( el, ev, drag ) {
 			this.getDimensions();
@@ -102,21 +111,27 @@ steal(
 				.step(this.widthOfSpot, this.element.parent());
 		},
 		"dragmove": function( el, ev, drag ) {
-			this.determineValue();
-			this.element.trigger( "changing", this.value )
+			var current = this.determineValue();
+			if(this.lastMove !== current){
+				
+				this.element.trigger( "changing", current );
+				this.lastMove = current;
+			} 
+			
+			
 		},
 		"dragend": function( el, ev, drag ) {
-			this.element.trigger( "change", this.value )
+			this.options.val( this.determineValue() )
 		},
 		determineValue : function() {
-			var left = this.element.offset().left - this.leftStart;
-			var spot = Math.round(left / this.widthOfSpot);
-			this.value = spot + this.options.min;
+			var left = this.element.offset().left - this.leftStart,
+				spot = Math.round(left / this.widthOfSpot);
+			return spot + this.options.min();
 		},
 		updatePosition: function() {
 			this.getDimensions();
 			this.element.offset({
-				left: this.leftStart + Math.round((this.value - this.options.min) * this.widthOfSpot)
+				left: this.leftStart + Math.round((this.options.val() - this.options.min()) * this.widthOfSpot)
 			})
 		},
 		/**
@@ -125,15 +140,14 @@ steal(
 		 * @return {Number}
 		 */
 		val: function( value ) {
-			if ( value !== undefined) {
-				this.value = value;
-				this.updatePosition();
-				setTimeout(this.proxy(function() {
-					this.element.trigger("change", value)
-				}), 0);
-			} else {
-				return this.value;
-			}
+			return this.option.val(value)
+		},
+		"{val} change" : function(){
+			// change the position ... 
+			this.lastMove = this.options.val();
+			console.log("changed to ", this.lastMove)
+			this.updatePosition();
+			this.element.trigger( "change", this.lastMove )
 		}
 	})
 

@@ -24,30 +24,64 @@
 			}
 			body {
 				margin: 0px;
-				padding: 30px;
+				padding: 10px;
 			}
         </style>
 	</head>
 	<body>
+		<p>This shows a basic slider that can be used without computes.</p>
+		
 	    <div class='container'>
-	    	<div class='slider' id='slider'></div>
+	    	<div class='slider' id='basicSlider'></div>
 	    </div>
-		<input id='value'/>
+		<input id='basicValue'/>
+		
+		<p>This shows a computed binding.  You are <span id='percent'></span> percent done.</p>
+		<div class='container'>
+	    	<div class='slider' id='computeSlider'></div>
+	    </div>
+		
 		<script type='text/javascript' 
                 src='../../../steal/steal.js'>   
         </script>
 		<script type='text/javascript'>
 			steal('canui/nav/slider', function(){
-				var value = $('#value');
-				new can.ui.nav.Slider($("#slider"), {
+				var value = $('#basicValue');
+				new can.ui.nav.Slider("#basicSlider", {
 					interval: 1, 
 					min: 1, 
 					max: 10, 
 					val: 5
 				});
-				$('#slider').on("changing change", function( ev, newValue ) {
+				$('#basicSlider').on("changing change", function( ev, newValue ) {
+					console.log(ev.type, newValue)
 					value.val(newValue);
 				});
+				
+				var project = new can.Observe({
+					progress: 0.5
+				});
+				var percentDone = can.compute(function(val){
+					if(val !== undefined){
+						project.attr("progress", val / 100)
+					} else {
+						return parseInt( project.attr("progress") * 100);
+					}
+				})
+				new can.ui.nav.Slider("#computeSlider", {
+					interval: 1, 
+					min: 0, 
+					max: 100, 
+					val: percentDone
+				});
+				
+				project.bind("progress", function(ev, newVal){
+					console.log(newVal)
+				})
+				percentDone.bind("change", function(ev, newVal){
+					$("#percent").text(newVal)
+				})
+				$("#percent").text(percentDone())
 			})
 		</script>
 	</body>
