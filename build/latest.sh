@@ -1,5 +1,6 @@
 #!/bin/sh
 
+# Makes the latest build and pushed it go gh-pages
 FOLDER=canui-gh-pages
 ./js canui/build/make.js
 git clone git@github.com:jupiterjs/canui.git $FOLDER

@@ -4,7 +4,8 @@ steal('steal/build/pluginify', function() {
 
 	var out = "canui/dist/",
 		excludes = [ 'steal/dev',
-			'can/util/jquery/jquery.1.7.1.js',
+			'can/',
+			'jquery/',
 			'steal/less' ];
 
 	steal.File(out).mkdirs();

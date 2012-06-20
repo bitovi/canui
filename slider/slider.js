@@ -4,7 +4,7 @@ steal(
 	'can/observe/compute',
 	'jquery/event/drag/limit', 
 	'jquery/event/drag/step'
-).then(function( $ ) {
+).then(function() {
 
 	/**
 	 * @class can.ui.Slider
@@ -117,8 +117,6 @@ steal(
 				this.element.trigger( "changing", current );
 				this.lastMove = current;
 			} 
-			
-			
 		},
 		"dragend": function( el, ev, drag ) {
 			this.options.val( this.determineValue() )
@@ -140,8 +138,9 @@ steal(
 		 * @return {Number}
 		 */
 		val: function( value ) {
-			return this.option.val(value)
+			return this.options.val(value)
 		},
+
 		"{val} change" : function(){
 			// change the position ... 
 			this.lastMove = this.options.val();
