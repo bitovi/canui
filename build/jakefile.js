@@ -15,8 +15,9 @@ var path = require("path"),
 
 desc('Runs make.js to build the application');
 task('build', function (params) {
+	var hippo = process.platform == 'win32' ? 'js.bat' : './js';
 	console.log('Building...');
-	exec('./js', ['canui/build/make.js'], function () {
+	exec(hippo, ['canui/build/make.js'], function () {
 		complete();
 	}, { cwd : rootPath });
 }, { async : true });
