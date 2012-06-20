@@ -2,7 +2,7 @@ steal('funcunit').then(function(){
 	
 module("can.ui.layout.TableScroll", {
 	setup: function(){
-        S.open("//canui/layout/table_scroll/table_scroll.html");
+        S.open("//canui/table_scroll/table_scroll.html");
 		
 		// helps compare columns
 		this.compareCols = function(i, size){
