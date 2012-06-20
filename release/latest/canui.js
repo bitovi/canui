@@ -1,3 +1,244 @@
+(function( $ ) {
+	//evil things we should ignore
+	var matches = /script|td/,
+
+		// if we are trying to fill the page
+		isThePage = function( el ) {
+			return el === document || el === document.documentElement || el === window || el === document.body
+		},
+		//if something lets margins bleed through
+		bleeder = function( el ) {
+			if ( el[0] == window ) {
+				return false;
+			}
+			var styles = el.styles('borderBottomWidth', 'paddingBottom')
+			return !parseInt(styles.borderBottomWidth) && !parseInt(styles.paddingBottom)
+		},
+		//gets the bottom of this element
+		bottom = function( el, offset ) {
+			//where offsetTop starts
+			return el.outerHeight() + offset(el);
+		}
+		pageOffset = function( el ) {
+			return el.offset().top
+		},
+		offsetTop = function( el ) {
+			return el[0].offsetTop;
+		},
+		inFloat = function( el, parent ) {
+			while ( el && el != parent ) {
+				var flt = $(el).css('float')
+				if ( flt == 'left' || flt == 'right' ) {
+					return flt;
+				}
+				el = el.parentNode
+			}
+		},
+		/**
+		 * @function jQuery.fn.fills
+		 * @parent jQuery.fills
+		 * @test jquery/dom/fills/funcunit.html
+		 * @plugin jquery/dom/fills
+		 *
+		 * Fills a parent element's height with the current element.
+		 * This is extremely useful for complex layout, especially when you want to account for line-wrapping.
+		 *
+		 * ## Basic Example
+		 *
+		 * If you have the following html:
+		 *
+		 *     <div id='box'>
+		 * 	    <p>I am a long heading.</p>
+		 * 	    <div id='child'>I'm a child.</div>
+		 *     </div>
+		 *
+		 * The follow makes `#child` fill up `#box`:
+		 *
+		 *     $('#child').can_ui_layout_fill("#box")
+		 *
+		 * ## Limitations
+		 *
+		 * Fill currently does not well with:
+		 *
+		 *   - Bleeding margins - Where margins leak through parent elements
+		 *     because the parent elements do not have a padding or border.
+		 *
+		 *   - Tables - You shouldn't be using tables to do layout anyway.
+		 *
+		 *   - Floated Elements - the child element has `float: left` or `float: right`
+		 *
+		 *
+		 * @param {HTMLElement|selector|Object} [parent] the parent element
+		 * to fill, defaults to the element's parent.
+		 *
+		 * The following fills the parent to `#child`:
+		 *
+		 *     $('#child').fills()
+		 *
+		 * A selector can also be pased.  This selector is passed to jQuery's
+		 * closet method.  The following matches the first `#parent` element that
+		 * is a parentNode of `#child`:
+		 *
+		 *     $('#child').fills("#parent")
+		 *
+		 * An element or window can also be passed.  The following will make
+		 * `#child` big enough so the entire window is filled:
+		 *
+		 *      $('#child').fills(window)
+		 *
+		 * If you pass an object, the following options are available:
+		 *
+		 * - __parent__ - The parent element selector or jQuery object
+		 * - __className__ - A class name to add to the element that fills
+		 * - __all__ - Reset the parents height when resizing
+		 *
+		 * @return {jQuery} the original jQuery collection for chaining.
+		 */
+		filler = $.fn.fills = function( parent ) {
+			var options = parent;
+			options || (options = {});
+			if(typeof options == 'string'){
+				options = this.closest(options)
+			}
+			if ( options.jquery || options.nodeName ) {
+				options = {parent: options };
+			}
+			// Set the parent
+			options.parent || (options.parent = $(this).parent());
+			options.parent = $(options.parent)
+
+			// setup stuff on every element
+			if(options.className) {
+				this.addClass(options.className)
+			}
+
+			var thePage = isThePage(options.parent[0]);
+			
+			if ( thePage ) {
+				options.parent = $(window)
+			}
+
+			this.each(function(){
+				var evData = {
+					filler: $(this),
+					inFloat: inFloat(this, thePage ? document.body : options.parent[0]),
+					options: options
+				},
+				cb = function() {
+					filler.parentResize.apply(this, arguments)
+				}
+				// Attach to the `resize` event
+				$(options.parent).bind('resize', evData, cb);
+
+				$(this).bind('destroyed', evData, function( ev ) {
+					if(options.className) {
+						$(ev.target).removeClass(options.className)
+					}
+					$(options.parent).unbind('resize', cb)
+				});
+				
+			});
+
+			// resize to get things going
+			var func = function() {
+				options.parent.resize();
+			}
+
+			if ( $.isReady ) {
+				func();
+			} else {
+				$(func)
+			}
+			return this;
+		};
+
+
+	$.extend(filler, {
+		parentResize : function( ev ) {
+			if (ev.data.filler.is(':hidden')) {
+				return;
+			}
+			
+			var parent = $(this),
+				isWindow = this == window,
+				container = (isWindow ? $(document.body) : parent),
+
+				//if the parent bleeds margins, we don't care what the last element's margin is
+				isBleeder = bleeder(parent),
+				children = container.children().filter(function() {
+					if ( matches.test(this.nodeName.toLowerCase()) ) {
+						return false;
+					}
+
+					var get = $.styles(this, ['position', 'display']);
+					return get.position !== "absolute" && get.position !== "fixed"
+						&& get.display !== "none" && !jQuery.expr.filters.hidden(this)
+				}),
+				last = children.eq(-1),
+				first,
+				parentHeight = parent.height() - (isWindow ? parseInt(container.css('marginBottom'), 10) || 0 : 0),
+				currentSize;
+			var div = '<div style="height: 0px; line-height:0px;overflow:hidden;' + (ev.data.inFloat ? 'clear: both' : '') + ';"/>'
+
+			if ( isBleeder ) {
+				//temporarily add a small div to use to figure out the 'bleed-through' margin
+				//of the last element
+				last = $(div).appendTo(container);
+				
+			}
+
+			//for performance, we want to figure out the currently used height of the parent element
+			// as quick as possible
+			// we can use either offsetTop or offset depending ...
+			if ( last && last.length > 0 ) {
+				if ( last.offsetParent()[0] === container[0] ) {
+
+					currentSize = last[0].offsetTop + last.outerHeight();
+				} else if (last.offsetParent()[0] === container.offsetParent()[0]) {
+					// add pos abs for IE7 but
+					// might need to adjust for the addition of first's hheight
+					var curLast =last[0].offsetTop;
+					first = $(div).prependTo(container);
+					
+					currentSize = ( curLast + last.outerHeight() ) - first[0].offsetTop;
+					
+					first.remove();
+				} else {
+					// add first so we know where to start from .. do not bleed in this case
+					first = $(div).prependTo(container);
+
+					currentSize = ( last.offset().top + last.outerHeight() ) - first.offset().top;
+					first.remove();
+				}
+			}
+
+			// what the difference between the parent height and what we are going to take up is
+			var delta = parentHeight - currentSize,
+				// the current height of the object
+				fillerHeight = ev.data.filler.height();
+
+			//adjust the height
+			if ( ev.data.options.all ) {
+				// we don't care about anything else, we are likely absolutely positioned
+				// we need to fill the parent width
+				// temporarily collapse, then expand
+				ev.data.filler.height(0).width(0);
+				var parentWidth = parent.width(),
+					parentHeight = parent.height();
+
+				ev.data.filler.outerHeight(parentHeight);
+				ev.data.filler.outerWidth(parentWidth);
+			} else {
+				ev.data.filler.height(fillerHeight + delta)
+			}
+
+			//remove the temporary element
+			if ( isBleeder ) {
+				last.remove();
+			}
+		}
+	});
+})(jQuery);
 (function($){
 	/**
 	 * @class can.ui.layout.Positionable
@@ -352,319 +593,6 @@
 	})
 
 
-})(jQuery);
-.can_ui_layout_split .split {
-	overflow: auto;
-	float:left;
-}
-.can_ui_layout_split .vsplitter {
-	width:3px;
-	cursor:w-resize;
-	float:left;
-	line-height: 3px;
-	font-size: 0px;
-	border-top:solid 1px #b6b6b6;
-	border-bottom:solid 1px #b6b6b6;
-	background:url(images/split_sprite.gif) repeat-y -35px 0;
-}
-.can_ui_layout_split .hsplitter {
-	width:100%;
-	cursor:s-resize;
-	float:left;
-	line-height: 3px;
-	font-size: 0px;
-	height:3px;
-	background:url(images/split_sprite_horz.gif) repeat-x 0 0;
-}
-.can_ui_layout_split .split-hover {
-	background:#5f83b9;
-}
-.can_ui_layout_split .collapsed{
-	display:none;
-}
-.can_ui_layout_split .disabled.vsplitter,
-.can_ui_layout_split .disabled.hsplitter {
-	background:red;
-}
-.can_ui_layout_split .vsplitter .collapser {
-	position:absolute;
-	top:50%;
-	margin-top:-13px;
-	width:3px;
-	cursor:pointer;
-	height:27px;
-	outline:none;
-}
-.can_ui_layout_split .hsplitter .collapser {
-	position:absolute;
-	left:50%;
-	margin-left:-13px;
-	width:27px;
-	cursor:pointer;
-	height:3px;
-	outline:none;
-}
-.can_ui_layout_split .vsplitter .right-collapse {
-	background:#FFF url(images/split_sprite.gif) no-repeat -4px 0;
-}
-.can_ui_layout_split .vsplitter .left-collapse {
-	background:#FFF url(images/split_sprite.gif) no-repeat -1px 0;
-}
-.can_ui_layout_split .hsplitter .right-collapse {
-	background:#FFF url(images/split_sprite.gif) no-repeat -8px -4px;
-}
-.can_ui_layout_split .hsplitter .left-collapse {
-	background:#FFF url(images/split_sprite.gif) no-repeat -8px -1px;
-}
-;
-.modal-overlay {
-  background: rgba(0,0,0,0.5);
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-};
-(function( $ ) {
-	//evil things we should ignore
-	var matches = /script|td/,
-
-		// if we are trying to fill the page
-		isThePage = function( el ) {
-			return el === document || el === document.documentElement || el === window || el === document.body
-		},
-		//if something lets margins bleed through
-		bleeder = function( el ) {
-			if ( el[0] == window ) {
-				return false;
-			}
-			var styles = el.styles('borderBottomWidth', 'paddingBottom')
-			return !parseInt(styles.borderBottomWidth) && !parseInt(styles.paddingBottom)
-		},
-		//gets the bottom of this element
-		bottom = function( el, offset ) {
-			//where offsetTop starts
-			return el.outerHeight() + offset(el);
-		}
-		pageOffset = function( el ) {
-			return el.offset().top
-		},
-		offsetTop = function( el ) {
-			return el[0].offsetTop;
-		},
-		inFloat = function( el, parent ) {
-			while ( el && el != parent ) {
-				var flt = $(el).css('float')
-				if ( flt == 'left' || flt == 'right' ) {
-					return flt;
-				}
-				el = el.parentNode
-			}
-		},
-		/**
-		 * @function jQuery.fn.fills
-		 * @parent jQuery.fills
-		 * @test jquery/dom/fills/funcunit.html
-		 * @plugin jquery/dom/fills
-		 *
-		 * Fills a parent element's height with the current element.
-		 * This is extremely useful for complex layout, especially when you want to account for line-wrapping.
-		 *
-		 * ## Basic Example
-		 *
-		 * If you have the following html:
-		 *
-		 *     <div id='box'>
-		 * 	    <p>I am a long heading.</p>
-		 * 	    <div id='child'>I'm a child.</div>
-		 *     </div>
-		 *
-		 * The follow makes `#child` fill up `#box`:
-		 *
-		 *     $('#child').can_ui_layout_fill("#box")
-		 *
-		 * ## Limitations
-		 *
-		 * Fill currently does not well with:
-		 *
-		 *   - Bleeding margins - Where margins leak through parent elements
-		 *     because the parent elements do not have a padding or border.
-		 *
-		 *   - Tables - You shouldn't be using tables to do layout anyway.
-		 *
-		 *   - Floated Elements - the child element has `float: left` or `float: right`
-		 *
-		 *
-		 * @param {HTMLElement|selector|Object} [parent] the parent element
-		 * to fill, defaults to the element's parent.
-		 *
-		 * The following fills the parent to `#child`:
-		 *
-		 *     $('#child').fills()
-		 *
-		 * A selector can also be pased.  This selector is passed to jQuery's
-		 * closet method.  The following matches the first `#parent` element that
-		 * is a parentNode of `#child`:
-		 *
-		 *     $('#child').fills("#parent")
-		 *
-		 * An element or window can also be passed.  The following will make
-		 * `#child` big enough so the entire window is filled:
-		 *
-		 *      $('#child').fills(window)
-		 *
-		 * If you pass an object, the following options are available:
-		 *
-		 * - __parent__ - The parent element selector or jQuery object
-		 * - __className__ - A class name to add to the element that fills
-		 * - __all__ - Reset the parents height when resizing
-		 *
-		 * @return {jQuery} the original jQuery collection for chaining.
-		 */
-		filler = $.fn.fills = function( parent ) {
-			var options = parent;
-			options || (options = {});
-			if(typeof options == 'string'){
-				options = this.closest(options)
-			}
-			if ( options.jquery || options.nodeName ) {
-				options = {parent: options };
-			}
-			// Set the parent
-			options.parent || (options.parent = $(this).parent());
-			options.parent = $(options.parent)
-
-			// setup stuff on every element
-			if(options.className) {
-				this.addClass(options.className)
-			}
-
-			var thePage = isThePage(options.parent[0]);
-			
-			if ( thePage ) {
-				options.parent = $(window)
-			}
-
-			this.each(function(){
-				var evData = {
-					filler: $(this),
-					inFloat: inFloat(this, thePage ? document.body : options.parent[0]),
-					options: options
-				},
-				cb = function() {
-					filler.parentResize.apply(this, arguments)
-				}
-				// Attach to the `resize` event
-				$(options.parent).bind('resize', evData, cb);
-
-				$(this).bind('destroyed', evData, function( ev ) {
-					if(options.className) {
-						$(ev.target).removeClass(options.className)
-					}
-					$(options.parent).unbind('resize', cb)
-				});
-				
-			});
-
-			// resize to get things going
-			var func = function() {
-				options.parent.resize();
-			}
-
-			if ( $.isReady ) {
-				func();
-			} else {
-				$(func)
-			}
-			return this;
-		};
-
-
-	$.extend(filler, {
-		parentResize : function( ev ) {
-			if (ev.data.filler.is(':hidden')) {
-				return;
-			}
-			
-			var parent = $(this),
-				isWindow = this == window,
-				container = (isWindow ? $(document.body) : parent),
-
-				//if the parent bleeds margins, we don't care what the last element's margin is
-				isBleeder = bleeder(parent),
-				children = container.children().filter(function() {
-					if ( matches.test(this.nodeName.toLowerCase()) ) {
-						return false;
-					}
-
-					var get = $.styles(this, ['position', 'display']);
-					return get.position !== "absolute" && get.position !== "fixed"
-						&& get.display !== "none" && !jQuery.expr.filters.hidden(this)
-				}),
-				last = children.eq(-1),
-				first,
-				parentHeight = parent.height() - (isWindow ? parseInt(container.css('marginBottom'), 10) || 0 : 0),
-				currentSize;
-			var div = '<div style="height: 0px; line-height:0px;overflow:hidden;' + (ev.data.inFloat ? 'clear: both' : '') + ';"/>'
-
-			if ( isBleeder ) {
-				//temporarily add a small div to use to figure out the 'bleed-through' margin
-				//of the last element
-				last = $(div).appendTo(container);
-				
-			}
-
-			//for performance, we want to figure out the currently used height of the parent element
-			// as quick as possible
-			// we can use either offsetTop or offset depending ...
-			if ( last && last.length > 0 ) {
-				if ( last.offsetParent()[0] === container[0] ) {
-
-					currentSize = last[0].offsetTop + last.outerHeight();
-				} else if (last.offsetParent()[0] === container.offsetParent()[0]) {
-					// add pos abs for IE7 but
-					// might need to adjust for the addition of first's hheight
-					var curLast =last[0].offsetTop;
-					first = $(div).prependTo(container);
-					
-					currentSize = ( curLast + last.outerHeight() ) - first[0].offsetTop;
-					
-					first.remove();
-				} else {
-					// add first so we know where to start from .. do not bleed in this case
-					first = $(div).prependTo(container);
-
-					currentSize = ( last.offset().top + last.outerHeight() ) - first.offset().top;
-					first.remove();
-				}
-			}
-
-			// what the difference between the parent height and what we are going to take up is
-			var delta = parentHeight - currentSize,
-				// the current height of the object
-				fillerHeight = ev.data.filler.height();
-
-			//adjust the height
-			if ( ev.data.options.all ) {
-				// we don't care about anything else, we are likely absolutely positioned
-				// we need to fill the parent width
-				// temporarily collapse, then expand
-				ev.data.filler.height(0).width(0);
-				var parentWidth = parent.width(),
-					parentHeight = parent.height();
-
-				ev.data.filler.outerHeight(parentHeight);
-				ev.data.filler.outerWidth(parentWidth);
-			} else {
-				ev.data.filler.height(fillerHeight + delta)
-			}
-
-			//remove the temporary element
-			if ( isBleeder ) {
-				last.remove();
-			}
-		}
-	});
 })(jQuery);
 (function(){
 
@@ -1131,1455 +1059,6 @@ can.Control('can.ui.Selectable',{
 	}
 });
 
-})(jQuery);
-(function( $ ) {
-		
-	var	prefixes = ' -webkit- -moz- -o- -ms- -khtml-'.split(' '),
-		supportsTransitions = (function() {
-			var elem = $("<div />"),
-				support = false;
-			$.each(prefixes, function( i, prefix ) {
-				var prop = prefix + "transition",
-					value = "all 1s ease-in-out";
-				elem.css( prop, value );
-				if ( elem.css( prop ) == value ) {
-					support = true;
-					return false;
-				}
-			});
-			return support;
-		}());
-
-
-	can.Control("can.ui.Tooltip", {
-		positions: {
-			n : {
-				my: "bottom",
-				at: "top",
-				arrowClass: "down",
-				arrowMargin: "margin-left"
-			},
-			e : {
-				my: "left",
-				at: "right",
-				arrowClass: "left",
-				arrowMargin: "margin-top"
-			},
-			w : {
-				my: "right",
-				at: "left",
-				arrowClass: "right",
-				arrowMargin: "margin-top"
-			},
-			s : {
-				my: "top",
-				at: "bottom",
-				arrowClass: "up",
-				arrowMargin: "margin-left"
-			}
-		},
-		defaults: {
-			theme: "error",
-			showEvent: "mouseenter",
-			hideEvent: "mouseleave",
-			showEffect: "show",
-			hideEffect: "fadeOut",
-			showTimeout: 200,
-			hideTimeout: 500,
-			showTimeoutId: null,
-			hideTimeoutId: null,
-			position: "n"
-		}
-	}, {
-
-		setup : function( el, options ) {
-			options = $.extend( this.constructor.defaults, options || {} );
-			options.$ = {
-				tooltip : $( can.view( "./views/tooltip.ejs", options ) )
-			}
-			$.each( ["outer", "inner", "arrow"], this.proxy( function( i, className ) {
-				options.$[ className ] = options.$.tooltip.find( "." + className );
-			}));
-			this._super( el, options );
-		},
-
-
-		init : function() {
-
-
-			// save references to each compontent of the tooltip
-
-			// Append template to the offset parent
-			this.element.offsetParent().append( this.options.$.tooltip );
-
-			// Spacing for arrows and stuff is calculated off the margin,
-			// perhaps should be changed to a setting
-			this.space = parseInt( this.options.$.outer.css("margin-left"), 10 );
-
-			// Position tooltip
-			this.determinePosition();
-			this.setPosition();
-
-			$.each( ["width", "height"], this.proxy( function( i, dim ) {
-				this.options.$.tooltip[ dim ]( this.options.$.tooltip[ dim ]() );
-			}));
-
-			this.options.$.tooltip.css({
-				display: this.options.showEvent ? "none" : "block",
-				visibility: "visible"
-			});
-
-
-			// Set up transitions
-			if ( supportsTransitions ) {
-				setTimeout( this.proxy( function() {
-					$.each(prefixes, this.proxy( function( i, prefix ) {
-						this.options.$.tooltip.css( prefix + "transition", "top .5s ease-in-out, left .5s ease-in-out" );
-					}));
-				}), 0);
-			}
-		},
-
-		"{$.tooltip} mouseenter" : function() {
-			if ( this.options.showEvent == "mouseenter" ) {
-				this.show();
-			}
-		},
-
-		"{$.tooltip} mouseleave" : function() {
-			if ( this.options.showEvent == "mouseenter" ) {
-				this.hide();
-			}
-		},
-
-		determineCorners: function() {
-			var arrowSpacing = this.space * 2,
-				offsetSpacing = this.space * 4;
-
-			this.corners= {
-				ne: {
-					arrowCss: {
-						left: arrowSpacing
-					},
-					offset : [ -( offsetSpacing ), 0 ]
-				},
-				en: {
-					arrowCss: {
-						top : "initial",
-						bottom: arrowSpacing
-					},
-					offset : [ 0, ( offsetSpacing ) ]
-				},
-				es: {
-					arrowCss: {
-						bottom : "initial",
-						top: arrowSpacing
-					},
-					offset : [ 0, -( offsetSpacing ) ]
-				},
-				se: {
-					arrowCss: {
-						left: arrowSpacing
-					},
-					offset : [ -( offsetSpacing ), 0 ]
-				},
-				sw: {
-					arrowCss: {
-						right: arrowSpacing,
-						left: "initial"
-					},
-					offset : [ ( offsetSpacing ), 0 ]
-				},
-				ws: {
-					arrowCss: {
-						bottom : "initial",
-						top: arrowSpacing
-					},
-					offset : [ 0, -( offsetSpacing ) ]
-				},
-				wn: {
-					arrowCss: {
-						top: "initial",
-						bottom: arrowSpacing
-					},
-					offset : [ 0, ( offsetSpacing ) ]
-				},
-				nw: {
-					arrowCss: {
-						right: arrowSpacing,
-						left: "initial"
-					},
-					offset : [ ( offsetSpacing ), 0 ]
-				}
-			}
-		},
-
-		determinePosition: function() {
-
-			var parts = "my at".split(" "),
-				positionArrays = {
-					my : [],
-					at : []
-				},
-				position = {};
-
-			// ZOMG double each, thats like, O(n^2)
-			$.each( parts, this.proxy( function( i, part ) {
-				$.each( this.options.position.split(""), function( i, c ) {
-					positionArrays[part].push( can.ui.Tooltip.positions[ c ][part] );
-				});
-
-				// Have to do this craziness because the jQuery UI position
-				// plugin requires position to be in the format of
-				// "horizontal vertical" :/
-				position[part] = (/left|right/.test( positionArrays[part][0] ) ?
-					positionArrays[part] : 
-					positionArrays[part].reverse()
-					).join(" ");
-			} ));
-
-			this.position = $.extend({},
-				can.ui.Tooltip.positions[ this.options.position.charAt(0) ],
-				position
-			);
-
-			this.options.$
-				.arrow
-				.addClass( this.position.arrowClass )
-				.css( "border-width", this.space )
-
-			this.determineCorners();
-
-			if ( positionArrays.my.length == 2 ) {
-				this.options.$.arrow.css( this.corners[ this.options.position ].arrowCss );
-				$.extend( this.position, {
-					offset : this.corners[ this.options.position ].offset.join(" ")
-				});
-			} else {
-				this.options.$.arrow.css( this.position.arrowMargin, "-" + this.space + "px");
-			}
-
-		},
-
-		setPosition: function() {
-			var isHidden = this.options.$.tooltip.css("display") == "none", positionable;
-
-			if ( isHidden ) {
-				this.options.$.tooltip.css({
-					visibility: "hidden",
-					display: "block"
-				})
-
-				positionable = new can.ui.layout.Positionable(this.options.$.tooltip,
-					$.extend({
-						of : this.element,
-						collision : "none"
-					}, this.position )
-				);
-
-				this.options.$.tooltip.css({
-					visibility: "visible",
-					display: "none"
-				})
-			} else {
-				positionable = new can.ui.layout.Positionable(this.options.$.tooltip,
-					$.extend({
-						of : this.element,
-						collision : "none",
-						using: this.proxy( function( pos ) {
-							this.options.$.tooltip.stop( true, false )[ supportsTransitions ? "css" : "animate" ]( pos );
-						})
-					}, this.position )
-				);
-			}
-			positionable.move();
-		},
-
-		show : function() {
-			clearTimeout( this.options.hideTimeoutId );
-			this.options.$.tooltip.stop( true, true )[ this.options.showEffect ]();
-		},
-
-		hide : function() {
-			this.options.hideTimeoutId = setTimeout(this.proxy( function() {
-				this.options.$.tooltip[ this.options.hideEffect ]();
-			}), this.options.hidetimeout );
-		},
-
-		"{showEvent}" : function() {
-			this.show();
-		},
-
-		"{hideEvent}" : function() {
-			this.hide();
-		},
-
-		"destroy" : function() {
-			this.options.$.tooltip.remove();
-			delete this.options.$;
-			this._super();
-		},
-
-		"{window} resize" : (function() {
-			var timeout;
-			return function() {
-				clearTimeout( timeout );
-				setTimeout( this.proxy( this.callback("setPosition")), 100 );
-			}
-		}())
-	});
-
-})(jQuery);
-(function( $ ) {
-
-	/**
-	 * @class can.ui.Split
-	 * @parent canui
-	 * @test canui/layout/split/funcunit.html
-	 * 
-	 * @description Makes a splitter widget.
-	 * 
-	 * The splitter widget manages a container whose content "panels" can be independently resized. It
-	 * does this by inserting a "splitter bar" between each panel element, which can be dragged or
-	 * optionally collapsed.
-	 * 
-	 * Panel elements can be added or removed from the container at any time using ordinary DOM manipulation.
-	 * The spliter widget will automatically adjust the splitter bars anytime a `resize` event is triggered.
-	 * 
-	 * The splitter widget will try to auto-detect whether it should operate in `vertical` or `horizontal`
-	 * mode by inspecting the positions of its first two elements. If the panels can wrap due to floating
-	 * content, or the container does not have two elements at initialization time, this check may be
-	 * unreliable, so just pass the direction in the options.
-	 * 
-	 * ## Basics
-	 * 
-	 * Suppose you have this HTML:
-	 *
-	 *     <div id="container">
-	 *       <div class="panel">Content 1</div>
-	 *       <div class="panel">Content 2</div>
-	 *       <div class="panel">Content 3</div>
-	 *     </div>
-	 * 
-	 * The following will create the splitter widget:
-	 * 
-	 *     new can.ui.Split($('#container'));
-	 * 
-	 * You can also provide the direction explicitly:
-	 * 
-	 *     new can.ui.Split($('#container'), { direction: 'vertical' });
-	 * 
-	 * The `direction` parameter refers to the splitter bar: `vertical` bars mean that the panels are arranged
-	 * from left-to-right, and `horizontal` bars mean the panels are arranged from top-to-bottom.
-	 * 
-	 * To indicate that a panel should be collapsible, simply apply the <code>collapsible</code> CSS class
-	 * to the panel.
-	 * 
-	 * ## Styling
-	 * 
-	 * The splitter widget uses a number of CSS classes that permit fine-grained control over the look
-	 * and feel of various elements. The most commonly used are the following:
-	 * 
-	 *   - `.can_ui_layout_split`: the container itself
-	 *     - `.splitter`: splitter bars
-	 *     - `.vsplitter`: only vertical splitter bars
-	 *     - `.hsplitter`: only horizontal splitter bars
-	 *     - `.collapser`: collapser buttons
-	 *     - `.left-collapse`: only left collapser buttons
-	 *     - `.right-collapse`: only right collapser buttons
-	 * 
-	 * You can see the standard styles for the splitter widget
-	 * [https://github.com/jupiterjs/canui/blob/master/layout/split/split.css here].
-	 * 
-	 * Additionally, the `panelClass` initialization option allows you to specify which subelements of
-	 * the container should be interpreted as panel elements, and the `hover` option specifies a CSS class
-	 * which will be applied to a splitter when the user hovers over it.
-	 * 
-	 * ## Events
-	 * 
-	 * The splitter widget responds to the [jQuery.event.special.resize resize] event by performing a quick
-	 * check to see if any panel elements have been inserted or removed, and updating its internal
-	 * state to reflect the changes. Simply add or remove whatever panel elements you wish from the DOM
-	 * using any appropriate jQuery methods, and then trigger the `resize` event on it:
-	 * 
-	 *     var container = $('#container');
-	 *     container.append($('<div class="panel">New Content</div>'));
-	 *     container.find('.panel:first').remove();
-	 *     container.resize();
-	 * 
-	 * ## Demo
-	 * 
-	 * @demo canui/layout/split/demo.html
-	 * 
-	 * ## More Examples
-	 * 
-	 * For some larger, more complex examples, see [//canui/layout/split/split.html here].
-	 * 
-	 * @param {HTMLElement} element an HTMLElement or jQuery-wrapped element.
-	 * @param {Object} options options to set on the split:
-	 * 
-	 *   - __hover__ (def. `"split-hover"`) - CSS class to apply to a splitter when the mouse enters it
-	 *   - __direction__ - whether the panel layout is `"vertical"` or `"horizontal"` (see above)
-	 *   - __dragDistance__ (def. `5`) - maximum number of pixels away from the slider to initiate a drag
-	 *   - __panelClass__ - CSS class that indicates a child element is a panel of this container
-	 *      					(by default any child is considered a panel)
-	 * @return {can.ui.Split}
-	 */
-	can.Control("can.ui.Split",
-	/** 
-	 * @static
-	 */
-	{
-		defaults: {
-			active: "active",
-			hover: "split-hover",
-			splitter: "splitter",
-			direction: null,
-			dragDistance: 5,
-			panelClass: null,
-			locale:{
-				collaspe: "Click to collapse",
-				expand: "Click to expand"
-			}
-		},
-		listensTo: ['resize'],
-		directionMap: {
-			vertical: {
-				dim: "width",
-				cap: "Width",
-				outer: "outerWidth",
-				pos: "left",
-				dragDir: "horizontal"
-			},
-			horizontal: {
-				dim: "height",
-				cap: "Height",
-				outer: "outerHeight",
-				pos: "top",
-				dragDir: "vertical"
-			}
-		}
-	},
-	/** 
-	 * @prototype
-	 */
-	{
-		/**
-		 * @hide
-		 * Init method called by CanJS base control.
-		 */
-		init: function() {
-			var c = this.panels();
-
-			//- Determine direction.  
-			//- TODO: Figure out better way to measure this since if its floating the panels and the 
-			//- width of the combined panels exceeds the parent container, it won't determine this correctly.
-			if (!this.options.direction ) {
-				this.options.direction = c.eq(0).position().top == c.eq(1).position().top ? "vertical" : "horizontal";
-			}
-
-			$.Drag.distance = this.options.dragDistance;
-			this.dirs = this.constructor.directionMap[this.options.direction];
-			this.usingAbsPos = c.eq(0).css('position') == "absolute";
-			
-			if(this.usingAbsPos){
-				if(!/absolute|relative|fixed/.test(this.element.css('position'))){
-					this.element.css('position','relative')
-				}
-			}
-			
-			this.element.css('overflow', 'hidden');
-			this.initalSetup(c);
-		},
-
-		/**
-		 * @hide
-		 * Sizes the split bar and split elements initially.  This is 
-		 * different from size in that fact
-		 * that initial size retains the elements widths and resizes 
-		 * what can't fit to be within the parent dims.
-		 * @param {Object} c
-		 */
-		initalSetup: function( c ) {
-			//- Insert the splitter bars
-			for ( var i = 0; i < c.length - 1; i++ ) {
-				var $c = $(c[i]),
-					$cCollasible = $c.hasClass('collapsible'),
-					$cCollapsed = $c.hasClass('collapsed'),
-					$nxt = $(c[i + 1]),
-					$nxtCollasible = $nxt.hasClass('collapsible'),
-					$nxtCollapsed = $nxt.hasClass('collapsed'),
-					dir, txt;
-					
-				if($cCollasible && !$cCollapsed){
-					txt = this.options.locale.collaspe;
-				} else {
-					txt = this.options.locale.expand;
-				}
-					
-				if(($cCollasible && !$cCollapsed) || ($nxtCollasible && $nxtCollapsed)){
-					dir = "left";
-					
-				} else if(($nxtCollasible && !$nxtCollapsed) || ($cCollasible && $cCollapsed)){
-					dir = "right";
-				}
-				
-				$c.after(this.splitterEl(dir, txt));
-			}
-
-			var splitters = this.element.children(".splitter"),
-				splitterDim = splitters[this.dirs.outer](),
-				// why is this calculated and not used
-				total = this.element[this.dirs.dim]() - splitterDim * (c.length - 1),
-				pHeight = this.element.height();
-
-
-			//- If its vertical, we need to set the height of the split bar
-			if ( this.options.direction == "vertical" ) {
-				splitters.height(pHeight);
-			}
-
-			//- Size the elements				  
-			for ( var i = 0; i < c.length; i++ ) {
-				var $c = $(c[i]);
-				
-				// store in data for faster lookup
-				$c.data("split-min-" + this.dirs.dim, parseInt($c.css('min-' + this.dirs.dim)));
-				$c.addClass("split");
-			}
-
-			//- Keep track of panels so that resize event is aware of panels that have been added/removed
-			this._cachedPanels = this.panels().get();
-
-			this.size();
-		},
-
-		/**
-		 * @hide
-		 * Appends a split bar.
-		 * @param {Object} dir
-		 */
-		splitterEl: function( dir,txt ) {
-			var splitter = $("<div class='" + this.options.direction.substr(0, 1) + "splitter splitter' tabindex='0'>")
-							.css("position", this.usingAbsPos ? "absolute" : "relative");
-
-			if ( dir ) {
-				splitter.append("<a title='" + txt + "' class='" + dir + "-collapse collapser' href='javascript://'></a>")
-			}
-
-			return splitter;
-		},
-
-		/**
-		 * Returns all the panels managed by this controller.
-		 * 
-		 * Given a `container`, iterate over its panels and collect their content:
-		 * 
-		 *     var content = '';
-		 *     var split = new can.ui.Split('#container');
-		 *     split.panels().each(function(el){
-		 *       content += el.text();
-		 *     });
-		 * 
-		 * @return {jQuery} Returns a jQuery-wrapped nodelist of elements that are panels of this container.
-		 */
-		panels: function() {
-			return this.element.children((this.options.panelClass ? "." + this.options.panelClass : "") + ":not(.splitter)")
-		},
-
-		".splitter mouseenter": function( el, ev ) {
-			if (!this.dragging ) {
-				el.addClass(this.options.hover)
-			}
-		},
-
-		".splitter mouseleave": function( el, ev ) {
-			if (!this.dragging ) {
-				el.removeClass(this.options.hover)
-			}
-		},
-
-		".splitter keydown": function( el, ev ) {
-			var offset = el.offset();
-			switch ( ev.keyName() ) {
-			case 'right':
-				this.moveTo(el, offset.left + 1);
-				break;
-			case 'left':
-				this.moveTo(el, offset.left - 1);
-				break;
-			case '\r':
-				this.toggleCollapse(el);
-				break;
-			}
-		},
-
-		".splitter draginit": function( el, ev, drag ) {
-			drag.noSelection();
-			drag.limit(this.element);
-
-			// limit motion to one direction
-			drag[this.dirs.dragDir]();
-			var hoverClass = this.options.hover;
-			el.addClass("move").addClass(this.options.hover);
-			this.moveCache = this._makeCache(el);
-			
-			if(this.moveCache.next.hasClass('collapsed') 
-			|| this.moveCache.prev.hasClass('collapsed')){
-				el.addClass('disabled');
-				drag.cancel();
-				
-				setTimeout(function(){ el.removeClass('disabled')
-										 .removeClass("move")
-										 .removeClass(hoverClass); }, 800);
-			} else {
-				this.dragging = true;
-			}
-		},
-
-		/**
-		 * @hide
-		 * Internal method for getting the cache info for an element
-		 * @param {Object} el
-		 */
-		_makeCache: function( el ) {
-			var next = el.next(),
-				prev = el.prev();
-			return {
-				offset: el.offset()[this.dirs.pos],
-				next: next,
-				prev: prev,
-				nextD: next[this.dirs.dim](),
-				prevD: prev[this.dirs.dim]()
-			};
-		},
-
-		/**
-		 * @hide
-		 * Moves a slider to a specific offset in the page
-		 * @param {jQuery} el
-		 * @param {Number} newOffset The location in the page in the direction the slider moves
-		 * @param {Object} [cache] A cache of dimensions data to make things run faster (esp for drag/drop). It looks like
-		 * 
-		 *     {
-		 *       offset: {top: 200, left: 200},
-		 *       prev: 400, // width or height of the previous element
-		 *       next: 200  // width or height of the next element
-		 *     }
-		 * @return {Boolean} false if unable to move
-		 */
-		moveTo: function( el, newOffset, cache ) {
-			cache = cache || this._makeCache(el);
-
-			var prevOffset = cache.offset,
-				delta = newOffset - prevOffset || 0,
-				prev = cache.prev,
-				next = cache.next,
-				prevD = cache.prevD,
-				nextD = cache.nextD,
-				prevMin = prev.data("split-min-" + this.dirs.dim),
-				nextMin = next.data("split-min-" + this.dirs.dim);
-
-			// we need to check the 'getting smaller' side
-			if ( delta > 0 && (nextD - delta < nextMin) ) {
-				return false;
-			} else if ( delta < 0 && (prevD + delta < prevMin) ) {
-				return false;
-			}
-
-			// make sure we can't go smaller than the right's min
-			if ( delta > 0 ) {
-				next[this.dirs.dim](nextD - delta);
-				prev[this.dirs.dim](prevD + delta);
-			} else {
-				prev[this.dirs.dim](prevD + delta);
-				next[this.dirs.dim](nextD - delta);
-			}
-
-			if ( this.usingAbsPos ) {
-				//- Sets the split bar element's offset relative to parents
-				var newOff = $(el).offset();
-				newOff[this.dirs.pos] = newOffset;
-				el.offset(newOff);
-				
-				//- Sets the next elements offset relative to parents
-				var off = next.offset();
-				off[this.dirs.pos] = newOffset + el[this.dirs.outer]();
-				next.offset(off);
-			}
-
-			// this can / should be throttled
-			clearTimeout(this._moveTimer);
-			this._moveTimer = setTimeout(function() {
-				prev.trigger("resize",[false]);
-				next.trigger("resize",[false]);
-			}, 1);
-		},
-
-		".splitter dragmove": function( el, ev, drag ) {
-			var moved = this.moveTo(el, drag.location[this.dirs.pos](), this.moveCache)
-
-			if ( moved === false ) {
-				ev.preventDefault();
-			}
-		},
-
-		".splitter dragend": function( el, ev, drag ) {
-			this.dragging = false;
-			el.removeClass(this.options.hover)
-			drag.selection();
-		},
-
-		/**
-		 * @hide
-		 * Resizes the panels.
-		 * @param {Object} el
-		 * @param {Object} ev
-		 * @param {Object} data
-		 */
-		resize: function( el, ev, data ) {
-			if(!this.element.is(":visible")){
-				return;
-			}
-			
-			var changed = this.refresh(),
-				refreshed = ( !! changed.inserted.length || changed.removed ),
-				keepEl = data && data.keep;
-			if ( ! keepEl && changed.inserted.length ){
-				// if no keep element was provided, and at least one element was inserted,
-				// keep the first inserted element's dimensions/position
-				keepEl = $(changed.inserted.get(0));
-			}
-			
-			// if not visible do nothing
-			if (!this.element.is(":visible") ) {
-				this.oldHeight = this.oldWidth = 0;
-				return;
-			}
-
-			if (!(data && data.force === true) && !this.forceNext && !refreshed) {
-				var h = this.element.height(),
-					w = this.element.width();
-				if ( this.oldHeight == h && this.oldWidth == w && !this.needsSize) {
-					ev.stopPropagation();
-					return;
-				}
-				this.oldHeight = h;
-				this.oldWidth = w;
-			}
-
-			this.forceNext = false;
-			this.size(null, null, keepEl, false);
-		},
-
-		/**
-		 * @hide
-		 * Refresh the state of the container by handling any panels that have been added or removed.
-		 */
-		refresh: function(){
-			var changed = {
-				inserted: this.insert(),
-				removed: this.remove()
-			};
-			this._cachedPanels = this.panels().get();
-			return changed;
-		},
-
-		/**
-		 * @hide
-		 * Handles the insertion of new panels into the container.
-		 * @param {jQuery} panel
-		 */
-		insert: function(){
-			var self = this,
-				//cached = this._cachedPanels,
-				panels = this.panels().get(),
-				inserted = [];
-			
-			$.each(panels, function(_, panel){
-				panel = $(panel);
-				
-				if( !panel.hasClass('split') ){
-					panel.before(self.splitterEl(panel.hasClass('collapsible') && 'right'))
-						.addClass('split')
-					
-					inserted.push(panel);
-					
-					if ( self.options.direction == 'vertical' ) {
-						var splitBar = panel.prev(),
-							pHeight = self.element.height();
-
-						splitBar.height(pHeight);
-						panel.height(pHeight);
-					}
-				}
-			});
-			
-			return $(inserted);
-		},
-		
-		/**
-		 * @hide
-		 * Handles the removal of a panel from the container.
-		 * @param {jQuery} panel
-		 */
-		remove: function(){
-			var self = this,
-				splitters = this.element.children('.splitter'),
-				removed = [];
-			
-			$.each(splitters, function(_, splitter){
-				splitter = $(splitter);
-				
-				var prev = $(splitter).prev(),
-					next = $(splitter).next();
-				
-				if( !prev.length || !next.length || next.hasClass('splitter') ){
-					removed.push( splitter[0] );
-				}
-			});
-			
-			if( removed.length ){
-				$(removed).remove();
-				return true;
-			}
-		},
-
-		".collapser click": function( el, event ) {
-			this.toggleCollapse(el.parent());
-		},
-
-		/**
-		 * @hide
-		 * Given a splitter bar element, collapses the appropriate panel.
-		 * @param {Object} el
-		 */
-		toggleCollapse: function( splitBar ) {
-			// check the next and prev element should be collapsed
-			var prevElm = splitBar.prev(),
-				nextElm = splitBar.next(),
-				elmToTakeActionOn = (prevElm.hasClass('collapsible') && prevElm) || (nextElm.hasClass('collapsible') && nextElm);
-				
-			if (!elmToTakeActionOn ) {
-				return;
-			}
-
-			if (!elmToTakeActionOn.is(':visible') ) {
-				this.showPanel(elmToTakeActionOn);
-				splitBar.find('a').attr('title', this.options.locale.collaspe);
-			} else {
-				this.hidePanel(elmToTakeActionOn, true);
-				splitBar.find('a').attr('title', this.options.locale.expand);
-			}
-			
-			splitBar.children().toggleClass('left-collapse').toggleClass('right-collapse');
-		},
-
-		/**
-		 * Shows a panel that is currently hidden.
-		 * 
-		 * Given some `container`, cause its last panel to be shown:
-		 * 
-		 *     split.showPanel(container.find('.panel:last'));
-		 *
-		 * @param {Object} panel
-		 * @param {Object} width
-		 */
-		showPanel: function( panel, width ) {
-			if (!panel.is(':visible') ) {
-
-				if ( width ) {
-					panel.width(width);
-				}
-
-				panel.show();
-				panel.removeClass('collapsed');
-				panel.trigger('toggle', true)
-
-				var prevElm = panel.prev();
-				if ( prevElm.hasClass('splitter') ) {
-					prevElm.show();
-				} else {
-					//- if it was hidden by start, it didn't get a 
-					//- splitter added so we need to add one here
-					panel.before(this.splitterEl(
-					prevElm.hasClass('collapsible') ? "left" : (
-					panel.hasClass('collapsible') ? "right" : undefined)));
-				}
-
-				this.size(null, false, panel);
-			}
-		},
-
-		/**
-		 * Hides a panel that is currently visible.
-		 * 
-		 * Given some `container`, cause its last panel to be hidden:
-		 * 
-		 *     split.hidePanel(container.find('.panel:last'));
-		 *
-		 * @param {Object} panel
-		 * @param {Object} keepSplitter
-		 */
-		hidePanel: function( panel, keepSplitter ) {
-			if ( panel.is(':visible') || panel.hasClass('collapsed') ) {
-				panel.hide();
-				panel.addClass('collapsed');
-				panel.trigger('toggle', false)
-
-				if (!keepSplitter ) {
-					panel.prev().hide();
-				}
-
-				this.size();
-			}
-		},
-
-		/**
-		 * @hide
-		 * Takes elements and animates them to the right size.
-		 * @param {jQuery} [els] child elements
-		 * @param {Boolean} [animate] animate the change
-		 * @param {jQuery} [keep] keep this element's width / height the same
-		 * @param {Boolean} [resizePanels] resize the panels or not.
-		 */
-		size: function( els, animate, keep, resizePanels ) {
-			els = els || this.panels();
-			resizePanels = resizePanels == undefined ? true : false;
-
-			var space = this.element[this.dirs.dim](),
-				splitters = this.element.children(".splitter:visible"),
-				splitterDim = splitters[this.dirs.outer](),
-				total = space - (splitterDim * splitters.length),
-				// rounding remainder
-				remainder = 0,
-				dims = [],
-				newDims = [],
-				sum = 0,
-				i, $c, dim, increase, keepSized = false,
-				curLeft = 0,
-				index, rawDim, newDim, pHeight = this.element.height(),
-				pWidth = this.element.width(),
-				length, 
-				start,
-				keepIndex = keep ? els.index(keep[0]) : -1;
-
-			// if splitters are filling the entire width, it probably means the 
-			// style has not loaded
-			// this should be fixed by steal, but IE sucks
-			if(splitterDim === space){
-				this.needsSize = true;
-				return;
-			} else {
-				this.needsSize = false;
-			}
-
-			// adjust total by the dimensions of the element whose size we want to keep
-			if ( keep ) {
-				total = total - $(keep)[this.dirs.outer]();
-			}
-
-			length = els.length;
-			start = Math.floor(Math.random() * length);
-
-			// round down b/c some browsers don't like fractional dimensions
-			total = Math.floor(total);
-
-			//calculate current percentage of height
-			for ( i = 0; i < length; i++ ) {
-				$c = $(els[i]);
-				dim = $c.hasClass('collapsed') ? 0 : $c[this.dirs.outer](true);
-				dims.push(dim);
-				if( keepIndex !== i ) {
-					sum += dim;
-				}
-			}
-
-			increase = total / sum;
-
-			// this randomly adjusts sizes so scaling is approximately equal
-			for ( i = start; i < length + start; i++ ) {
-				index = i >= length ? i - length : i;
-				dim = dims[index];
-				rawDim = (dim * increase) + remainder;
-				newDim = (i == length + start - 1 ? total : Math.round(rawDim));
-				
-				if (keepIndex == i) {
-					// if we're keeping this element's size, use the original dimensions
-					newDims[index] = dim;
-				} else {
-					// use the adjusted dimensions
-					newDims[index] = newDim;
-					total = total - newDim;
-				}
-			}
-
-			//resize splitters to new height if vertical (horizontal will automatically be the right width)
-			if ( this.options.direction == "vertical" ) {
-				splitters.height(pHeight);
-			}
-
-			// Adjust widths for each pane and account for rounding
-			for ( i = 0; i < length; i++ ) {
-				$c = $(els[i]);
-
-				var minWidth = $c.data("split-min-width") || 0,
-					minHeight = $c.data("split-min-height") || 0,
-					dim = this.options.direction == "horizontal" ? {
-						outerHeight: Math.max( newDims[i], minHeight ),
-						outerWidth: Math.max( pWidth, minWidth )
-					} : {
-						outerWidth: Math.max( newDims[i], minWidth ),
-						outerHeight: Math.max( pHeight, minHeight )
-					};
-					
-				if($c.hasClass('collapsed')){
-					if(this.options.direction == "horizontal"){
-						dim.outerHeight = 0;
-					} else {
-						dim.outerWidth = 0;
-					}
-				}
-				
-				// Only resize panels that are actually visible, otherwise leave the dimensions of the panel alone 
-				if ($c.is(':visible')) {
-					if ( animate && !this.usingAbsPos ) {
-						$c.animate(dim, "fast", function() {
-							if ( resizePanels ) {
-								$(this).trigger('resize', [false]);
-							}
-
-							if ( keep && !keepSized ) {
-								keep.trigger('resize', [false])
-								keepSized = true;
-							}
-						});
-					}
-					else {
-						$c.outerHeight(dim.outerHeight).outerWidth(dim.outerWidth);
-
-						if ( resizePanels ) {
-							$c.trigger('resize', [false]);
-						}
-					}
-				}
-
-				// adjust positions if absolutely positioned
-				if ( this.usingAbsPos ) {
-					//set splitter in the right spot
-					$c.css(this.dirs.pos, curLeft)
-					splitters.eq(i).css(this.dirs.pos, curLeft + newDims[i])
-				}
-				// move the next location
-				curLeft = curLeft + newDims[i] + splitterDim;
-			}
-		}
-	})
-})(jQuery);
-(function() {
-
-	/**
-	 * @class can.ui.Slider
-	 * @test canui/slider/slider_test.js
-	 * @parent canui
-	 *
-	 * @description Creates a slider with `min`, `max` and `interval` options.
-	 * Creates a slider with `min`, `max` and `interval` options.
-	 *
-	 * Given the following markup:
-	 *
-	 *		<div class="container">
-	 *			<div id="slider"></div>
-	 *		</div>
-	 *
-	 * You can create a slider with the following code:
-	 *
-	 *      var slider = new can.ui.Slider($('#slider'), {
-	 *			interval: 1, 
-	 *			min: 1, 
-	 *			max: 10, 
-	 *			val: 4
-	 *		});
-	 *
-	 *	The targeted element then becomes a draggable box within the bounding
-	 *	box of it's parent element. You can then call the val method to
-	 *	retrieve it's current value:
-	 *
-	 *	    slider.val() // 4
-	 *
-	 *	You can also use the `val` method as a setter:
-	 *
-	 *		slider.val(6)
-	 *
-	 *	Alternatively, you can subscribe to the `change` event on the slider,
-	 *	which will pass the value as the second argument to the event handler.
-	 *
-	 *		$("#slider").change(function( e, value ) {
-	 *			value; // 6
-	 *		});
-	 *
-	 * ## Demo
-	 * @demo canui/nav/slider/slider.html
-	 *
-	 * @param {Object} options - An object literal describing the range,
-	 * interval and starting value of the slider
-	 *
-	 *	- `min` {Number} - The minimum value the slider can go down to.
-	 *	- `max` {Number} - The maximum value the slider can go up to.
-	 *	- `interval` {Number} - The step size that the slider should increment
-	 *	by when being moved.	
-	 *	- `val` {Number} - The initial starting value of the slider.
-	 */
-	can.Control("can.ui.Slider",
-		/**
-		 * @hide
-		 * @static
-		 */
-	{
-		defaults: {
-			min: 0,
-			max: 10,
-			step : 1,
-			// if the slider is contained in the parent
-			contained : true,
-			val : undefined
-		}
-	}, 
-	/**
-	 * @prototype
-	 */
-	{		
-		init: function() {
-			this.element.css("position", 'relative');
-			// convert options to computed
-			for(var optionName in this.options){
-				this.options[optionName] = can.compute(this.options[optionName])
-			}
-			// rebind
-			this.on();
-			if ( this.options.val() ) {
-				this.updatePosition()
-			}
-		},
-		resize: function() {
-			this.updatePosition();
-		},
-		getDimensions: function() {
-			var spots = this.options.max() - this.options.min() + 1,
-				parent = this.element.parent(),
-				outerWidth = this.element.outerWidth(),
-				styles, leftSpace;
-
-			this.widthToMove = parent.width() - outerWidth;
-			this.widthOfSpot = this.widthToMove / (spots - 1);
-
-			styles = parent.styles("borderLeftWidth", "paddingLeft");
-			leftSpace = parseInt(styles.borderLeftWidth) + parseInt(styles.paddingLeft) || 0;
-			this.leftStart = parent.offset().left + leftSpace - (this.options.contained() ? 0 : Math.round(outerWidth / 2));
-		},
-		"draginit": function( el, ev, drag ) {
-			this.getDimensions();
-			drag.limit(this.element.parent(), this.options.contained ? undefined : "width")
-				.step(this.widthOfSpot, this.element.parent());
-		},
-		"dragmove": function( el, ev, drag ) {
-			var current = this.determineValue();
-			if(this.lastMove !== current){
-				
-				this.element.trigger( "changing", current );
-				this.lastMove = current;
-			} 
-		},
-		"dragend": function( el, ev, drag ) {
-			this.options.val( this.determineValue() )
-		},
-		determineValue : function() {
-			var left = this.element.offset().left - this.leftStart,
-				spot = Math.round(left / this.widthOfSpot);
-			return spot + this.options.min();
-		},
-		updatePosition: function() {
-			this.getDimensions();
-			this.element.offset({
-				left: this.leftStart + Math.round((this.options.val() - this.options.min()) * this.widthOfSpot)
-			})
-		},
-		/**
-		 * @param {Number} value - Optional. The new value for the slider. If
-		 * omitted, the current value is returned.
-		 * @return {Number}
-		 */
-		val: function( value ) {
-			return this.options.val(value)
-		},
-
-		"{val} change" : function(){
-			// change the position ... 
-			this.lastMove = this.options.val();
-			console.log("changed to ", this.lastMove)
-			this.updatePosition();
-			this.element.trigger( "change", this.lastMove )
-		}
-	})
-
-})(jQuery);
-(function($){
-	/**
-	 * @class can.ui.Modal
-	 * @parent canui
-	 * @test canui/layout/modal/funcunit.html
-	 * 
-	 * @description A basic modal implementation. 
-	 * A basic modal implementation. 
-	 * 
-	 * ## Use
-	 *
-	 * Create a new Modal control instance:
-	 *
-	 *		new can.ui.Modal($('#modal'));
-	 *
-	 * This will take the jQuery object and place it centered
-	 * on the window. If you want an overlay over the page behind the modal, use
-	 * the overlay option:
-	 *
-	 *		new can.ui.Modal($('modal'), {
-	 *			overlay: true
-	 *		});
-	 *
-	 * This will create <div class="can_ui_layout_modal-overlay"></div> element
-	 * and display it over the page. Default CSS applied to the overlay is:
-	 * 
-	 *		.can_ui_layout_modal-overlay {
-	 *			background: rgba(0,0,0,0.5);
-	 *			position: fixed;
-	 *			top: 0;
-	 *			bottom: 0;
-	 *			right: 0;
-	 *			left: 0;
-	 *		}
-	 *
-	 * You can either overwrite that CSS in your stylesheet, or you
-	 * can use pass the overlay class as an option to the can_ui_layout_modal:
-	 *
-	 *		new can.ui.Modal($('modal'), {
-	 *			overlay: true, 
-	 *			overlayClass: 'my-overlay-class'
-	 *		});
-	 *
-	 * Alternatively, if you'd like to use a custom element as your overlay,
-	 * simply pass it in the overlay option:
-	 *
-	 *		new can.ui.Modal($('modal', {
-	 *			overlay: $(".custom_overlay")
-	 *		});
-	 *
-	 * By default modals will be hidden and left in the DOM after you trigger "hide"
-	 * on the modal element. If you want to destroy the modal (and overlay) you can pass
-	 * true to the destroyOnHide option:
-	 *
-	 *		new can.ui.Modal($('modal'), {
-	 *			destroyOnHide: true
-	 *		});
-	 *
-	 * You can hide or destroy the modal by pressing the "Escape" key or by clicking on
-	 * the overlay element (if overlay exists).
-	 *
-	 * Modals can also be attached to an element rather than the window using
-	 * the `of` option.
-	 *
-	 *		new can.ui.Modal($('modal'), {
-	 *			of : $("#box"),
-	 *			overlay: true
-	 *		});
-	 *
-	 * Modal windows can be stacked one on top of another. If modal has overlay, it will
-	 * cover the existing modal windows. If you use the "Escape" key to hide the modals
-	 * they will be hidden one by one in the reverse order they were created.
-	 *
-	 * ## Demo
-	 * @demo canui/layout/modal/modal.html
-	 * @constructor
-	 * 
-	 * @param {Object} [options] Values to configure the behavior of modal:
-	 * 
-	 *	- `overlay` - An element to block the screen behind the modal. When
-	 *	clicked, the modal closes.
-	 *		- `{Boolean}` - If true an overlay will be created and used.
-	 *		- `{HTMLElement}` - If an element is passed, that element will be
-	 *		used as the overlay. This is useful for implementing custom
-	 *		overlays.
-	 *	- `overlayClass` - `{String}` - A class name to be added to the overlay element.
-	 *	- `of` - `{HTMLElement}` - The element you would like the modal to be applied to. The
-	 *	default is the `window`.
-	 *	- `destroyOnHide` - `{Boolean}` - If `true`, the modal will be
-	 *	destroyed when it's `hide` method is called.
-	 *	- `overlayClick`- `{Boolean}` - If `true`, when user clicks on the overlay
-	 *	modal's `hide` method will be called.
-	 *	- `autoShow`- `{Boolean}` - If `true`, modal will be shown immediately, otherwise it
-	 * will be hidden.
-	 *
-	 * @return {can.ui.Modal}
-	 */
-	
-	/* Starting z-index for modals. We use stack variable to keep open models in order */
-	
-	var zIndex = 9999, stack = [];
-	
-	can.ui.Positionable("can.ui.Modal", {
-		defaults: {
-			my: 'center center',
-			at: 'center center',
-			of: window,
-			collision: 'fit fit',
-			// destroy modal when hide is triggered
-			destroyOnHide : false,
-			// show overlay if true
-			overlay: false,
-			// class that will be applied to the overlay element
-			overlayClass : "modal-overlay",
-			// close modal if overlay is clicked
-			overlayClick: true,
-			autoShow : true,
-			hideOnEsc : true,
-			hide : function(el, overlay, cb){
-				el.hide();
-				overlay.hide();
-				cb();
-			},
-			show : function(el, position, overlay, cb){
-				overlay.show();
-				el.show().css(position);
-				cb();
-			}
-		}
-	},
-	/*
-	 * @prototype
-	 */
-	{
-		setup: function(el, options) {
-			var opts = $.extend({}, this.constructor.defaults, options)
-			if ( opts.overlay ) {
-				if ( opts.overlay === true ) {
-					options.overlayElement = $('<div />', {
-						"class" : opts.overlayClass
-					});
-				} else if ( opts.overlay.jquery ) {
-					options.overlayElement = opts.overlay;
-					options.overlayElement.addClass( opts.overlayClass );
-				}
-
-				if ( $.isWindow( opts.of ) ) {
-					$(document.body).append( options.overlayElement.detach() )
-					options.overlayPosition = "fixed";
-					//console.log( 'here', options );
-				} else {
-					opts.of.css("position", "relative").append( options.overlayElement.detach() )
-					options.overlayPosition = "absolute";
-					//console.log( 'there', options );
-				}
-				//console.log( options.overlayElement, options.overlayElement.parent() );
-				options.overlayElement.hide()
-
-			}
-			this._super.apply(this, [el, options])
-		},
-		init : function(){
-			this._super.apply(this, arguments);
-			this.stackId = "modal-" + (new Date()).getTime();
-			this.options.autoShow ? this.show() : this.hide();
-		},
-		update : function(options){
-			if(options && options.overlay === true && typeof this.options.overlayElement == 'undefined'){
-				var klass = options.overlayClass || this.options.overlayClass;
-				options.overlayElement = $('<div class="'+klass+'"></div>');
-				$('body').append(options.overlayElement.hide())
-			} else if(options && options.overlay === false && typeof this.options.overlayElement != 'undefined'){
-				this.options.overlayElement.remove();
-				delete this.options.overlayElement;
-			}
-			this._super(options);
-			this.show();
-		},
-		destroy : function(){
-			if(typeof this.options.overlayElement != "undefined"){
-				this.options.overlayElement.remove();
-			}
-			this._super.apply(this, arguments)
-		},
-		/**
-		 * Hide modal element and overlay if overlay exists
-		 */
-		hide : function(){
-			this.options.hide(this.element, this.overlay(), this.proxy('hideCb'))
-		},
-		hideCb : function(){
-			var stackIndex;
-			if((stackIndex = stack.indexOf(this.stackId)) > -1){
-				stack.splice(stackIndex, 1);
-			}
-			if(this.options.destroyOnHide){
-				this.element.trigger('hidden');
-				this.element.remove();
-				this.overlay().remove();
-			} else {
-				this.element.hide();
-				this.overlay().hide();
-				this.element.trigger('hidden');
-			}
-		},
-		' hide' : function() {
-			this.hide();
-		},
-		/**
-		 * Show modal element and overlay if overlay exists
-		 */
-		show : function(){
-			this.moveToTop();
-			this.options.show(this.element, this.position(), this.overlay(), this.proxy('showCb'))
-		},
-		showCb : function(){
-			this.element.trigger('shown')
-		},
-		' show' : function() {
-			this.show();
-		},
-		/**
-		 * Move modal to the top of the stack.
-		 */
-		moveToTop : function(){
-			if($.inArray(this.stackId, stack) == -1){
-				stack.unshift(this.stackId);
-			} else {
-				stack.splice(stack.indexOf(this.stackId), 1);
-				stack.unshift(this.stackId);
-			}
-			if ( this.options.overlayElement ){
-				this.options.overlayElement.css({
-					'z-index': ++zIndex, 
-					position: this.options.overlayPosition
-				})
-			}
-			this.element.css({'z-index': ++zIndex});
-			this.element.css('position', this.options.overlayPosition );
-		},
-		overlay : function(){
-			return this.options.overlayElement ? this.options.overlayElement : $([]);
-		},
-		"{document} keyup" : function(el, ev){
-			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId){
-				this.element.trigger('hide');
-				ev.stopImmediatePropagation();
-			}
-		},
-		"{overlayElement} click" : function(el, ev){
-			if(this.options.overlayClick) { this.hide(); }
-		},
-		// Reposition the modal on window resize
-		"{window} resize" : function(el, ev){
-			this.move();
-		}
-	})
 })(jQuery);
 (function($){
 	/**
