@@ -1,7 +1,7 @@
 steal('funcunit')
 .then(
-	'./accordion/accordion_test.js',
-	'./block/block_test.js'
+	'./accordion/accordion_test.js'
+	// './block/block_test.js'
 	// './fills/fills_test.js',
 	// './grid/grid_test.js',
 	// './modal/modal_test.js',

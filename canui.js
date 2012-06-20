@@ -1,6 +1,6 @@
 steal(
-	'canui/accordion',
-	'canui/block'
+	'canui/accordion'
+//	'canui/block',
 //	'canui/fills',
 //	'canui/grid',
 //	'canui/modal',
