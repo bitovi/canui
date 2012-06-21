@@ -3,7 +3,7 @@ var path = require("path"),
 	rootPath = path.join(__dirname, "../../"),
 	exec = function (cmd, args, callback, options) {
 		console.log(cmd + ' ' + args.join(' '));
-		var spawned = spawn(cmd, args, options);
+		var spawned = spawn(cmd, args, options || {});
 
 		spawned.stdout.pipe(process.stdout, { end : false });
 		spawned.stderr.pipe(process.stderr, { end : false });
@@ -15,9 +15,9 @@ var path = require("path"),
 
 desc('Runs make.js to build the application');
 task('build', function (params) {
-	var hippo = process.platform == 'win32' ? 'js.bat' : './js';
+	var executable = process.platform == 'win32' ? 'js.bat' : './js';
 	console.log('Building...');
-	exec(hippo, ['canui/build/make.js'], function () {
+	exec(executable, ['canui/build/make.js'], function () {
 		complete();
 	}, { cwd : rootPath });
 }, { async : true });
@@ -31,7 +31,7 @@ namespace('deploy', function () {
 				jake.cpR(path.join(rootPath + 'canui/dist/canui.js'), './canui/release/latest/canui.js');
 				exec('git', ['commit', '-a', '-m', '"Updating release"'], function() {
 					exec('git', ['push', 'origin', 'gh-pages'], function () {
-						jake.rmRf('./canui')
+						exec('rm', [ '-rf', './canui' ], function() {});
 					}, { cwd : './canui' });
 				}, { cwd : './canui' });
 				complete();

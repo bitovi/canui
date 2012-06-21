@@ -1,6 +1,7 @@
 steal('funcunit')
 .then(
-	'./accordion/accordion_test.js'
+	'./accordion/accordion_test.js',
+	'./table_scroll/table_scroll_test.js'
 	// './block/block_test.js'
 	// './fills/fills_test.js',
 	// './grid/grid_test.js',
@@ -10,5 +11,4 @@ steal('funcunit')
 	// './selectable/selectable_test.js',
 	// './slider/slider_test.js'
 	// './tooltip/tooltip_test.js',
-	// './table_scroll/table_scroll_test.js'
 );
