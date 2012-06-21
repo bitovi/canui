@@ -1,4 +1,4 @@
-(function( $ ) {
+;(function( $ ) {
 	//evil things we should ignore
 	var matches = /script|td/,
 
@@ -238,8 +238,8 @@
 			}
 		}
 	});
-})(jQuery);
-(function(){
+})(jQuery);;
+;(function(){
 
 //we have to clear out activate
 $.event.special.activate = {
@@ -704,8 +704,8 @@ can.Control('can.ui.Selectable',{
 	}
 });
 
-})(jQuery);
-(function(){
+})(jQuery);;
+;(function(){
 		
 /**
  * @class can.ui.nav.Accordion
@@ -909,4 +909,4 @@ can.Control("can.ui.Accordion",{
 	
 });
 
-})(jQuery)
+})(jQuery);
