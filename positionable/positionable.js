@@ -120,12 +120,11 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 */
 	can.Control("can.ui.Positionable",
 	 {
+	 	rhorizontal : /left|center|right/,
+		rvertical : /top|center|bottom/,
+		hdefault : "center",
+		vdefault : "center",
 	 	defaults : {
-	 		rhorizontal : /left|center|right/,
-			rvertical : /top|center|bottom/,
-			hdefault : "center",
-			vdefault : "center",
-			listensTo : ["show",'move'],
 			iframe: false,
 			of: window,
 			keep : false, //keeps it where it belongs,
@@ -271,14 +270,14 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			$.each( [ "my", "at" ], this.proxy( function( i, val ) {
 				var pos = ( options[val] || "" ).split( " " );
 				if ( pos.length === 1) {
-					pos = this.options.rhorizontal.test( pos[0] ) ?
-						pos.concat( [this.options.vdefault] ) :
-						this.options.rvertical.test( pos[0] ) ?
-							[ this.options.hdefault ].concat( pos ) :
-							[ this.options.hdefault, this.options.vdefault ];
+					pos = this.constructor.rhorizontal.test( pos[0] ) ?
+						pos.concat( [this.constructor.vdefault] ) :
+						this.constructor.rvertical.test( pos[0] ) ?
+							[ this.constructor.hdefault ].concat( pos ) :
+							[ this.constructor.hdefault, this.constructor.vdefault ];
 				}
-				pos[ 0 ] = this.options.rhorizontal.test( pos[0] ) ? pos[ 0 ] : this.options.hdefault;
-				pos[ 1 ] = this.options.rvertical.test( pos[1] ) ? pos[ 1 ] : this.options.vdefault;
+				pos[ 0 ] = this.constructor.rhorizontal.test( pos[0] ) ? pos[ 0 ] : this.constructor.hdefault;
+				pos[ 1 ] = this.constructor.rvertical.test( pos[1] ) ? pos[ 1 ] : this.constructor.vdefault;
 				options[ val ] = pos;
 			}));
 		
@@ -296,13 +295,13 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 		
 			if ( options.at[0] === "right" ) {
 				basePosition.left += targetWidth;
-			} else if (options.at[0] === this.options.hdefault ) {
+			} else if (options.at[0] === this.constructor.hdefault ) {
 				basePosition.left += targetWidth / 2;
 			}
 		
 			if ( options.at[1] === "bottom" ) {
 				basePosition.top += targetHeight;
-			} else if ( options.at[1] === this.options.vdefault ) {
+			} else if ( options.at[1] === this.constructor.vdefault ) {
 				basePosition.top += targetHeight / 2;
 			}
 		
@@ -321,13 +320,13 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 
 			if ( options.my[0] === "right" ) {
 				position.left -= elemWidth;
-			} else if ( options.my[0] === this.options.hdefault ) {
+			} else if ( options.my[0] === this.constructor.hdefault ) {
 				position.left -= elemWidth / 2;
 			}
 	
 			if ( options.my[1] === "bottom" ) {
 				position.top -= elemHeight;
-			} else if ( options.my[1] === this.options.vdefault ) {
+			} else if ( options.my[1] === this.constructor.vdefault ) {
 				position.top -= elemHeight / 2;
 			}
 
