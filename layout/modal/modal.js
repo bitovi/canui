@@ -251,8 +251,14 @@ steal('can/construct/super',
 			return this.options.overlayElement ? this.options.overlayElement : $([]);
 		},
 		position : function(el, ev, positionFrom){
-			this._pos = this._super.apply(this, arguments);
-			return this._pos;
+			var pos = this._super.apply(this, arguments);
+			this._pos = {
+				left: pos.left,
+				top: pos.top
+			}
+			this._pos.top = this._pos.top - $(this.options.of).scrollTop();
+			this._pos.left = this._pos.left - $(this.options.of).scrollLeft();
+			return pos;
 		},
 		"{document} keyup" : function(el, ev){
 			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId){
@@ -269,7 +275,6 @@ steal('can/construct/super',
 			} else {
 				this.overlay().hide();
 			}
-			
 			this._super.apply(this, arguments)
 		},
 		// Reposition the modal on window resize

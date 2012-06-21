@@ -75,8 +75,8 @@ steal('can/control',
 
 			this.element
 				.css({
-					top: "0px", 
-					left: "0px" , 
+					top: $(this.options.parent).scrollTop() + "px", 
+					left: $(this.options.parent).scrollLeft() + "px" , 
 					zIndex: this.options.zIndex
 				})
 				.can_ui_layout_fill({
@@ -85,7 +85,6 @@ steal('can/control',
 				});
 			
 		},
-		" show" : 'show',
 		show : function(){
 			this.element.css('top', $(this.options.parent).scrollTop() + "px").show();
 		},
