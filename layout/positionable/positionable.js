@@ -120,13 +120,17 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 */
 	can.Control("can.ui.layout.Positionable",
 	 {
-		rhorizontal : /left|center|right/,
-		rvertical : /top|center|bottom/,
-		hdefault : "center",
-		vdefault : "center",
-		listensTo : ["show",'move'],
-		iframe: false,
-		keep : false, //keeps it where it belongs,
+	 	defaults : {
+	 		rhorizontal : /left|center|right/,
+			rvertical : /top|center|bottom/,
+			hdefault : "center",
+			vdefault : "center",
+			listensTo : ["show",'move'],
+			iframe: false,
+			of: window,
+			keep : false, //keeps it where it belongs,
+	 	},
+		
 		scrollbarWidth: function() {
 			var w1, w2,
 				div = $( "<div style='display:block;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>" ),
@@ -163,11 +167,30 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 * @prototype
 	 */
 	 {
+	 	setup : function(element, options){
+	 		var controls, pluginName = this.constructor._shortName;
+	 		if(controls = $(element).data('controls')){
+	 			for(var i = 0; i < controls.length; i++){
+	 				if(controls[i].constructor._shortName === pluginName){
+	 					controls[i].destroy();
+	 				}
+	 			}
+	 		}
+	 		this._super(element, options);
+	 	},
 		init : function(element, options) {
+			//if(this.element.length === 0) return;
 			this.element.css("position","absolute");
 			if(!this.options.keep){
-				this.element[0].parentNode.removeChild(this.element[0])
+				/*
+				 * Remove element from it's parent only if this element _has_ parent.
+				 * This allows us to call positionable like `new can.ui.layout.Positionable($('<div/>'))
+				 */
+				if(this.element[0].parentNode){
+					this.element[0].parentNode.removeChild(this.element[0])
+				}
 				document.body.appendChild(this.element[0]);
+				
 			}
 		},
 		show : function(el, ev, position){
@@ -248,14 +271,14 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			$.each( [ "my", "at" ], this.proxy( function( i, val ) {
 				var pos = ( options[val] || "" ).split( " " );
 				if ( pos.length === 1) {
-					pos = this.constructor.rhorizontal.test( pos[0] ) ?
-						pos.concat( [this.constructor.vdefault] ) :
-						this.constructor.rvertical.test( pos[0] ) ?
-							[ this.constructor.hdefault ].concat( pos ) :
-							[ this.constructor.hdefault, this.constructor.vdefault ];
+					pos = this.options.rhorizontal.test( pos[0] ) ?
+						pos.concat( [this.options.vdefault] ) :
+						this.options.rvertical.test( pos[0] ) ?
+							[ this.options.hdefault ].concat( pos ) :
+							[ this.options.hdefault, this.options.vdefault ];
 				}
-				pos[ 0 ] = this.constructor.rhorizontal.test( pos[0] ) ? pos[ 0 ] : this.constructor.hdefault;
-				pos[ 1 ] = this.constructor.rvertical.test( pos[1] ) ? pos[ 1 ] : this.constructor.vdefault;
+				pos[ 0 ] = this.options.rhorizontal.test( pos[0] ) ? pos[ 0 ] : this.options.hdefault;
+				pos[ 1 ] = this.options.rvertical.test( pos[1] ) ? pos[ 1 ] : this.options.vdefault;
 				options[ val ] = pos;
 			}));
 		
@@ -273,13 +296,13 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 		
 			if ( options.at[0] === "right" ) {
 				basePosition.left += targetWidth;
-			} else if (options.at[0] === this.constructor.hdefault ) {
+			} else if (options.at[0] === this.options.hdefault ) {
 				basePosition.left += targetWidth / 2;
 			}
 		
 			if ( options.at[1] === "bottom" ) {
 				basePosition.top += targetHeight;
-			} else if ( options.at[1] === this.constructor.vdefault ) {
+			} else if ( options.at[1] === this.options.vdefault ) {
 				basePosition.top += targetHeight / 2;
 			}
 		
@@ -298,13 +321,13 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 
 			if ( options.my[0] === "right" ) {
 				position.left -= elemWidth;
-			} else if ( options.my[0] === this.constructor.hdefault ) {
+			} else if ( options.my[0] === this.options.hdefault ) {
 				position.left -= elemWidth / 2;
 			}
 	
 			if ( options.my[1] === "bottom" ) {
 				position.top -= elemHeight;
-			} else if ( options.my[1] === this.constructor.vdefault ) {
+			} else if ( options.my[1] === this.options.vdefault ) {
 				position.top -= elemHeight / 2;
 			}
 

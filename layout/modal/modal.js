@@ -3,6 +3,7 @@ steal('can/construct/super',
 	'can/control',
 	'jquery/event/resize',
 	'canui/layout/positionable',
+	'canui/layout/block',
 	'./modal.css').then(function($){
 	/**
 	 * @class can.ui.layout.Modal
@@ -144,6 +145,7 @@ steal('can/construct/super',
 					options.overlayElement = $('<div />', {
 						"class" : opts.overlayClass
 					});
+					this._removeOverlayOnDestroy = true;
 				} else if ( opts.overlay.jquery ) {
 					options.overlayElement = opts.overlay;
 					options.overlayElement.addClass( opts.overlayClass );
@@ -151,15 +153,17 @@ steal('can/construct/super',
 
 				if ( $.isWindow( opts.of ) ) {
 					$(document.body).append( options.overlayElement.detach() )
-					options.overlayPosition = "fixed";
+					//options.overlayPosition = "fixed";
 					//console.log( 'here', options );
 				} else {
 					opts.of.css("position", "relative").append( options.overlayElement.detach() )
-					options.overlayPosition = "absolute";
+					
 					//console.log( 'there', options );
 				}
+				options.overlayPosition = "absolute";
 				//console.log( options.overlayElement, options.overlayElement.parent() );
-				options.overlayElement.hide()
+				new can.ui.layout.Block($(options.overlayElement), options.of || $(window))
+				options.overlayElement.trigger('hide')
 
 			}
 			this._super.apply(this, [el, options])
@@ -168,6 +172,12 @@ steal('can/construct/super',
 			this._super.apply(this, arguments);
 			this.stackId = "modal-" + (new Date()).getTime();
 			this.options.autoShow ? this.show() : this.hide();
+			/*if(!$.isWindow(this.options.of)){
+				var ofPosition = this.options.of.css('position');
+				if(["absolute", "relative", "fixed"].indexOf(ofPosition) < 0){
+					this.options.of.css('position', 'relative')
+				}
+			}*/
 		},
 		update : function(options){
 			if(options && options.overlay === true && typeof this.options.overlayElement == 'undefined'){
@@ -180,12 +190,6 @@ steal('can/construct/super',
 			}
 			this._super(options);
 			this.show();
-		},
-		destroy : function(){
-			if(typeof this.options.overlayElement != "undefined"){
-				this.options.overlayElement.remove();
-			}
-			this._super.apply(this, arguments)
 		},
 		/**
 		 * Hide modal element and overlay if overlay exists
@@ -201,7 +205,7 @@ steal('can/construct/super',
 			if(this.options.destroyOnHide){
 				this.element.trigger('hidden');
 				this.element.remove();
-				this.overlay().remove();
+				this.overlay().hide();
 			} else {
 				this.element.hide();
 				this.overlay().hide();
@@ -246,6 +250,10 @@ steal('can/construct/super',
 		overlay : function(){
 			return this.options.overlayElement ? this.options.overlayElement : $([]);
 		},
+		position : function(el, ev, positionFrom){
+			this._pos = this._super.apply(this, arguments);
+			return this._pos;
+		},
 		"{document} keyup" : function(el, ev){
 			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId){
 				this.element.trigger('hide');
@@ -255,9 +263,25 @@ steal('can/construct/super',
 		"{overlayElement} click" : function(el, ev){
 			if(this.options.overlayClick) { this.hide(); }
 		},
+		destroy : function(){
+			if(this._removeOverlayOnDestroy === true){
+				this.overlay().remove();
+			} else {
+				this.overlay().hide();
+			}
+			
+			this._super.apply(this, arguments)
+		},
 		// Reposition the modal on window resize
-		"{window} resize" : function(el, ev){
+		"{of} resize" : function(el, ev){
 			this.move();
+		},
+		"{of} scroll" : function(el, ev){
+			if($.isWindow(el)){
+				this.element.css('top', (this._pos.top + $(el).scrollTop()) + "px")
+				this.element.css('left', (this._pos.left + $(el).scrollLeft()) + "px")
+			}
+			
 		}
 	})
 })

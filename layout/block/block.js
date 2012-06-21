@@ -20,7 +20,7 @@ steal('can/control',
 	 * 
 	 *		new can.ui.layout.Block($("#blocker"));
 	 *
-	 * If you'd like to block a specifc element, simply pass it as the argument
+	 * If you'd like to block a specific element, simply pass it as the argument
 	 * to the can.ui.layout.Block call:
 	 *
 	 *		new can.ui.layout.Block($("#blocker"), $("#parent"));
@@ -36,7 +36,6 @@ steal('can/control',
 		defaults : {
 			zIndex: 9999
 		},
-		listensTo: ['show','hide']
 	}, {
 		setup: function( el, option ) {
 			var parent;
@@ -86,9 +85,17 @@ steal('can/control',
 				});
 			
 		},
+		" show" : 'show',
+		show : function(){
+			this.element.css('top', $(this.options.parent).scrollTop() + "px").show();
+		},
 		update : function(options){
 			this._super(options);
 			this.element.show().resize()
+		},
+		"{parent} scroll" : function(el, ev){
+			this.element.css('top', $(el).scrollTop() + "px");
+			this.element.css('left', $(el).scrollLeft() + "px")
 		}
 	})
 })
