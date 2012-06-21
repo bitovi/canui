@@ -155,7 +155,7 @@
 			}
 		})
 		$('#move-to-top').click(function(){
-			var modal =$('.can_ui_layout_modal:first')
+			var modal =$('.can_ui_modal:first')
 			if(modal.length > 0){
 				modal.data().controls[0].moveToTop();
 			}
@@ -174,20 +174,20 @@
 			});
 		})
 		$("#show-in-scrollable").click(function () {
-			new can.ui.layout.Modal($("#modal2"), {
+			new can.ui.Modal($("#modal2"), {
 				overlayClass : 'custom-overlay-2',
 				overlay : $("#customOverlayElement"),
 				of : $(".scrollable")
 			});
 		})
 		$("#show-without-overlay").click(function () {
-			new can.ui.layout.Modal($("#modal2"), {
+			new can.ui.Modal($("#modal2"), {
 				overlayClass : 'custom-overlay-2',
 				overlay : false
 			});
 		})
 		$('#show-custom').click(function(){
-			new can.ui.layout.Modal($("#modal"), {
+			new can.ui.Modal($("#modal"), {
 				my: "center top",
 				at: "center top",
 				overlayClass : 'custom-overlay',

@@ -2,8 +2,8 @@ steal('can/construct/super',
 	'can/construct/proxy',
 	'can/control',
 	'jquery/event/resize',
-	'canui/layout/positionable',
-	'canui/layout/block',
+	'canui/positionable',
+	'canui/block',
 	'./modal.css').then(function($){
 	/**
 	 * @class can.ui.Modal
@@ -162,7 +162,7 @@ steal('can/construct/super',
 				}
 				options.overlayPosition = "absolute";
 				//console.log( options.overlayElement, options.overlayElement.parent() );
-				new can.ui.layout.Block($(options.overlayElement), options.of || $(window))
+				new can.ui.Block($(options.overlayElement), options.of || $(window))
 				options.overlayElement.trigger('hide')
 
 			}
