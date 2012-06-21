@@ -3,55 +3,17 @@
 <html lang="en">
 <head>
 	<title>scrollable_table</title>
-	<style type='text/css'>
-		body {
-			font-family: verdana
-		}
-
-		.error {
-			border: solid 1px red;
-		}
-
-		.error_text {
-			color: red;
-			font-size: 10px;
-		}
-
-		td {
-			padding: 3px;
-		}
-
-		tbody tr:nth-child(2n+1) {
-			background-color: #ddeeff
-		}
-
-		#container {
-			width: 600px;
-			height: 600px;
-			padding: 10px;
-			border: solid 1px red;
-			overflow: auto;
-		}
-
-		#container p {
-			margin: 0px;
-			padding: 2px;
-		}
-
-		#table {
-
-		}
-	</style>
 	<link type="text/css" href="../resize/resize.css" rel="stylesheet"/>
 </head>
 <body>
+
 <a href="javascript://" id='scrollable'>Make Scrollable</a>
 <a href="javascript://" id='resize'>Resize</a>
 <a href="javascript://" id='changeColumn'>Change Column</a>
 
-<div id='container'>
+<div id='container' class="well" style="width: 500px; height: 400px; overflow: auto;">
 	<p>I can't see the columns when I scroll down :(.</p>
-	<table id='table' class="table">
+	<table id='table' class="table table-bordered">
 		<thead>
 		<tr></tr>
 		</thead>
