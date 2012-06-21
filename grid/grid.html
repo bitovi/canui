@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CanUI Grid</title>
+</head>
+<body style="padding-top: 30px;">
+
+<div class="container">
+  <header class="well">
+    <h1>CanUI Grid Demo</h1>
+  </header>
+  <section>
+    <div id="grid"></div>
+  </section>
+</div>
+
+<script type="text/javascript" src="../../steal/steal.js"></script>
+<script type="text/javascript">
+  steal('canui/grid', 'can/model', 'canui/style', function() {
+    var Model = can.Model({}),
+      list = [];
+
+      for(var i = 0; i < 100; i++) {
+        list.push({ name : 'Test ' + i, age : Math.ceil(Math.random(100) * 100) });
+      }
+
+      var grid = new can.ui.Grid('#grid', {
+        columns : [
+          {
+            text : 'Name',
+            name : 'name'
+          },
+          {
+            text : 'Age',
+            name : 'age'
+          }
+        ],
+        data : list
+      });
+  })
+</script>
+</body>
+</html>

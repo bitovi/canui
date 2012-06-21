@@ -1,17 +1,14 @@
 steal('funcunit')
 .then(
-	'./layout/sortable/sortable_test.js',
-	'./layout/wrap/wrap_test.js',
-	'./layout/fill/fill_test.js',
-	'./layout/block/block_test.js',
-	'./layout/split/split_test.js',
-	'./layout/modal/modal_test.js'
-).then(
-	'./nav/slider/slider_test.js',
-	'./nav/accordion/accordion_test.js',
-	'./nav/selectable/selectable_test.js'
-).then(
-	'./data/list/list_test.js'
-).then(
-	'./util/rpc/test/qunit/rpc_test.js'
+	'./accordion/accordion_test.js',
+	'./table_scroll/table_scroll_test.js'
+	// './block/block_test.js'
+	// './fills/fills_test.js',
+	// './grid/grid_test.js',
+	// './modal/modal_test.js',
+	// './positionable/positionable_test.js',
+	// './resize/resize_test.js',
+	// './selectable/selectable_test.js',
+	// './slider/slider_test.js'
+	// './tooltip/tooltip_test.js',
 );

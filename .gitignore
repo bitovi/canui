@@ -1,2 +1,4 @@
 .tmp*
 grid/scripts/docs/*
+dist
+.DS_Store

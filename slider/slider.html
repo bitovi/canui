@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+            "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+	<head>
+		<title>slider</title>
+        <style type='text/css'>
+            body {font-family: verdana}
+            .error {border: solid 1px red;}
+            .error_text { color: red; font-size: 10px;}
+            td {padding: 3px;}
+
+      .slider {
+				min-width: 20px;
+				height: 20px;
+				cursor: pointer;
+			}
+			#slider2 {
+				width: 40px;
+			}
+			body {
+				margin: 0px;
+				padding: 10px;
+			}
+
+      #computeSlider {
+        width: 60px;
+        font-weight: bold;
+      }
+        </style>
+	</head>
+	<body>
+		<p>This shows a basic slider that can be used without computes.</p>
+
+    <div class="progress" style="height: auto;">
+      <div class="btn btn-primary slider" id="basicSlider"></div>
+    </div>
+
+		<input id='basicValue'/>
+		
+		<p>This shows a computed binding.  You are <span id='percent'></span> percent done.</p>
+		<div class="alert" style="padding: 0;">
+	    	<div class='btn slider' id='computeSlider'>50%</div>
+    </div>
+
+    <div id="status" class="progress progress-striped">
+      <div class="bar" style="width: 50%;"></div>
+    </div>
+
+		<script type='text/javascript' 
+                src='../../steal/steal.js'>
+        </script>
+		<script type='text/javascript'>
+			steal('canui/style', 'canui/slider', function(){
+				var value = $('#basicValue');
+				new can.ui.Slider("#basicSlider", {
+					interval: 1, 
+					min: 1, 
+					max: 10, 
+					val: 5
+				});
+				$('#basicSlider').on("changing change", function( ev, newValue ) {
+					console.log(ev.type, newValue)
+					value.val(newValue);
+				});
+				
+				var project = new can.Observe({
+					progress: 0.5
+				});
+				var percentDone = can.compute(function(val){
+					if(val !== undefined){
+						project.attr("progress", val / 100)
+					} else {
+						return parseInt( project.attr("progress") * 100);
+					}
+				})
+				new can.ui.Slider("#computeSlider", {
+					interval: 1, 
+					min: 0, 
+					max: 100, 
+					val: percentDone
+				});
+
+        $("#computeSlider").on('changing', function(ev, newValue) {
+          $(this).html(newValue + '%');
+        });
+
+				project.bind("progress", function(ev, newVal){
+					console.log(newVal)
+          $('#status .bar').css('width', (newVal * 100) + '%');
+				})
+
+				percentDone.bind("change", function(ev, newVal){
+					$("#percent").text(newVal)
+				})
+				$("#percent").text(percentDone())
+			})
+		</script>
+	</body>
+</html>
