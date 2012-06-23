@@ -57,6 +57,32 @@
 			line-height: 20px;
 			text-align: left;
 		}
+		.make-page-scroll {
+			height: 2000px;
+			width: 200%;
+		}
+		.scrollable {
+			width: 300px;
+			height: 300px;
+			overflow: auto;
+			border: 1px solid black;
+		}
+		.scrollable::-webkit-scrollbar {
+			-webkit-appearance: none;
+			width: 11px;
+			height: 11px;
+		}
+
+		.scrollable::-webkit-scrollbar-thumb {
+			border-radius: 8px;
+			border: 2px solid white; /* should match background, can't be transparent */
+			background-color: rgba(0, 0, 0, .5);
+		}
+
+		.scrollable-content {
+			width: 800px;
+			height: 800px;
+		}
 	</style>
 </head>
 <body>
@@ -78,7 +104,13 @@
 		<a href="javascript://" id='show-custom-overlay-class'>Show modal with custom overlay class</a>
 	</li>
 	<li>
+		<a href="javascript://" id='show-in-scrollable'>Show modal in scrollable element</a>
+	</li>
+	<li>
 		<a href="javascript://" id='show-custom-element'>Show modal within an element</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-without-overlay'>Show modal without overlay</a>
 	</li>
 </ul>
 <div id="elem">
@@ -97,6 +129,10 @@
 	<p>I'm a modal inside of an element.
 	</p>
 </div>
+<div class="scrollable">
+	<div class="scrollable-content">This is scrollable content</div>
+</div>
+<div class="make-page-scroll"></div>
 <div id="customOverlayElement" style="display: none">This is a custom overlay element</div>
 <script type='text/javascript' src='../../steal/steal.js'></script>
 <script type='text/javascript'>
@@ -119,7 +155,7 @@
 			}
 		})
 		$('#move-to-top').click(function(){
-			var modal =$('.can_ui_layout_modal:first')
+			var modal =$('.can_ui_modal:first')
 			if(modal.length > 0){
 				modal.data().controls[0].moveToTop();
 			}
@@ -137,8 +173,21 @@
 				of : $("#elem")
 			});
 		})
+		$("#show-in-scrollable").click(function () {
+			new can.ui.Modal($("#modal2"), {
+				overlayClass : 'custom-overlay-2',
+				overlay : $("#customOverlayElement"),
+				of : $(".scrollable")
+			});
+		})
+		$("#show-without-overlay").click(function () {
+			new can.ui.Modal($("#modal2"), {
+				overlayClass : 'custom-overlay-2',
+				overlay : false
+			});
+		})
 		$('#show-custom').click(function(){
-			new can.ui.layout.Modal($("#modal"), {
+			new can.ui.Modal($("#modal"), {
 				my: "center top",
 				at: "center top",
 				overlayClass : 'custom-overlay',

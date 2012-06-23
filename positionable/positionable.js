@@ -120,13 +120,16 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 */
 	can.Control("can.ui.Positionable",
 	 {
-		rhorizontal : /left|center|right/,
+	 	rhorizontal : /left|center|right/,
 		rvertical : /top|center|bottom/,
 		hdefault : "center",
 		vdefault : "center",
-		listensTo : ["show",'move'],
-		iframe: false,
-		keep : false, //keeps it where it belongs,
+	 	defaults : {
+			iframe: false,
+			of: window,
+			keep : false, //keeps it where it belongs,
+	 	},
+		
 		scrollbarWidth: function() {
 			var w1, w2,
 				div = $( "<div style='display:block;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>" ),
@@ -163,11 +166,30 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 * @prototype
 	 */
 	 {
+	 	setup : function(element, options){
+	 		var controls, pluginName = this.constructor._shortName;
+	 		if(controls = $(element).data('controls')){
+	 			for(var i = 0; i < controls.length; i++){
+	 				if(controls[i].constructor._shortName === pluginName){
+	 					controls[i].destroy();
+	 				}
+	 			}
+	 		}
+	 		this._super(element, options);
+	 	},
 		init : function(element, options) {
+			//if(this.element.length === 0) return;
 			this.element.css("position","absolute");
 			if(!this.options.keep){
-				this.element[0].parentNode.removeChild(this.element[0])
+				/*
+				 * Remove element from it's parent only if this element _has_ parent.
+				 * This allows us to call positionable like `new can.ui.layout.Positionable($('<div/>'))
+				 */
+				if(this.element[0].parentNode){
+					this.element[0].parentNode.removeChild(this.element[0])
+				}
 				document.body.appendChild(this.element[0]);
+				
 			}
 		},
 		show : function(el, ev, position){

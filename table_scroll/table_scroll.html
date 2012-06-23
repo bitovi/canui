@@ -3,55 +3,17 @@
 <html lang="en">
 <head>
 	<title>scrollable_table</title>
-	<style type='text/css'>
-		body {
-			font-family: verdana
-		}
-
-		.error {
-			border: solid 1px red;
-		}
-
-		.error_text {
-			color: red;
-			font-size: 10px;
-		}
-
-		td {
-			padding: 3px;
-		}
-
-		tbody tr:nth-child(2n+1) {
-			background-color: #ddeeff
-		}
-
-		#container {
-			width: 600px;
-			height: 600px;
-			padding: 10px;
-			border: solid 1px red;
-			overflow: auto;
-		}
-
-		#container p {
-			margin: 0px;
-			padding: 2px;
-		}
-
-		#table {
-
-		}
-	</style>
 	<link type="text/css" href="../resize/resize.css" rel="stylesheet"/>
 </head>
 <body>
+
 <a href="javascript://" id='scrollable'>Make Scrollable</a>
 <a href="javascript://" id='resize'>Resize</a>
 <a href="javascript://" id='changeColumn'>Change Column</a>
 
-<div id='container'>
+<div id='container' class="well" style="width: 500px; height: 400px; overflow: auto;">
 	<p>I can't see the columns when I scroll down :(.</p>
-	<table id='table'>
+	<table id='table' class="table table-bordered">
 		<thead>
 		<tr></tr>
 		</thead>
@@ -65,10 +27,10 @@
 </div>
 
 <script type='text/javascript'
-        src='../../../steal/steal.js'>
+        src='../../steal/steal.js'>
 </script>
 <script type='text/javascript'>
-	steal( 'can/control/plugin').then('canui/layout/table_scroll', 'canui/layout/resize').then(function () {
+	steal( 'can/control/plugin').then('canui/table_scroll', 'canui/style').then(function () {
 		var body = $('tbody'),
 				html = [],
 				cols = 8,
@@ -101,16 +63,17 @@
 		body.html(html.join(''));
 		var els;
 		$('#scrollable').click(function () {
-			$('#table').can_ui_layout_table_scroll();
-			els = $('.can_ui_layout_table_scroll').control(can.ui.layout.TableScroll).elements()
+			$('#table').can_ui_table_scroll();
+			els = $('.can_ui_table_scroll').control(can.ui.TableScroll).elements()
 		})
 
 		$('#resize').click(function () {
-			$('#container').css("overflow", "hidden").can_ui_layout_resize();
+			$('#container').css("overflow", "hidden").canui_resize();
 		})
+
 		$('#changeColumn').click(function () {
 			els.thead.find('th:eq(1)').text('NEW COLUMN')
-			$('.mxui_layout_table_scroll').can_ui_layout_table_scroll('changed')
+			$('.canui_table_scroll').can_ui_table_scroll('changed')
 		})
 	})
 </script>
