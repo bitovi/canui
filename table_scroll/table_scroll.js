@@ -394,7 +394,7 @@ steal('can/construct/proxy',
 					this._sizeHeaderAndFooters();
 				},
 				bodyScroll : function (ev) {
-					this.$.head.scrollLeft(ev.target.scrollLeft)
+					this.$.head.scrollLeft($(ev.target).scrollLeft());
 				},
 				/**
 				 * @hide

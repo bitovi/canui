@@ -59,6 +59,18 @@ steal('canui/widget',
 
 		'{select.header} click' : function(el, ev) {
 			this.attr('sort', can.data(el, 'column'));
+		},
+
+		find : function(selector) {
+			return this.element.find(this.options.select[selector] || selector);
+		},
+
+		message : function(name, options) {
+			return can.sub(this.options.locale[name], options);
+		},
+
+		render : function(name, options) {
+			return can.view(this.options.view[name] || name, options || this);
 		}
 	});
 });
