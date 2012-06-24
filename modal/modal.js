@@ -266,7 +266,7 @@ steal('can/construct/super',
 			}
 		},
 		"{overlayElement} click" : function(el, ev){
-			if(this.options.overlayClick) { this.element.hide(); }
+			if(this.options.overlayClick) { this.hide(); }
 		},
 		destroy : function(){
 			this.overlay().remove();
