@@ -55,6 +55,8 @@ steal('can/control',
 
 			new can.ui.Positionable(this.element.show());
 
+			this._parentIsWindow = $.isWindow( this.options.parent[0] );
+
 			// If the block element is styled with a width or height of zero,
 			// this will still work
 			if ( ! this.element.is(":visible") ) {
@@ -63,38 +65,55 @@ steal('can/control',
 					width: "1px"
 				});
 			}
-
-			if ( ! $.isWindow( this.options.parent )) {
+			if ( ! this._parentIsWindow ) {
 				// If its an element, make sure it's relatively positioned
 				this.options.parent.css("position", "relative");
 				// Put the block inside of the parent if it's not
 				if ( ! $.contains( this.options.parent[0], this.element[0] ) ) {
 					this.options.parent.append( this.element.detach() );
 				}
-			}
 
-			this.element
-				.css({
-					top: $(this.options.parent).scrollTop() + "px", 
-					left: $(this.options.parent).scrollLeft() + "px" , 
-					zIndex: this.options.zIndex
+				this.element
+					.css({
+						top    : $(this.options.parent).scrollTop() + "px", 
+						left   : $(this.options.parent).scrollLeft() + "px" , 
+						zIndex : this.options.zIndex,
+						right  : "auto",
+						bottom : "auto"
+					})
+					.fills({
+						all: true, 
+						parent: this.options.parent
+					});
+
+			} else {
+
+				this.element.css({
+					position : "fixed",
+					left     : 0,
+					top      : 0,
+					right    : 0,
+					bottom   : 0,
+					zIndex   : this.options.zIndex
 				})
-				.fills({
-					all: true, 
-					parent: this.options.parent
-				});
-			
+				
+			}
 		},
 		show : function(){
-			this.element.css('top', $(this.options.parent).scrollTop() + "px").show();
+			if( ! this._parentIsWindow){
+				this.element.css('top', $(this.options.parent).scrollTop() + "px").show();
+			}
+			
 		},
 		update : function(options){
 			this._super(options);
 			this.element.show().resize()
 		},
 		"{parent} scroll" : function(el, ev){
-			this.element.css('top', $(el).scrollTop() + "px");
-			this.element.css('left', $(el).scrollLeft() + "px")
+			if( ! this._parentIsWindow){
+				this.element.css('top', $(el).scrollTop() + "px");
+				this.element.css('left', $(el).scrollLeft() + "px")
+			}
 		}
 	})
 })

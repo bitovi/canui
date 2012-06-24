@@ -2,6 +2,7 @@ steal('can/construct/super',
 	'can/construct/proxy',
 	'can/control',
 	'jquery/event/resize',
+	'jquery/event/pause',
 	'canui/positionable',
 	'canui/block',
 	'./modal.css').then(function($){
@@ -107,6 +108,16 @@ steal('can/construct/super',
 	var zIndex = 9999, stack = [];
 	
 	can.ui.Positionable("can.ui.Modal", {
+		hide : function(el, overlay, cb){
+			el.hide();
+			overlay.hide();
+			cb();
+		},
+		show : function(el, position, overlay, cb){
+			overlay.show();
+			el.show().css(position);
+			cb();
+		},
 		defaults: {
 			my: 'center center',
 			at: 'center center',
@@ -121,17 +132,7 @@ steal('can/construct/super',
 			// close modal if overlay is clicked
 			overlayClick: true,
 			autoShow : true,
-			hideOnEsc : true,
-			hide : function(el, overlay, cb){
-				el.hide();
-				overlay.hide();
-				cb();
-			},
-			show : function(el, position, overlay, cb){
-				overlay.show();
-				el.show().css(position);
-				cb();
-			}
+			hideOnEsc : true
 		}
 	},
 	/*
@@ -145,23 +146,18 @@ steal('can/construct/super',
 					options.overlayElement = $('<div />', {
 						"class" : opts.overlayClass
 					});
-					this._removeOverlayOnDestroy = true;
 				} else if ( opts.overlay.jquery ) {
-					options.overlayElement = opts.overlay;
+					// We need to clone the overlay element so when multiple
+					// overlays use it everything works as expected.
+					options.overlayElement = opts.overlay.clone(true);
 					options.overlayElement.addClass( opts.overlayClass );
 				}
 
 				if ( $.isWindow( opts.of ) ) {
 					$(document.body).append( options.overlayElement.detach() )
-					//options.overlayPosition = "fixed";
-					//console.log( 'here', options );
 				} else {
 					opts.of.css("position", "relative").append( options.overlayElement.detach() )
-					
-					//console.log( 'there', options );
 				}
-				options.overlayPosition = "absolute";
-				//console.log( options.overlayElement, options.overlayElement.parent() );
 				new can.ui.Block($(options.overlayElement), options.of || $(window))
 				options.overlayElement.trigger('hide')
 
@@ -172,12 +168,12 @@ steal('can/construct/super',
 			this._super.apply(this, arguments);
 			this.stackId = "modal-" + (new Date()).getTime();
 			this.options.autoShow ? this.show() : this.hide();
-			/*if(!$.isWindow(this.options.of)){
+			if(!$.isWindow(this.options.of)){
 				var ofPosition = this.options.of.css('position');
 				if(["absolute", "relative", "fixed"].indexOf(ofPosition) < 0){
 					this.options.of.css('position', 'relative')
 				}
-			}*/
+			}
 		},
 		update : function(options){
 			if(options && options.overlay === true && typeof this.options.overlayElement == 'undefined'){
@@ -195,7 +191,7 @@ steal('can/construct/super',
 		 * Hide modal element and overlay if overlay exists
 		 */
 		hide : function(){
-			this.options.hide(this.element, this.overlay(), this.proxy('hideCb'))
+			this.element.triggerAsync('hide');
 		},
 		hideCb : function(){
 			var stackIndex;
@@ -212,15 +208,18 @@ steal('can/construct/super',
 				this.element.trigger('hidden');
 			}
 		},
-		' hide' : function() {
-			this.hide();
+		' hide.default' : function() {
+			var hideFn =  this.options.hide || this.constructor.hide;
+			var hideCb = this.proxy('hideCb');
+			hideFn(this.element, this.overlay(), hideCb);
 		},
 		/**
 		 * Show modal element and overlay if overlay exists
 		 */
 		show : function(){
+			var showFn = this.options.show || this.constructor.show;
 			this.moveToTop();
-			this.options.show(this.element, this.position(), this.overlay(), this.proxy('showCb'))
+			showFn(this.element, this.position(), this.overlay(), this.proxy('showCb'))
 		},
 		showCb : function(){
 			this.element.trigger('shown')
@@ -262,19 +261,15 @@ steal('can/construct/super',
 		},
 		"{document} keyup" : function(el, ev){
 			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId){
-				this.element.trigger('hide');
+				this.hide();
 				ev.stopImmediatePropagation();
 			}
 		},
 		"{overlayElement} click" : function(el, ev){
-			if(this.options.overlayClick) { this.hide(); }
+			if(this.options.overlayClick) { this.element.hide(); }
 		},
 		destroy : function(){
-			if(this._removeOverlayOnDestroy === true){
-				this.overlay().remove();
-			} else {
-				this.overlay().hide();
-			}
+			this.overlay().remove();
 			this._super.apply(this, arguments)
 		},
 		// Reposition the modal on window resize

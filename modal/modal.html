@@ -112,6 +112,15 @@
 	<li>
 		<a href="javascript://" id='show-without-overlay'>Show modal without overlay</a>
 	</li>
+	<li>
+		<a href="javascript://" id='show-custom-widget'>Show modal with custom modal controller</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-five-modals-overlay'>Show five modals that use same overlay element</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-modal-pausable'>Show modal with pausable events</a>
+	</li>
 </ul>
 <div id="elem">
 	Just a random element
@@ -129,6 +138,11 @@
 	<p>I'm a modal inside of an element.
 	</p>
 </div>
+<div id='modal3' class="modal" style="display: none">
+	<h3>Some Modal</h3>
+
+	<p>I'm a modal that will be opened with the custom modal class.</p>
+</div>
 <div class="scrollable">
 	<div class="scrollable-content">This is scrollable content</div>
 </div>
@@ -136,7 +150,42 @@
 <div id="customOverlayElement" style="display: none">This is a custom overlay element</div>
 <script type='text/javascript' src='../../steal/steal.js'></script>
 <script type='text/javascript'>
-	steal('canui/modal', function () {
+	steal('canui/modal', 'jquery/event/pause', function () {
+
+		var customModal = can.ui.Modal({
+			show : function(el, position, overlay, cb){
+				overlay.show();
+				el.show().css($.extend(position, {background: "red", color: "white"}));
+				cb();
+			}
+		}, {})
+
+
+		var pausableModal = can.ui.Modal({}, {
+			init : function(){
+				this.element.html("<a href='javascript://' class='close'>Close modal</a>");
+				this._super.apply(this, arguments);
+			},
+			"a.close click" : function(el, ev){
+				this.hide();
+			},
+			"a.confirm click" : function(el, ev){
+				this._closingEv.resume();
+				delete this._closingEv;
+			},
+			" hide" : function(el, ev){
+				this._closingEv = ev;
+				this._closingEv.pause();
+				this.element.html("Are you sure? <a href='javascript://' class='confirm'>YES!</a>")
+			}
+		})
+
+		$('#show-modal-pausable').click(function(){
+			new pausableModal($('<div/>').addClass('modal'))
+		})
+
+
+
 		$("#show").click(function () {
 			new can.ui.Modal($("#modal"), {
 				overlay : false
@@ -148,6 +197,18 @@
 				new can.ui.Modal(div, {
 					destroyOnHide : true,
 					overlay : true
+				});
+				div.find('.close').on('click', function () {
+					$(this).trigger('hide')
+				});
+			}
+		})
+		$('#show-five-modals-overlay').click(function () {
+			for (var i = 1; i < 6; i++) {
+				var div = $('<div class="modal"">Test ' + i + '. <a href="#" class="close">Close</a></div>');
+				new can.ui.Modal(div, {
+					destroyOnHide : true,
+					overlay : $('#customOverlayElement')
 				});
 				div.find('.close').on('click', function () {
 					$(this).trigger('hide')
@@ -184,6 +245,15 @@
 			new can.ui.Modal($("#modal2"), {
 				overlayClass : 'custom-overlay-2',
 				overlay : false
+			});
+		})
+
+		$("#show-custom-widget").click(function () {
+			new customModal($("#modal3"), {
+				hide : function(el, overlay, cb){
+					var height = el.outerHeight();
+					el.animate({top: "-" + height + "px"}, 100, cb)
+				}
 			});
 		})
 		$('#show-custom').click(function(){
