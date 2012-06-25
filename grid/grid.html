@@ -7,7 +7,7 @@
 
 <div class="container">
   <header class="well">
-    <h1>CanUI Grid Demo</h1>
+    <h1>CanUI Grid List Demo</h1>
   </header>
   <section>
     <div id="grid"></div>
@@ -16,27 +16,53 @@
 
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
-  steal('canui/grid', 'can/model', 'canui/style', function() {
+  steal('canui/grid', 'can/model', 'canui/style', 'canui/table_scroll', function () {
     var Model = can.Model({}),
-      list = [];
+        list = [];
 
-      for(var i = 0; i < 100; i++) {
-        list.push({ name : 'Test ' + i, age : Math.ceil(Math.random(100) * 100) });
-      }
+    for (var i = 0; i < 100; i++) {
+      list.push({ name : 'Test ' + i, age : Math.ceil(Math.random(100) * 100) });
+    }
 
-      var grid = new can.ui.Grid('#grid', {
-        columns : [
-          {
-            text : 'Name',
-            name : 'name'
-          },
-          {
-            text : 'Age',
-            name : 'age'
+    var models = Model.models(list),
+        pager = new can.Observe({
+          offset : 0,
+          limit : -1
+        }),
+        compute = can.compute(function () {
+          var sliced = list.slice(pager.attr('offset'), pager.attr('offset') + pager.attr('limit'));
+          return Model.models(sliced);
+        });
+
+    var people = Model.models(list),
+        filterCompute = can.compute(function () {
+          var oldFolks = new can.Observe.List();
+          for (var i = 0; i < people.attr('length'); i++) {
+            if (people.attr(i + '.age') > 80) {
+              oldFolks.push(people[i]);
+            }
           }
-        ],
-        data : list
-      });
+          return oldFolks;
+        });
+
+    var grid = new can.ui.Grid('#grid', {
+      columns : [
+        {
+          text : 'Name',
+          name : 'name'
+        },
+        {
+          text : 'Age',
+          name : 'age'
+        }
+      ],
+      list : filterCompute
+    });
+
+    people.push(new Model({
+      name : 'Another old one',
+      age : 82
+    }));
   })
 </script>
 </body>

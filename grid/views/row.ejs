@@ -1,11 +1,7 @@
-<tr>
-  <% list(state.attr('columns'), function(col) { %>
-    <% if(!col.attr('hidden')) { %>
-      <% if(col.attr('renderer')) { %>
-        <td <%= function(el) { col.attr('renderer').call(el, item.attr(col.name), item) } %>></td>
-      <% } else { %>
-        <td><%= item.attr(col.name) %></td>
-      <% } %>
-    <% } %>
-  <% }) %>
+<tr <% if(item.constructor.id) { %>data-id="<%= item.attr(item.constructor.id) %>"<% } %>>
+<% list(options.columns, function(col) { %>
+  <% if(col.attr('visible') !== false) { %>
+    <td><%= item instanceof can.Observe ? item.attr(col.name) : item[col.name] %></td>
+  <% } %>
+<% }); %>
 </tr>
