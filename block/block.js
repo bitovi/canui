@@ -38,6 +38,7 @@ steal('can/control',
 		},
 	}, {
 		setup: function( el, option ) {
+			// Set the parent
 			var parent;
 			if ( option && ( $.isWindow( option ) || option.jquery )) {
 				parent = option;
@@ -52,7 +53,7 @@ steal('can/control',
 			});
 		},
 		init : function() {
-
+			// Call positionable plugin on the element
 			new can.ui.Positionable(this.element.show());
 
 			this._parentIsWindow = $.isWindow( this.options.parent[0] );
@@ -72,7 +73,6 @@ steal('can/control',
 				if ( ! $.contains( this.options.parent[0], this.element[0] ) ) {
 					this.options.parent.append( this.element.detach() );
 				}
-
 				this.element
 					.css({
 						top    : $(this.options.parent).scrollTop() + "px", 
@@ -99,6 +99,8 @@ steal('can/control',
 				
 			}
 		},
+		// Reposition the blocker when it's shown. If window is the parent, we are using 
+		// position fixed so we don't have to update it's position.
 		show : function(){
 			if( ! this._parentIsWindow){
 				this.element.css('top', $(this.options.parent).scrollTop() + "px").show();
@@ -109,6 +111,8 @@ steal('can/control',
 			this._super(options);
 			this.element.show().resize()
 		},
+		// Reposition the blocker when parent is scrolled. If window is the parent, we are using 
+		// position fixed so we don't have to update it's position.
 		"{parent} scroll" : function(el, ev){
 			if( ! this._parentIsWindow){
 				this.element.css('top', $(el).scrollTop() + "px");

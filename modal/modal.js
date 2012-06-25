@@ -28,12 +28,11 @@ steal('can/construct/super',
 	 *			overlay: true
 	 *		});
 	 *
-	 * This will create <div class="can_ui_layout_modal-overlay"></div> element
+	 * This will create <div class="modal-overlay"></div> element
 	 * and display it over the page. Default CSS applied to the overlay is:
 	 * 
-	 *		.can_ui_layout_modal-overlay {
+	 *		.modal-overlay {
 	 *			background: rgba(0,0,0,0.5);
-	 *			position: fixed;
 	 *			top: 0;
 	 *			bottom: 0;
 	 *			right: 0;
@@ -98,7 +97,9 @@ steal('can/construct/super',
 	 *	- `overlayClick`- `{Boolean}` - If `true`, when user clicks on the overlay
 	 *	modal's `hide` method will be called.
 	 *	- `autoShow`- `{Boolean}` - If `true`, modal will be shown immediately, otherwise it
-	 * will be hidden.
+	 *	will be hidden.
+	 *	- `hideOnEsc` - `{Boolean}` - If `true` modal will be hidden when user presses the 
+	 *	escape button
 	 *
 	 * @return {can.ui.Modal}
 	 */

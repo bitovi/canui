@@ -182,10 +182,8 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			//if(this.element.length === 0) return;
 			this.element.css("position","absolute");
 			if(!this.options.keep){
-				/*
-				 * Remove element from it's parent only if this element _has_ parent.
-				 * This allows us to call positionable like `new can.ui.layout.Positionable($('<div/>'))
-				 */
+				// Remove element from it's parent only if this element _has_ parent.
+				// This allows us to call positionable like `new can.ui.layout.Positionable($('<div/>'))
 				if(this.element[0].parentNode){
 					this.element[0].parentNode.removeChild(this.element[0])
 				}
@@ -220,6 +218,9 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			can.extend(this.options, options);
 			this.on();
 		},
+		/**
+		 * Calculate the position of the element.
+		 */
 		position : function(el, ev, positionFrom){
 			var options  = $.extend({},this.options);
 				 options.of= positionFrom || options.of;
@@ -362,6 +363,9 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			});
 			return position
 		},
+		/**
+		 * Move element when the `of` element is moving
+		 */
 		"{of} move" : function(el, ev){
 			clearTimeout(this._finalMove)
 			this.move(this.element, ev, el);
@@ -369,6 +373,9 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 				this.move(this.element, ev, el);
 			}), 1)
 		},
+		/**
+		 * Reposition element when `move` event is triggered
+		 */
 		" move" : function(){
 			this.move.apply(this, arguments)
 		}
