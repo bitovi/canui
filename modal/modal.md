@@ -38,17 +38,13 @@ Here is the code:
 
     var bootstrapModal = can.ui.Modal({
     	show : function(el, position, overlay, cb){
-    		if(!el.is(':visible')){
-    			el.css('opacity', 0).show();
-    			var height = el.outerHeight()
-    			el.css('opacity', 1).hide();
-    		}
+    		var height = el.height();
     		var hiddenPosition = $.extend({}, position, {top: "-" + height + "px"})
     		overlay.css('opacity', 0).show().animate({opacity: 1}, 100);
     		el.show().css(hiddenPosition).animate(position, 100, cb);
     	},
     	hide : function(el, overlay, cb){
-    		var height = el.outerHeight();
+    		var height = el.height();
     		el.animate({top: "-" + height + "px"}, 100, cb)
     		overlay.animate({opacity: 0}, 100)
     	}
@@ -58,3 +54,5 @@ You can create this modal like this:
 
     new bootstrapModal(element);
 
+In just a few lines of code we've implemented the modal widget that behaves similar to the Twitter bootstrap's
+modal widget, while using all of the low level plumbing from the can.ui.Modal.

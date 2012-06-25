@@ -180,6 +180,20 @@
 			}
 		})
 
+		var bootstrapModal = can.ui.Modal({
+			show : function(el, position, overlay, cb){
+				var height = el.height();
+				var hiddenPosition = $.extend({}, position, {top: "-" + height + "px"})
+				overlay.css('opacity', 0).show().animate({opacity: 1}, 100);
+				el.show().css(hiddenPosition).animate(position, 100, cb);
+			},
+			hide : function(el, overlay, cb){
+				var height = el.height();
+				el.animate({top: "-" + height + "px"}, 100, cb)
+				overlay.animate({opacity: 0}, 100)
+			}
+		}, {})
+
 		$('#show-modal-pausable').click(function(){
 			new pausableModal($('<div/>').addClass('modal'))
 		})
@@ -257,7 +271,7 @@
 			});
 		})
 		$('#show-custom').click(function(){
-			new can.ui.Modal($("#modal"), {
+			/*new can.ui.Modal($("#modal"), {
 				overlay : true,
 				show : function(el, position, overlay, cb){
 					var height         = el.outerHeight(),
@@ -270,7 +284,10 @@
 					el.animate({top: "-" + height + "px"}, 100, cb)
 					overlay.animate({opacity: 0}, 100)
 				}
-			});
+			});*/
+			new bootstrapModal($('#modal'), {
+				overlay: true
+			})
 		})
 	})
 </script>

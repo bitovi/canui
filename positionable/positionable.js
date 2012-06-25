@@ -167,8 +167,9 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 */
 	 {
 	 	setup : function(element, options){
-	 		var controls, pluginName = this.constructor._shortName;
-	 		if(controls = $(element).data('controls')){
+	 		var controls = $(element).data('controls'),
+	 			pluginName = this.constructor._shortName;
+	 		if(controls && controls.length > 0){
 	 			for(var i = 0; i < controls.length; i++){
 	 				if(controls[i].constructor._shortName === pluginName){
 	 					controls[i].destroy();
