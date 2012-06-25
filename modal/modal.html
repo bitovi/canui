@@ -143,6 +143,13 @@
 
 	<p>I'm a modal that will be opened with the custom modal class.</p>
 </div>
+<div id="signup-form" class="modal">
+	<form>
+		<div><label>Username</label><input name="username" /></div>
+		<div><label>Password</label><input name="password" type="password" /></div>
+		<div><input type="submit" value="Save!" /></div>
+	</form>
+</div>
 <div class="scrollable">
 	<div class="scrollable-content">This is scrollable content</div>
 </div>
@@ -161,22 +168,38 @@
 		}, {})
 
 
-		var pausableModal = can.ui.Modal({}, {
+		var confirmModal = can.ui.Modal({
+			defaults : {
+				confirm       : function(){},
+				destroyOnHide : true
+			}
+		}, {
 			init : function(){
-				this.element.html("<a href='javascript://' class='close'>Close modal</a>");
-				this._super.apply(this, arguments);
+				this.element.html('Are you sure? <a href="javascript://"" class="confirm">YES!</a>').addClass('modal');
+				this._super.apply(this, arguments)
 			},
-			"a.close click" : function(el, ev){
-				this.hide();
-			},
-			"a.confirm click" : function(el, ev){
-				this._closingEv.resume();
-				delete this._closingEv;
+			".confirm click" : function(){
+				this.options.confirm();
+				this.element.remove();
+			}
+		})
+
+		var pausableModal = can.ui.Modal({}, {
+			"input keydown" : "markDirty",
+			"input change"  : "markDirty",
+			markDirty : function(){
+				this.element.addClass('dirty')
 			},
 			" hide" : function(el, ev){
-				this._closingEv = ev;
-				this._closingEv.pause();
-				this.element.html("Are you sure? <a href='javascript://' class='confirm'>YES!</a>")
+				if(this.element.hasClass('dirty')){
+					ev.pause();
+					new confirmModal($('<div/>'), {
+						confirm : function(){
+							ev.resume();
+						},
+						of : this.element
+					})
+				}
 			}
 		})
 
@@ -195,7 +218,7 @@
 		}, {})
 
 		$('#show-modal-pausable').click(function(){
-			new pausableModal($('<div/>').addClass('modal'))
+			new pausableModal($('#signup-form'))
 		})
 
 
