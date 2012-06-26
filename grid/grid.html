@@ -8,6 +8,15 @@
 <div class="container">
   <header class="well">
     <h1>CanUI Grid List Demo</h1>
+    <form class="form">
+      <fieldset>
+        <legend>Filter</legend>
+        <label>Age between</label>
+        <input type="text" name="min-age" value="50" />
+        <input type="text" name="max-age" value="80" />
+        <p><input type="submit" class="btn" value="Update filter" id="update-filter" /></p>
+      </fieldset>
+    </form>
   </header>
   <section>
     <div id="grid"></div>
@@ -17,6 +26,8 @@
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
   steal('canui/grid', 'can/model', 'canui/style', 'canui/table_scroll', function () {
+
+    // Setup
     var Model = can.Model({}),
         list = [];
 
@@ -24,25 +35,24 @@
       list.push({ name : 'Test ' + i, age : Math.ceil(Math.random(100) * 100) });
     }
 
-    var models = Model.models(list),
-        pager = new can.Observe({
-          offset : 0,
-          limit : -1
-        }),
-        compute = can.compute(function () {
-          var sliced = list.slice(pager.attr('offset'), pager.attr('offset') + pager.attr('limit'));
-          return Model.models(sliced);
-        });
-
+    // Model list
     var people = Model.models(list),
+        getFilter = function() {
+          return {
+            min : parseInt($('[name="min-age"]').val()),
+            max : parseInt($('[name="max-age"]').val())
+          }
+        },
+        filter = new can.Observe(getFilter()),
         filterCompute = can.compute(function () {
-          var oldFolks = new can.Observe.List();
+          var folks = new can.Observe.List(), age;
           for (var i = 0; i < people.attr('length'); i++) {
-            if (people.attr(i + '.age') > 80) {
-              oldFolks.push(people[i]);
+            age = people.attr(i + '.age');
+            if (age >= filter.attr('min') && age <= filter.attr('max')) {
+              folks.push(people[i]);
             }
           }
-          return oldFolks;
+          return folks;
         });
 
     var grid = new can.ui.Grid('#grid', {
@@ -65,15 +75,10 @@
       list : filterCompute
     });
 
-//    var person = new Model({
-//      name : 'Another old one',
-//      age : 82
-//    });
-//    people.push(person);
-//
-//    setTimeout(function() {
-//      person.attr('name', 'Blabla')
-//    }, 2000)
+    $('#update-filter').click(function(ev) {
+      filter.attr(getFilter());
+      ev.preventDefault();
+    });
   })
 </script>
 </body>
