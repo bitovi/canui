@@ -48,21 +48,32 @@
     var grid = new can.ui.Grid('#grid', {
       columns : [
         {
-          text : 'Name',
-          name : 'name'
+          header : 'Name',
+          attr : 'name'
         },
         {
-          text : 'Age',
-          name : 'age'
+          header : 'Age',
+          attr : 'age'
+        },
+        {
+          header : 'Stuff',
+          attr : function() {
+            return this.attr('name') + ' (' + this.attr('age') + ')';
+          }
         }
       ],
       list : filterCompute
     });
 
-    people.push(new Model({
-      name : 'Another old one',
-      age : 82
-    }));
+//    var person = new Model({
+//      name : 'Another old one',
+//      age : 82
+//    });
+//    people.push(person);
+//
+//    setTimeout(function() {
+//      person.attr('name', 'Blabla')
+//    }, 2000)
   })
 </script>
 </body>

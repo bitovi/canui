@@ -17,69 +17,80 @@ steal('can/control', 'can/view/ejs', 'can/observe').then(function() {
 			emptyText : 'No data'
 		}
 	}, {
+		setup : function(el, ops) {
+			// Convert the options for list and columns into a can.compute
+			var options = can.extend({}, ops, {
+				list : can.compute(ops.list || {}),
+				columns : can.compute(ops.columns || [])
+			});
+			can.Control.prototype.setup.call(this, el, options);
+		},
+
 		init : function() {
-			this.options.list = can.compute(this.options.list || []);
-			this.columns(this.options.columns);
 			this.element.html(this.render('init'));
-			this.heading = this.find('heading').html(this.render('head', { options: this.options }));
+			this.heading = this.find('heading');
 			this.body = this.find('body');
+			this.heading.html(this.render('head', { options : this.options, columns : this.options.columns() }));
 			this.draw();
 		},
 
 		/**
-		 * Set or get the currently displayed list.
-		 * Can be an array or a can.Observe.List
+		 * Redraw the currently displayed list.
 		 *
-		 * @param {can.Observe.List|Array} [data] The list data. Arrays will be converted to can.Observe.List
-		 * @return {can.Observe.List} The (converted) list instance
+		 * @return {can.ui.Grid} The Grid control instance
 		 */
 		draw : function() {
 			var body = this.body.empty(),
-				self = this;
+				self = this,
+				data = this.options.list();
 
-			this.options.data = this.options.list();
-			this.on();
+			// Only do this for actual observable lists
+			if(data instanceof can.Observe.List) {
+				this.options.data = data;
+				this.on();
+			}
 
-			this.options.data.each(function(item) {
-				body.append(self.render('row', { options : self.options, item : item }));
+			data.each(function(item) {
+				body.append(self.render('row', { options : self.options, columns : self._row(item), item : item }));
 			});
-		},
 
-		list : function() {
-			return this.options.list.apply(this, arguments);
-		},
-
-		'{list} change' : 'draw',
-
-		'{data} remove' : function() {
-
-		},
-
-		'{data} add' : function() {
-
+			return this;
 		},
 
 		/**
-		 * Returns or sets the current column configuration.
-		 * Columns are an array or can.Observe.List of single column configurations.
+		 * Converts a data item into a list of can.computes according to the columns.
 		 *
-		 * @param {can.Observe.List|Array} [cols] The columns to set
-		 * @return {can.Observe.List}
+		 * @param item
+		 * @return {Array}
+		 * @private
 		 */
+		_row : function(item) {
+			var res = [];
+			can.each(this.options.columns(), function(column) {
+				var callback = can.isFunction(column.attr) ?
+						can.proxy(column.attr, item) :
+						function() {
+							return item.attr(column.attr);
+						};
+				res.push(can.compute(callback));
+			});
+			return res;
+		},
+
+		// When the columns change we can reinitialize everything
+		'{columns} change' : 'init',
+		'{list} change' : 'draw',
+
+		// TODO these should just remove and add their row
+		'{data} remove' : 'draw',
+		'{data} add' : 'draw',
+
 		columns : function(cols) {
-			if(typeof cols !== 'undefined') {
-				var columns = cols instanceof can.Observe.List ? cols : new can.Observe.List(cols);
-				columns.colspan = can.compute(function() {
-					var colspan = 0;
-					columns.each(function(col) {
-						colspan += col.attr('visible') === false ? 0 : 1;
-					});
-					return colspan;
-				});
-				this.options.columns = columns;
-				this.on();
-			}
-			return this.options.columns;
+			return this.options.columns(cols);
+		},
+
+		list : function(data) {
+			return this.options.list(data);
 		},
 
 		find : function(selector) {

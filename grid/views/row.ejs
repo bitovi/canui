@@ -1,7 +1,5 @@
 <tr <% if(item.constructor.id) { %>data-id="<%= item.attr(item.constructor.id) %>"<% } %>>
-<% list(options.columns, function(col) { %>
-  <% if(col.attr('visible') !== false) { %>
-    <td><%= item instanceof can.Observe ? item.attr(col.name) : item[col.name] %></td>
-  <% } %>
+<% can.each(columns, function(current) { %>
+    <td><%= current() %></td>
 <% }); %>
 </tr>

@@ -1,9 +1,7 @@
 <tr>
-<% list(options.columns, function(col) { %>
-  <% if(col.attr('visible') !== false) { %>
-    <th <%=  (el) -> can.data( el, 'column', col) %>>
-      <%= col.attr('text') %>
+<% can.each(columns, function(col) { %>
+    <th <%= (el) -> can.data(el, 'column', col) %>>
+      <%= col.header %>
     </th>
-  <% } %>
 <% }) %>
 </tr>
