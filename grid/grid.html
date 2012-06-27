@@ -67,18 +67,22 @@
         },
         {
           header : 'Stuff',
-          attr : function() {
-            return this.attr('name') + ' (' + this.attr('age') + ')';
+          attr : function(element, index, data) {
+            return element.attr('name') + ' (' + element.attr('age') + ')';
           }
         }
-      ],
-      list : filterCompute
+      ]
     });
 
     $('#update-filter').click(function(ev) {
-      filter.attr(getFilter());
       ev.preventDefault();
+      filter.attr(getFilter());
     });
+
+    $('#grid').trigger('loading', 'Custom loading text...');
+    setTimeout(function() {
+      grid.list(people);
+    }, 1500);
   })
 </script>
 </body>

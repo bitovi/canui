@@ -1,4 +1,4 @@
-<tr <% if(item.constructor.id) { %>data-id="<%= item.attr(item.constructor.id) %>"<% } %>>
+<tr class="grid-row" <%= (el) -> can.data(el, 'item', item) %>>
 <% can.each(columns, function(current) { %>
     <td><%= current() %></td>
 <% }); %>
