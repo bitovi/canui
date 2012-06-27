@@ -226,7 +226,6 @@ steal('can/construct/super',
 		 * Default event handler for the `hide` event
 		 */
 		' hide.default' : function() {
-			console.log("HIDE DEFAULT")
 			var hideFn =  this.options.hide || this.constructor.hide;
 			var hideCb = this.proxy('hideCb');
 			hideFn(this.element, this.overlay(), hideCb);

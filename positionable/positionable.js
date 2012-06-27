@@ -128,6 +128,7 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			iframe: false,
 			of: window,
 			keep : false, //keeps it where it belongs,
+			hideWhenOfInvisible : false
 	 	},
 		
 		scrollbarWidth: function() {
@@ -213,6 +214,19 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 				elem.css("opacity", 1)
 					.hide();
 			}
+			if(this.options.hideWhenOfInvisible){
+				this.element.toggle(this.isOfVisible());
+			}
+			
+		},
+		isOfVisible : function(){
+			if(this.options.of.position().top < 0){
+				return false;
+			} 
+			if(this.options.of.position().top > this.options.of.offsetParent().height()){
+				return false;
+			}
+			return true;
 		},
 		update : function(options){
 			can.extend(this.options, options);
