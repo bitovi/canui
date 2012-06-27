@@ -196,23 +196,21 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			this.move.apply(this, arguments)
 			  //clicks elsewhere should hide
 		},
-		move : function(el, ev, positionFrom){
+		move : function( el, ev, positionFrom ) {
 			var position = this.position.apply(this, arguments),
 				elem     = this.element,
 				options  = this.options;
 	
 			// if elem is hidden, show it before setting offset
 			var visible = elem.is(":visible")
-			if(!visible){
-				elem.css("opacity", 0)
-					.show()
-				
+			if ( ! visible ) {
+				elem.css("opacity", 0).show()
 			}
 
-			elem.offset( $.extend( position, { using: options.using } ) )
-			if(!visible){
-				elem.css("opacity", 1)
-					.hide();
+			elem.offset( $.extend( position, { using: options.using } ) );
+
+			if ( ! visible ) {
+				elem.css("opacity", 1).hide();
 			}
 			if(this.options.hideWhenOfInvisible){
 				this.element.toggle(this.isOfVisible());
