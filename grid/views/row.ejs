@@ -1,11 +1,5 @@
-<tr>
-  <% list(state.attr('columns'), function(col) { %>
-    <% if(!col.attr('hidden')) { %>
-      <% if(col.attr('renderer')) { %>
-        <td <%= function(el) { col.attr('renderer').call(el, item.attr(col.name), item) } %>></td>
-      <% } else { %>
-        <td><%= item.attr(col.name) %></td>
-      <% } %>
-    <% } %>
-  <% }) %>
+<tr class="grid-row" <%= (el) -> can.data(el, 'item', item) %>>
+<% can.each(columns, function(current) { %>
+    <td><%= current() %></td>
+<% }); %>
 </tr>

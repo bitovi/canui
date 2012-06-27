@@ -2,6 +2,7 @@ steal('can/construct/super',
 	'can/construct/proxy',
 	'can/control',
 	'jquery/event/resize',
+	'jquery/event/pause',
 	'canui/positionable',
 	'canui/block',
 	'./modal.css').then(function($){
@@ -27,12 +28,11 @@ steal('can/construct/super',
 	 *			overlay: true
 	 *		});
 	 *
-	 * This will create <div class="can_ui_layout_modal-overlay"></div> element
+	 * This will create <div class="modal-overlay"></div> element
 	 * and display it over the page. Default CSS applied to the overlay is:
 	 * 
-	 *		.can_ui_layout_modal-overlay {
+	 *		.modal-overlay {
 	 *			background: rgba(0,0,0,0.5);
-	 *			position: fixed;
 	 *			top: 0;
 	 *			bottom: 0;
 	 *			right: 0;
@@ -97,7 +97,9 @@ steal('can/construct/super',
 	 *	- `overlayClick`- `{Boolean}` - If `true`, when user clicks on the overlay
 	 *	modal's `hide` method will be called.
 	 *	- `autoShow`- `{Boolean}` - If `true`, modal will be shown immediately, otherwise it
-	 * will be hidden.
+	 *	will be hidden.
+	 *	- `hideOnEsc` - `{Boolean}` - If `true` modal will be hidden when user presses the 
+	 *	escape button
 	 *
 	 * @return {can.ui.Modal}
 	 */
@@ -107,31 +109,39 @@ steal('can/construct/super',
 	var zIndex = 9999, stack = [];
 	
 	can.ui.Positionable("can.ui.Modal", {
+		/**
+		 * Default `hide` method.
+		 */
+		hide : function(el, overlay, cb){
+			el.hide();
+			overlay.hide();
+			cb();
+		},
+		/**
+		 * Default `show` method.
+		 */
+		show : function(el, position, overlay, cb){
+			overlay.show();
+			el.show().css(position);
+			cb();
+		},
 		defaults: {
-			my: 'center center',
-			at: 'center center',
-			of: window,
-			collision: 'fit fit',
+			my            : 'center center',
+			at            : 'center center',
+			of            : window,
+			collision     : 'fit fit',
 			// destroy modal when hide is triggered
 			destroyOnHide : false,
 			// show overlay if true
-			overlay: false,
+			overlay       : false,
 			// class that will be applied to the overlay element
-			overlayClass : "modal-overlay",
+			overlayClass  : "modal-overlay",
 			// close modal if overlay is clicked
-			overlayClick: true,
-			autoShow : true,
-			hideOnEsc : true,
-			hide : function(el, overlay, cb){
-				el.hide();
-				overlay.hide();
-				cb();
-			},
-			show : function(el, position, overlay, cb){
-				overlay.show();
-				el.show().css(position);
-				cb();
-			}
+			overlayClick  : true,
+			autoShow      : true,
+			hideOnEsc     : true,
+			show          : null,
+			hide          : null
 		}
 	},
 	/*
@@ -141,27 +151,26 @@ steal('can/construct/super',
 		setup: function(el, options) {
 			var opts = $.extend({}, this.constructor.defaults, options)
 			if ( opts.overlay ) {
+				// Create overlay element if `true` is passed to the `overlay` option.
 				if ( opts.overlay === true ) {
 					options.overlayElement = $('<div />', {
 						"class" : opts.overlayClass
 					});
-					this._removeOverlayOnDestroy = true;
 				} else if ( opts.overlay.jquery ) {
-					options.overlayElement = opts.overlay;
+					// We need to clone the overlay element so when multiple
+					// overlays use it everything works as expected.
+					options.overlayElement = opts.overlay.clone();
 					options.overlayElement.addClass( opts.overlayClass );
 				}
 
 				if ( $.isWindow( opts.of ) ) {
+					// Append overlay to body if window is passed as the `of` option
 					$(document.body).append( options.overlayElement.detach() )
-					//options.overlayPosition = "fixed";
-					//console.log( 'here', options );
 				} else {
+					// Otherwise append overlay to the element passed as the `of` option
 					opts.of.css("position", "relative").append( options.overlayElement.detach() )
-					
-					//console.log( 'there', options );
 				}
-				options.overlayPosition = "absolute";
-				//console.log( options.overlayElement, options.overlayElement.parent() );
+				// Initialize can.ui.Block on the overlay element
 				new can.ui.Block($(options.overlayElement), options.of || $(window))
 				options.overlayElement.trigger('hide')
 
@@ -170,57 +179,64 @@ steal('can/construct/super',
 		},
 		init : function(){
 			this._super.apply(this, arguments);
+			// Generate stackId of the modal window. This is used
+			// to close modals in  the correct order.
 			this.stackId = "modal-" + (new Date()).getTime();
+			// If `autoShow` option is true immediately show the modal
 			this.options.autoShow ? this.show() : this.hide();
-			/*if(!$.isWindow(this.options.of)){
+			// If modal is shown inside some element, instead of window,
+			// use the relative position.
+			if(!$.isWindow(this.options.of)){
 				var ofPosition = this.options.of.css('position');
 				if(["absolute", "relative", "fixed"].indexOf(ofPosition) < 0){
 					this.options.of.css('position', 'relative')
 				}
-			}*/
-		},
-		update : function(options){
-			if(options && options.overlay === true && typeof this.options.overlayElement == 'undefined'){
-				var klass = options.overlayClass || this.options.overlayClass;
-				options.overlayElement = $('<div class="'+klass+'"></div>');
-				$('body').append(options.overlayElement.hide())
-			} else if(options && options.overlay === false && typeof this.options.overlayElement != 'undefined'){
-				this.options.overlayElement.remove();
-				delete this.options.overlayElement;
 			}
-			this._super(options);
-			this.show();
 		},
 		/**
-		 * Hide modal element and overlay if overlay exists
+		 * Trigger async `hide` event to allow users to pause it in their
+		 * modal widgets.
 		 */
 		hide : function(){
-			this.options.hide(this.element, this.overlay(), this.proxy('hideCb'))
+			this.element.triggerAsync('hide');
 		},
+		/**
+		 * This function is passed as the callback to the function that hides
+		 * the modal. We have to use the callback because users might have code
+		 * that animates the hiding or in some other way prevents immediate 
+		 * execution.
+		 */
 		hideCb : function(){
+			// Hide modal and overlay again to make sure they're really hidden.
+			this.element.hide();
+			this.overlay().hide();
+			// Trigger `hidden` event on the element after hiding is complete
+			this.element.trigger('hidden');
 			var stackIndex;
+			// Remove this element's stackId from the stack
 			if((stackIndex = stack.indexOf(this.stackId)) > -1){
 				stack.splice(stackIndex, 1);
 			}
 			if(this.options.destroyOnHide){
-				this.element.trigger('hidden');
+				// If modal window should be destroyed on hide, remove the element
 				this.element.remove();
-				this.overlay().hide();
-			} else {
-				this.element.hide();
-				this.overlay().hide();
-				this.element.trigger('hidden');
 			}
 		},
-		' hide' : function() {
-			this.hide();
+		/**
+		 * Default event handler for the `hide` event
+		 */
+		' hide.default' : function() {
+			var hideFn =  this.options.hide || this.constructor.hide;
+			var hideCb = this.proxy('hideCb');
+			hideFn(this.element, this.overlay(), hideCb);
 		},
 		/**
-		 * Show modal element and overlay if overlay exists
+		 * Call function that shows the modal
 		 */
 		show : function(){
+			var showFn = this.options.show || this.constructor.show;
 			this.moveToTop();
-			this.options.show(this.element, this.position(), this.overlay(), this.proxy('showCb'))
+			showFn(this.element, this.position(), this.overlay(), this.proxy('showCb'))
 		},
 		showCb : function(){
 			this.element.trigger('shown')
@@ -232,24 +248,38 @@ steal('can/construct/super',
 		 * Move modal to the top of the stack.
 		 */
 		moveToTop : function(){
+			// If element's stackId is not in the stack add it to the 
+			// beggining. If it exists in the stack, then move it to
+			// the beggining.
 			if($.inArray(this.stackId, stack) == -1){
 				stack.unshift(this.stackId);
 			} else {
 				stack.splice(stack.indexOf(this.stackId), 1);
 				stack.unshift(this.stackId);
 			}
+			// If overlay exists for this modal, move it on the top
+			// of all other overlay and modal elements.
 			if ( this.options.overlayElement ){
 				this.options.overlayElement.css({
 					'z-index': ++zIndex, 
 					position: this.options.overlayPosition
 				})
 			}
+			// Move modal element to the top.
 			this.element.css({'z-index': ++zIndex});
 			this.element.css('position', this.options.overlayPosition );
 		},
+		/** 
+		 * Helper function that always returns jQuery collection for the overlay
+		 * even if overlay doesn't exist. 
+		 */
 		overlay : function(){
 			return this.options.overlayElement ? this.options.overlayElement : $([]);
 		},
+		/**
+		 * Get the position where modal should placed. Save it with scroll values
+		 * substracted so we can correctly reposition the modal when user scrolls.
+		 */
 		position : function(el, ev, positionFrom){
 			var pos = this._super.apply(this, arguments);
 			this._pos = {
@@ -260,27 +290,39 @@ steal('can/construct/super',
 			this._pos.left = this._pos.left - $(this.options.of).scrollLeft();
 			return pos;
 		},
+		/** 
+		 * If `hideOnEsc` option is true and user pressed the escape button, check if 
+		 * this modal is the top one and hide it.
+		 */ 
 		"{document} keyup" : function(el, ev){
-			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId){
-				this.element.trigger('hide');
+			if(this.element.css('display') == "block" && ev.which == 27 && stack[0] == this.stackId && this.options.hideOnEsc === true){
+				this.hide();
 				ev.stopImmediatePropagation();
 			}
 		},
+		/**
+		 * Hide modal if user clicked on the overlay and `overlayClick` option is set to true.
+		 */
 		"{overlayElement} click" : function(el, ev){
 			if(this.options.overlayClick) { this.hide(); }
 		},
+		/**
+		 * Remove the overlay when modal element is removed or someone directly destroyed
+		 * can.ui.Modal instance on the element.
+		 */
 		destroy : function(){
-			if(this._removeOverlayOnDestroy === true){
-				this.overlay().remove();
-			} else {
-				this.overlay().hide();
-			}
+			this.overlay().remove();
 			this._super.apply(this, arguments)
 		},
-		// Reposition the modal on window resize
+		/**
+		 * Reposition the modal when container is resized.
+		 */
 		"{of} resize" : function(el, ev){
 			this.move();
 		},
+		/**
+		 * If `window` is the container, reposition modal on the scroll.
+		 */
 		"{of} scroll" : function(el, ev){
 			if($.isWindow(el)){
 				this.element.css('top', (this._pos.top + $(el).scrollTop()) + "px")

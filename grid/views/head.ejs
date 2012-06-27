@@ -1,15 +1,7 @@
 <tr>
-<% list(columns, function(col) { %>
-  <% if(!col.attr('hidden')) { %>
-    <th <%=  (el) -> can.data( el, 'column', col) %>>
-      <%= col.attr('text') %>
-      <% if(col.attr('sort') == 'asc') { %>
-        <i class="icon-chevron-down pull-right"></i>
-      <% } %>
-      <% if(col.attr('sort') == 'desc') { %>
-        <i class="icon-chevron-up pull-right"></i>
-      <% } %>
+<% can.each(columns, function(col) { %>
+    <th <%= (el) -> can.data(el, 'column', col) %>>
+      <%= col.header %>
     </th>
-  <% } %>
 <% }) %>
 </tr>

@@ -38,6 +38,7 @@ steal('can/control',
 		},
 	}, {
 		setup: function( el, option ) {
+			// Set the parent
 			var parent;
 			if ( option && ( $.isWindow( option ) || option.jquery )) {
 				parent = option;
@@ -52,8 +53,10 @@ steal('can/control',
 			});
 		},
 		init : function() {
-
+			// Call positionable plugin on the element
 			new can.ui.Positionable(this.element.show());
+
+			this._parentIsWindow = $.isWindow( this.options.parent[0] );
 
 			// If the block element is styled with a width or height of zero,
 			// this will still work
@@ -63,38 +66,58 @@ steal('can/control',
 					width: "1px"
 				});
 			}
-
-			if ( ! $.isWindow( this.options.parent )) {
+			if ( ! this._parentIsWindow ) {
 				// If its an element, make sure it's relatively positioned
 				this.options.parent.css("position", "relative");
 				// Put the block inside of the parent if it's not
 				if ( ! $.contains( this.options.parent[0], this.element[0] ) ) {
 					this.options.parent.append( this.element.detach() );
 				}
-			}
+				this.element
+					.css({
+						top    : $(this.options.parent).scrollTop() + "px", 
+						left   : $(this.options.parent).scrollLeft() + "px" , 
+						zIndex : this.options.zIndex,
+						right  : "auto",
+						bottom : "auto"
+					})
+					.fills({
+						all: true, 
+						parent: this.options.parent
+					});
 
-			this.element
-				.css({
-					top: $(this.options.parent).scrollTop() + "px", 
-					left: $(this.options.parent).scrollLeft() + "px" , 
-					zIndex: this.options.zIndex
+			} else {
+
+				this.element.css({
+					position : "fixed",
+					left     : 0,
+					top      : 0,
+					right    : 0,
+					bottom   : 0,
+					zIndex   : this.options.zIndex
 				})
-				.fills({
-					all: true, 
-					parent: this.options.parent
-				});
-			
+				
+			}
 		},
+		// Reposition the blocker when it's shown. If window is the parent, we are using 
+		// position fixed so we don't have to update it's position.
 		show : function(){
-			this.element.css('top', $(this.options.parent).scrollTop() + "px").show();
+			if( ! this._parentIsWindow){
+				this.element.css('top', $(this.options.parent).scrollTop() + "px").show();
+			}
+			
 		},
 		update : function(options){
 			this._super(options);
 			this.element.show().resize()
 		},
+		// Reposition the blocker when parent is scrolled. If window is the parent, we are using 
+		// position fixed so we don't have to update it's position.
 		"{parent} scroll" : function(el, ev){
-			this.element.css('top', $(el).scrollTop() + "px");
-			this.element.css('left', $(el).scrollLeft() + "px")
+			if( ! this._parentIsWindow){
+				this.element.css('top', $(el).scrollTop() + "px");
+				this.element.css('left', $(el).scrollLeft() + "px")
+			}
 		}
 	})
 })
