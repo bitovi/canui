@@ -1,66 +1,161 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
             "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="en">
-	<head>
-		<title>resizable</title>
-		<link type="text/css" href="resize.css" rel="stylesheet" />
-        <style type='text/css'>
-            body {font-family: verdana}
-            .error {border: solid 1px red;}
-            .error_text { color: red; font-size: 10px;}
-            td {padding: 3px;
-				vertical-align: top;
-			}
-			
-			
-			#first {
-				width: 200px;
-				height: 50px;
-				border: dashed 1px gray;
-				position: relative;
-			}
-			.wrap {
-				margin: 30px;
-			}
-        </style>
-	</head>
-	<body>
-		<h1>Resizable</h1>
-	    <table width='100%' style='table-layout: fixed'>
-	    	<tr>
-	    		<td>
-	    			<div class='wrap' id='first'>Here is some swell content</div>
-	    		</td>
-				<td>
-					<textarea class='wrap'>Here is my textarea</textarea>
-				</td>
-				<td>
-					<input class='wrap' type='text'/>
-				</td>
-	    	</tr>
-			<tr>
-				<td>
-					<select  class='wrap'><option>1</option></select>
-				</td>
-				<td>
-					<button type='button'  class='wrap'>try me</button>
-				</td>
-			</tr>
-	    </table>
-		
-		
-		<div id="test">Test!</div>
-		<script type='text/javascript' 
-                src='../../../steal/steal.js?canui/layout/resize'
-                package='main.js'
-                compress='false'>   
-        </script>
-		<script type='text/javascript'>
-			steal("jquery").then(function() {
-				$(function() {
-					new can.ui.layout.Resize('#test');
-				})
-			});
-		</script>
-	</body>
+  <head>
+    <title>resizable</title>
+    <link type="text/css" href="resize.css" rel="stylesheet" />
+    <style type='text/css'>
+      body {font-family: verdana}
+
+      #test {
+        border: 1px solid black;
+        height: 300px;
+        width: 300px;
+      }
+
+      #resizable {
+        height: 200px;
+        width: 300px;
+        overflow: hidden;
+      }
+      .temp_content {
+        width: 300px;
+        display: none;
+      }
+      .status {
+        background: black;
+        color: white;
+        width: 300px;
+      }
+
+      .wrap {
+        margin: 30px;
+      }
+
+      .modal {
+        width: 300px;
+        height: auto;
+        border: solid 1px black;
+        background-color: #eeeeff;
+      }
+
+      .custom-overlay {
+        background: rgba(255, 0, 247, 0.5);
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Resizable</h1>
+    <ul>
+      <li><a href="javascript://" id="resize">Resize</a></li>
+      <li><a href="javascript://" id="resizeAutoHide">Resize with hidden handles</a></li>
+      <li><a href="javascript://" id="resizeModal">Resize a Modal</a></li>
+      <li><a href="javascript://" id="resizeImage">Resize an image</a></li>
+      <li><a href="javascript://" id="resizeForm">Resize a form, disable when resizing, enable when done</a></li>
+      <li><a href="javascript://" id="destroyResize">Destroy resize after displaying full content</a></li>
+    </ul>
+
+    <div id="suite">
+      <div id="disable-content">
+        <div class="temp_content"></div>
+        <div id="resizable">Nam metus purus, convallis eu mollis lacinia, consequat eu erat. Cras ac velit sit amet dolor luctus pulvinar vel lobortis metus. Donec vehicula varius blandit. Aenean ultrices lacinia mi adipiscing pulvinar. Etiam tincidunt, magna quis pretium mattis, arcu augue varius leo, ut aliquam ligula diam sed lorem. Phasellus faucibus, nulla in aliquet tempus, quam lectus fermentum turpis, fringilla aliquet nibh ante a leo. Morbi interdum adipiscing quam, porttitor lacinia nulla pulvinar vel. Curabitur vitae venenatis lectus. Fusce lobortis dolor pellentesque est tempus suscipit. Praesent eget nunc id mauris faucibus dapibus id sed turpis. Suspendisse potenti. Etiam eros orci, porttitor sed venenatis at, accumsan ut dolor.</div>
+        <div class="status">Drag to show more content</div>
+      </div>
+      <div id="test">Test Resize that can't be wider than 400px</div>
+
+       <div id="modal" class="modal">
+        <h3>Some Modal</h3>
+
+        <p>Here is some text. Blah blah blah. I am watching SNL with Jennifer Lopez.
+          She still has it. But, I am not sure SNL does.
+        </p>
+      </div>
+      <img id="testImage" src="http://placekitten.com/300/300" height="300" width="300" />
+      <form id="testForm">
+        <input type="text" placeholder="username" />
+        <input type="password" placeholder="password" />
+        <input type="submit" value="login" />
+      </form>
+    </div>
+
+    <script type='text/javascript' 
+      src='../../../steal/steal.js'
+      package='main.js'
+      compress='false'>   
+    </script>
+    <script type='text/javascript'>
+      steal('jquery', 'canui/resize', 'canui/modal').then(function() {
+
+        var disableWhenAllShownResize = can.ui.Resize({ }, {
+          init: function(el, ev) {
+            this.options.handles = ['s'];
+            this._super.apply(this, arguments);
+            this.max_height = this.element.siblings('.temp_content').html(this.element.html()).height();
+
+          },
+          " resize": function(el, ev) {
+            if(el.height() >= this.max_height) {
+              ev.stopPropagation();
+              //this.destroy();
+              this.element.siblings('.status').html('No more content');
+            }
+          },
+          " resizestop": function(el, ev) {
+            if(el.height() >= this.max_height) {
+              this.destroy();
+            }
+          }
+        })
+
+        var toggleFormResize = can.ui.Resize({}, {
+          " resizestart": function(el, ev) {
+            el.find('input').prop('disabled', true);
+          },
+          " resizestop": function(el, ev) {
+            el.find('input').prop('disabled', false);
+          }
+        })
+
+        var resizableModal = can.ui.Modal({}, {
+          init: function() {
+            this._super.apply(this, arguments);
+            new can.ui.Resize(this.element);
+          }
+        })
+
+        $('#resize').click(function() {
+          new can.ui.Resize('#test', {
+            maxWidth: 400
+          });
+        });
+
+        $('#resizeAutoHide').click(function() {
+          new can.ui.Resize('#test', {
+            maxWidth: 400,
+            autoHide: true
+          });
+        });
+
+        $('#resizeModal').click(function() {
+          var modal = new resizableModal($('#modal'));
+        })
+
+        $('#resizeImage').click(function() {
+          new can.ui.Resize('#testImage');
+        });
+
+        $('#resizeForm').click(function() {
+          new toggleFormResize('#testForm');
+        })
+
+        $('#destroyResize').click(function() {
+          new disableWhenAllShownResize("#resizable");
+        })
+      });
+    </script>
+  </body>
 </html>
