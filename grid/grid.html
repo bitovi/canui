@@ -7,7 +7,16 @@
 
 <div class="container">
   <header class="well">
-    <h1>CanUI Grid Demo</h1>
+    <h1>CanUI Grid List Demo</h1>
+    <form class="form">
+      <fieldset>
+        <legend>Filter</legend>
+        <label>Age between</label>
+        <input type="text" name="min-age" value="50" />
+        <input type="text" name="max-age" value="80" />
+        <p><input type="submit" class="btn" value="Update filter" id="update-filter" /></p>
+      </fieldset>
+    </form>
   </header>
   <section>
     <div id="grid"></div>
@@ -16,27 +25,60 @@
 
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
-  steal('canui/grid', 'can/model', 'canui/style', function() {
+  steal('canui/grid', 'can/model', 'canui/style', 'canui/table_scroll', function () {
+
+    // Setup
     var Model = can.Model({}),
-      list = [];
+        list = [];
 
-      for(var i = 0; i < 100; i++) {
-        list.push({ name : 'Test ' + i, age : Math.ceil(Math.random(100) * 100) });
-      }
+    for (var i = 0; i < 100; i++) {
+      list.push({ name : 'Test ' + i, age : Math.ceil(Math.random(100) * 100) });
+    }
 
-      var grid = new can.ui.Grid('#grid', {
-        columns : [
-          {
-            text : 'Name',
-            name : 'name'
-          },
-          {
-            text : 'Age',
-            name : 'age'
+    // Model list
+    var people = Model.models(list),
+        getFilter = function() {
+          return {
+            min : parseInt($('[name="min-age"]').val()),
+            max : parseInt($('[name="max-age"]').val())
           }
-        ],
-        data : list
-      });
+        },
+        filter = new can.Observe(getFilter()),
+        filterCompute = can.compute(function () {
+          var folks = new can.Observe.List(), age;
+          for (var i = 0; i < people.attr('length'); i++) {
+            age = people.attr(i + '.age');
+            if (age >= filter.attr('min') && age <= filter.attr('max')) {
+              folks.push(people[i]);
+            }
+          }
+          return folks;
+        });
+
+    var grid = new can.ui.Grid('#grid', {
+      columns : [
+        {
+          header : 'Name',
+          attr : 'name'
+        },
+        {
+          header : 'Age',
+          attr : 'age'
+        },
+        {
+          header : 'Stuff',
+          attr : function() {
+            return this.attr('name') + ' (' + this.attr('age') + ')';
+          }
+        }
+      ],
+      list : filterCompute
+    });
+
+    $('#update-filter').click(function(ev) {
+      filter.attr(getFilter());
+      ev.preventDefault();
+    });
   })
 </script>
 </body>
