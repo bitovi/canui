@@ -78,7 +78,7 @@ If we want to customize show or hide behavior, we can still pass show or hide me
     }, {})
 
 
-In just a few lines of code we've implemented the modal widget that behaves similar to the Twitter bootstrap's
+In just a few lines of code we've implemented the modal widget that behaves similary to the Twitter bootstrap's
 modal widget, while using all of the low level plumbing from the can.ui.Modal.
 
 ## Example - Pausable events and modal
