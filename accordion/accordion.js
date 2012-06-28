@@ -1,7 +1,7 @@
 steal('can/control',
 	  'can/construct/proxy',
 	  'canui/selectable',
-	  'steal/less',
+	  'jquery/dom/dimensions',
 	  'canui/accordion/accordion.less',
 	  function(){
 		
@@ -100,14 +100,7 @@ can.Control("can.ui.Accordion",{
 		 * Possible values: 'vertical' or 'horizontal'.
 		 * 'vertical' by default.
 		 */
-		dir: 'vertical',
-		
-		/**
-		 * @attribute autoDim
-		 * Resets the dimension to 'auto' after activate.
-		 * 'false' by default.
-		 */
-		autoDim: false
+		dir: 'vertical'
 	}, 
 	
 	/**
@@ -131,7 +124,6 @@ can.Control("can.ui.Accordion",{
 },{
 	init : function(){
 		this._setupDom();
-		this._setupDim();
 		
 		new can.ui.Selectable(this.element, {
 			selectedClassName: this.options.css.selected,
@@ -140,9 +132,34 @@ can.Control("can.ui.Accordion",{
 			outsideDeactivate: false
 		});
 		
+		if(this.options.fillSpace){
+			var dim = this.dir().dim,
+				outer = this.dir().outer,
+				inner = this.dir().inner,
+				maxDim = this.element.parent()[dim](),
+				maxPadding = 0,
+				headers = this.element.children(this.options.header);
+				
+			headers.each(function() {
+				maxDim -= $(this)[outer]();
+			});
+			
+			headers.next().each(function() {
+				maxPadding = Math.max(maxPadding, $(this)[outer]() - $(this)[dim]());
+			})[dim](maxDim - maxPadding);
+		}
+		
+		if(this.options.dir === "horizontal"){
+			this.element.children().outerHeight(this.element.innerHeight());
+		}
+		
 		if(this.options.active){
 			this.options.active.trigger('activate', true);
 		}
+	},
+	
+	dir:function(){
+		return this.constructor.dirMap[this.options.dir];
 	},
 	
 	/**
@@ -173,37 +190,6 @@ can.Control("can.ui.Accordion",{
 	},
 	
 	/**
-	 * Sets up the dimensions for the widget.
-	 */
-	_setupDim:function(){
-		if(this.options.fillSpace){
-			var dim = this.constructor.dirMap[this.options.dir].dim,
-				outer = this.constructor.dirMap[this.options.dir].outer,
-				inner = dim = this.constructor.dirMap[this.options.dir].inner,
-				maxDim = this.element.parent()[dim](),
-				maxPadding = 0,
-				headers = this.element.children(this.options.header);
-				
-			headers.each(function() {
-				maxDim -= $(this)[outer]();
-			});
-			
-			headers.next().each(function() {
-				maxPadding = Math.max(maxPadding, $(this)[inner]() - $(this)[dim]());
-			})[dim](maxDim - maxPadding);
-			
-		} else if(this.options.autoDim) {
-			var maxDim = 0,
-				dim = this.constructor.dirMap[this.options.dir].dim,
-				outer = this.constructor.dirMap[this.options.dir].outer;
-				
-			this.element.children(this.options.header).next().each(function() {
-				maxDim = Math.max(maxDim, $(this)[outer]());
-			})[dim](maxDim);
-		}
-	},
-	
-	/**
 	 * Header 'activate' event.  
 	 * Hides the old element and shows the new one.
 	 * @param {Object} elm
@@ -211,6 +197,12 @@ can.Control("can.ui.Accordion",{
 	 * @param {Boolean} first
 	 */
 	"{header} activate":function(elm,ev,first){
+		ev.stopPropagation();
+		
+		if(this.options.disabled){
+			return false;
+		}
+		
 		var to = elm.next();
 		
 		/**
@@ -232,29 +224,24 @@ can.Control("can.ui.Accordion",{
 			return;
 		}
 		
-		var dim = this.constructor.dirMap[this.options.dir].dim,
+		var dim = this.dir().dim,
 			animation = { duration: this.options.duration },
 			from = this.options.active.next(),
-			fromDim = from[this.constructor.dirMap[this.options.dir].outer](),
-			toDim = to[this.constructor.dirMap[this.options.dir].outer](),
-			diff = toDim / fromDim,
-			autoDim = this.options.autoDim;		
+			fromDim = from[this.dir().outer](),
+			toDim = to[this.dir().outer](),
+			toInner = to[this.dir().dim](),
+			diff = toDim / fromDim;
 			
 		animation[dim] = "hide";
-			
+		
 		from.attr('title', this.options.locale.expand)
 		to.attr('title', this.options.locale.collaspe)
 		
 		to.css({ overflow: 'hidden' }).show();
-			
+
 		from.animate(animation, {
 			step:function(now){
-				to[dim](Math.ceil((fromDim - now) * diff));
-			},
-			complete:function(){
-				if(autoDim){
-					to[dim]('auto')
-				}
+				to[dim](Math.min(Math.floor((fromDim - now) * diff), toInner));
 			}
 		});
 		

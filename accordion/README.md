@@ -49,17 +49,10 @@ The accordion widget shows and hides content for a given header element, similar
 	Default: false
 	Description: Enables/Disables the accordion from expanding/collapsing.
 	
-- autoDim
-	Options: Boolean
-	Default: false
-	Description: Resets the content dimension to 'auto'.
-	
 ## Events
 
 - activate
 	Description: Occurs when an item is 'activated'.  Currently only supports 'click' but should add 'hover'.
-
-## Methods
 
 ## Localization
 

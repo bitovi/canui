@@ -5,88 +5,252 @@
 		<title>can.ui.Accordion</title>
 	</head>
 <body>
-	
-<div id="demo-html">
-	
-	<h2>Vertical</h2>
-	<p>new can.ui.Accordion($('#demo1'));</p>
 
-	<div id="demo1">
-		<h2>Aliquam tincidunt</h2>
-		<ul>
-			<li>lorem ipsum dolor</li>
-			<li>lorem ipsum dolor</li>
-			<li>lorem ipsum dolor</li>
-		</ul>
-		
-		<h2>Sit amet</h2>
-		<p>lorem ipsum dolor.</p>
-	
-		<h2>Lorem ipsum</h2>
-		<div>
-			<p>lorem ipsum dolor....</p>
-			<p>lorem ipsum dolor....</p>
-		</div>
-		
-		<h2>Lorem ipsum</h2>
-		<div id="css3">
-			<p>lorem ipsum dolor....</p>
-			<p>lorem ipsum dolor....</p>
-		</div>
+<div class="container" id="demo-html">
+	<div class="page-header">
+		<h1>can.ui.Accordion <small>canui/accordion</small></h1>
 	</div>
 	
-	<h2>Horizontal</h2>
-	<p>new can.ui.Accordion($('#demo2'), {
-		dir: "horizontal"
-	});</p>
-	
-	<div id="demo2">
-		<h2>1</h2>
-		<ul>
-			<li>lorem ipsum dolor</li>
-			<li>lorem ipsum dolor</li>
-			<li>lorem ipsum dolor</li>
-		</ul>
+	<div class="row">
 		
-		<h2>2</h2>
-		<p>lorem ipsum dolor.</p>
-	
-		<h2>3</h2>
-		<div>
-			<p>lorem ipsum dolor....</p>
-			<p>lorem ipsum dolor....</p>
-		</div>
+	<div class="span4 columns">
+		<h3>About</h3>
+		<p>The accordion widget shows and hides content for a given header element, similar to tabs.</p>
 		
-		<h2>4</h2>
-		<div id="css3">
-			<p>lorem ipsum dolor....</p>
-			<p>lorem ipsum dolor....</p>
-		</div>
+		<p>It works with a number of DOM markups as long as there is a header/content consistency.  This accordion is configurable for either horizontal or vertical styles.</p>
+		
+		<p>An accordion doesn't allow more than one content panel to be open at the same time.</p>
 	</div>
+	
+	<div class="span8 columns">
 
+		<h2>Example <small>Vertical</small></h2>
+		<pre>new can.ui.Accordion($('#demo1'));</pre>
+
+		<div id="demo1">
+			<h2>Aliquam tincidunt</h2>
+			<ul>
+				<li>lorem ipsum dolor</li>
+				<li>lorem ipsum dolor</li>
+				<li>lorem ipsum dolor</li>
+			</ul>
+	
+			<h2>Lorem ipsum</h2>
+			<div>
+				<p>lorem ipsum dolor....</p>
+				<p>lorem ipsum dolor....</p>
+			</div>
+		
+			<h2>Lorem ipsum</h2>
+			<div id="css3">
+				<p>lorem ipsum dolor....</p>
+				<p>lorem ipsum dolor....</p>
+			</div>
+		</div>
+	
+	
+	
+	
+		<h2>Example <small>Vertical - Fill Space</small></h2>
+		<pre>new can.ui.Accordion($('#demo2'), {
+			fillSpace: true
+		});</pre>
+
+		<div id="demo2-parent">
+			<div id="demo2">
+				<h2>Aliquam tincidunt</h2>
+				<ul>
+					<li>lorem ipsum dolor</li>
+					<li>lorem ipsum dolor</li>
+					<li>lorem ipsum dolor</li>
+				</ul>
+
+				<h2>Lorem ipsum</h2>
+				<div>
+					<p>lorem ipsum dolor....</p>
+					<p>lorem ipsum dolor....</p>
+				</div>
+	
+				<h2>Lorem ipsum</h2>
+				<div id="css3">
+					<p>lorem ipsum dolor....</p>
+				</div>
+			</div>
+		</div>
+	
+	
+	
+	
+		<h2>Example <small>Horizontal</small></h2>
+		<pre>new can.ui.Accordion($('#demo3'), {
+			dir: "horizontal"
+		});</pre>
+	
+		<div id="demo3">
+			<h2>1</h2>
+			<ul>
+				<li>lorem ipsum dolor</li>
+				<li>lorem ipsum dolor</li>
+				<li>lorem ipsum dolor</li>
+			</ul>
+	
+			<h2>2</h2>
+			<div>
+				<p>lorem ipsum dolor....</p>
+				<p>lorem ipsum dolor....</p>
+			</div>
+		
+			<h2>3</h2>
+			<div id="css3">
+				<p>lorem ipsum dolor....</p>
+				<p>lorem ipsum dolor....</p>
+			</div>
+		</div>
+	
+		<h2>Example <small>Horizontal - Fill Space</small></h2>
+		<pre>new can.ui.Accordion($('#demo4'), {
+			dir: "horizontal",
+			fillSpace: true
+		});</pre>
+	
+		<div id="demo4-parent">
+			<div id="demo4">
+				<h2>1</h2>
+				<ul>
+					<li>lorem ipsum dolor</li>
+					<li>lorem ipsum dolor</li>
+					<li>lorem ipsum dolor</li>
+				</ul>
+	
+				<h2>2</h2>
+				<div>
+					<p>lorem ipsum dolor....</p>
+					<p>lorem ipsum dolor....</p>
+				</div>
+		
+				<h2>3</h2>
+				<div id="css3">
+					<p>lorem ipsum dolor....</p>
+					<p>lorem ipsum dolor....</p>
+				</div>
+			</div>
+		</div>
+		
+		<h2>Options</h2>
+		
+		<table class="table table-bordered table-striped">
+         <thead>
+          <tr>
+            <th style="width: 100px;">Name</th>
+            <th style="width: 50px;">type</th>
+            <th style="width: 100px;">default</th>
+            <th>description</th>
+          </tr>
+         </thead>
+         <tbody>
+           <tr>
+            <td>active</td>
+            <td>Selector, Element, jQuery, Boolean</td>
+            <td>':first'</td>
+            <td>The active/open element by default. Set to false to display none at start.</td>
+          </tr>
+          <tr>
+            <td>dir</td>
+            <td>'vertical' or 'horizontal'</td>
+            <td>'vertical'</td>
+            <td>The direction to which the accordion will be expanding/collapsing.</td>
+          </tr>
+          <tr>
+            <td>fillSpace</td>
+            <td>Boolean</td>
+            <td>false</td>
+            <td>Determines whether the accordion completely fills the dimension based on the 'dir' option of the parent element or not.</td>
+          </tr>
+          <tr>
+            <td>header</td>
+            <td>Selector</td>
+            <td>':header'</td>
+            <td>The element to be the toggler.</td>
+          </tr>
+          <tr>
+            <td>disabled</td>
+            <td>Boolean</td>
+            <td>false</td>
+            <td>Enables/Disables the accordion from expanding/collapsing.</td>
+          </tr>
+         </tbody>
+       </table>
+
+		<h2>Events</h2>
+		<h4>activate</h4>
+		<p>Occurs when an item is 'activated'.  Currently only supports 'click' but should add 'hover'.</p>
+		
+	</div>
+</div>
 </div>	
 
 <style id="demo-css">
+
+	body{
+		margin:15px;
+	}
+
+	.accordion p, li{
+		padding:7px 10px;
+		margin:0;
+	}
+
 	#demo1{
+		margin:15px;
+		width:250px;
+		height:200px;
+	}
+	
+	#demo2-parent{
 		margin:15px;
 		height:400px;
 		width:250px;
+		background:#EEE;
+		padding:5px;
+		border:solid 1px #CCC;
 	}
 	
-	#demo2{
+	#demo3{
 		margin:15px;
 		height:200px;
 		width:550px;
+	}
+
+	#demo4-parent{
+		margin:15px;
+		height:230px;
+		width:550px;
+		background:#EEE;
+		padding:5px;
+		border:solid 1px #CCC;
+	}
+	#demo4{
+		height:230px;
 	}
 </style>
 
 <script type='text/javascript' src='../../../steal/steal.js'></script>
 <script type='text/javascript'  id="demo-source">
-steal('canui/accordion',function(){
+steal('canui/accordion', 'canui/style', function(){
 
 	new can.ui.Accordion($('#demo1'));
+	
 	new can.ui.Accordion($('#demo2'), {
+		fillSpace: true
+	});
+	
+	new can.ui.Accordion($('#demo3'), {
 		dir: "horizontal"
+	});
+	
+	new can.ui.Accordion($('#demo4'), {
+		dir: "horizontal",
+		fillSpace: true
 	});
 	
 });
