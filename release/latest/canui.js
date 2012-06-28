@@ -1,244 +1,115 @@
-(function( $ ) {
-	//evil things we should ignore
-	var matches = /script|td/,
+// Can.UI.ACCORDION
+// ----------------
 
-		// if we are trying to fill the page
-		isThePage = function( el ) {
-			return el === document || el === document.documentElement || el === window || el === document.body
-		},
-		//if something lets margins bleed through
-		bleeder = function( el ) {
-			if ( el[0] == window ) {
-				return false;
-			}
-			var styles = el.styles('borderBottomWidth', 'paddingBottom')
-			return !parseInt(styles.borderBottomWidth) && !parseInt(styles.paddingBottom)
-		},
-		//gets the bottom of this element
-		bottom = function( el, offset ) {
-			//where offsetTop starts
-			return el.outerHeight() + offset(el);
+@import "../style/bootstrap/less/reset.less";
+@import "../style/bootstrap/less/variables.less";
+@import "../style/bootstrap/less/mixins.less";
+
+.accordion{
+	font-family:@sansFontFamily;
+	
+	.accordion-toggle {
+		border: 1px solid @btnBorder;
+		background:@btnBackground;
+		
+		display: block;
+		margin:0;
+	  	padding:0;
+		outline:none;
+		cursor:pointer;
+		text-deocoration:none;
+		
+		font-size: @baseFontSize;
+	  	line-height: @baseLineHeight;
+		
+		&:hover {
+	    	background:#ddd;
+	  	}
+	}
+	
+	.accordion-toggle.active{
+		color: @white;
+		text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+		background-color: @linkColor;
+	}
+	
+	.accordion-body {
+		display:none;
+		margin:0;
+		list-style:none;
+		border: 1px solid @btnBorder;
+	}
+}
+
+.accordion_vertical{
+
+	.accordion-toggle {
+		border-bottom:none;
+	  	padding: 8px 15px;
+
+		&.first{
+			.border-radius(4px 4px 0 0);
 		}
-		pageOffset = function( el ) {
-			return el.offset().top
-		},
-		offsetTop = function( el ) {
-			return el[0].offsetTop;
-		},
-		inFloat = function( el, parent ) {
-			while ( el && el != parent ) {
-				var flt = $(el).css('float')
-				if ( flt == 'left' || flt == 'right' ) {
-					return flt;
-				}
-				el = el.parentNode
-			}
-		},
-		/**
-		 * @function jQuery.fn.fills
-		 * @parent jQuery.fills
-		 * @test jquery/dom/fills/funcunit.html
-		 * @plugin jquery/dom/fills
-		 *
-		 * Fills a parent element's height with the current element.
-		 * This is extremely useful for complex layout, especially when you want to account for line-wrapping.
-		 *
-		 * ## Basic Example
-		 *
-		 * If you have the following html:
-		 *
-		 *     <div id='box'>
-		 * 	    <p>I am a long heading.</p>
-		 * 	    <div id='child'>I'm a child.</div>
-		 *     </div>
-		 *
-		 * The follow makes `#child` fill up `#box`:
-		 *
-		 *     $('#child').can_ui_layout_fill("#box")
-		 *
-		 * ## Limitations
-		 *
-		 * Fill currently does not well with:
-		 *
-		 *   - Bleeding margins - Where margins leak through parent elements
-		 *     because the parent elements do not have a padding or border.
-		 *
-		 *   - Tables - You shouldn't be using tables to do layout anyway.
-		 *
-		 *   - Floated Elements - the child element has `float: left` or `float: right`
-		 *
-		 *
-		 * @param {HTMLElement|selector|Object} [parent] the parent element
-		 * to fill, defaults to the element's parent.
-		 *
-		 * The following fills the parent to `#child`:
-		 *
-		 *     $('#child').fills()
-		 *
-		 * A selector can also be pased.  This selector is passed to jQuery's
-		 * closet method.  The following matches the first `#parent` element that
-		 * is a parentNode of `#child`:
-		 *
-		 *     $('#child').fills("#parent")
-		 *
-		 * An element or window can also be passed.  The following will make
-		 * `#child` big enough so the entire window is filled:
-		 *
-		 *      $('#child').fills(window)
-		 *
-		 * If you pass an object, the following options are available:
-		 *
-		 * - __parent__ - The parent element selector or jQuery object
-		 * - __className__ - A class name to add to the element that fills
-		 * - __all__ - Reset the parents height when resizing
-		 *
-		 * @return {jQuery} the original jQuery collection for chaining.
-		 */
-		filler = $.fn.fills = function( parent ) {
-			var options = parent;
-			options || (options = {});
-			if(typeof options == 'string'){
-				options = this.closest(options)
-			}
-			if ( options.jquery || options.nodeName ) {
-				options = {parent: options };
-			}
-			// Set the parent
-			options.parent || (options.parent = $(this).parent());
-			options.parent = $(options.parent)
-
-			// setup stuff on every element
-			if(options.className) {
-				this.addClass(options.className)
-			}
-
-			var thePage = isThePage(options.parent[0]);
-			
-			if ( thePage ) {
-				options.parent = $(window)
-			}
-
-			this.each(function(){
-				var evData = {
-					filler: $(this),
-					inFloat: inFloat(this, thePage ? document.body : options.parent[0]),
-					options: options
-				},
-				cb = function() {
-					filler.parentResize.apply(this, arguments)
-				}
-				// Attach to the `resize` event
-				$(options.parent).bind('resize', evData, cb);
-
-				$(this).bind('destroyed', evData, function( ev ) {
-					if(options.className) {
-						$(ev.target).removeClass(options.className)
-					}
-					$(options.parent).unbind('resize', cb)
-				});
-				
-			});
-
-			// resize to get things going
-			var func = function() {
-				options.parent.resize();
-			}
-
-			if ( $.isReady ) {
-				func();
-			} else {
-				$(func)
-			}
-			return this;
-		};
-
-
-	$.extend(filler, {
-		parentResize : function( ev ) {
-			if (ev.data.filler.is(':hidden')) {
-				return;
-			}
-			
-			var parent = $(this),
-				isWindow = this == window,
-				container = (isWindow ? $(document.body) : parent),
-
-				//if the parent bleeds margins, we don't care what the last element's margin is
-				isBleeder = bleeder(parent),
-				children = container.children().filter(function() {
-					if ( matches.test(this.nodeName.toLowerCase()) ) {
-						return false;
-					}
-
-					var get = $.styles(this, ['position', 'display']);
-					return get.position !== "absolute" && get.position !== "fixed"
-						&& get.display !== "none" && !jQuery.expr.filters.hidden(this)
-				}),
-				last = children.eq(-1),
-				first,
-				parentHeight = parent.height() - (isWindow ? parseInt(container.css('marginBottom'), 10) || 0 : 0),
-				currentSize;
-			var div = '<div style="height: 0px; line-height:0px;overflow:hidden;' + (ev.data.inFloat ? 'clear: both' : '') + ';"/>'
-
-			if ( isBleeder ) {
-				//temporarily add a small div to use to figure out the 'bleed-through' margin
-				//of the last element
-				last = $(div).appendTo(container);
-				
-			}
-
-			//for performance, we want to figure out the currently used height of the parent element
-			// as quick as possible
-			// we can use either offsetTop or offset depending ...
-			if ( last && last.length > 0 ) {
-				if ( last.offsetParent()[0] === container[0] ) {
-
-					currentSize = last[0].offsetTop + last.outerHeight();
-				} else if (last.offsetParent()[0] === container.offsetParent()[0]) {
-					// add pos abs for IE7 but
-					// might need to adjust for the addition of first's hheight
-					var curLast =last[0].offsetTop;
-					first = $(div).prependTo(container);
-					
-					currentSize = ( curLast + last.outerHeight() ) - first[0].offsetTop;
-					
-					first.remove();
-				} else {
-					// add first so we know where to start from .. do not bleed in this case
-					first = $(div).prependTo(container);
-
-					currentSize = ( last.offset().top + last.outerHeight() ) - first.offset().top;
-					first.remove();
-				}
-			}
-
-			// what the difference between the parent height and what we are going to take up is
-			var delta = parentHeight - currentSize,
-				// the current height of the object
-				fillerHeight = ev.data.filler.height();
-
-			//adjust the height
-			if ( ev.data.options.all ) {
-				// we don't care about anything else, we are likely absolutely positioned
-				// we need to fill the parent width
-				// temporarily collapse, then expand
-				ev.data.filler.height(0).width(0);
-				var parentWidth = parent.width(),
-					parentHeight = parent.height();
-
-				ev.data.filler.outerHeight(parentHeight);
-				ev.data.filler.outerWidth(parentWidth);
-			} else {
-				ev.data.filler.height(fillerHeight + delta)
-			}
-
-			//remove the temporary element
-			if ( isBleeder ) {
-				last.remove();
-			}
+	
+		&.last{
+			.border-radius(0 0 4px 4px);
+			border-bottom:solid 1px @btnBorder;
 		}
-	});
-})(jQuery);
+	}
+	
+	.accordion-toggle.active{
+		&.last{
+			.border-radius(0);
+		}
+	}
+	
+	.accordion-body {
+		padding: 9px 15px;
+		border-top:none;
+		margin-bottom:-1px;
+		
+		&.last{
+			.border-radius(0 0 4px 4px);
+		}
+	}
+}
+
+.accordion_horizontal{
+
+	.accordion-toggle {
+		float:left;
+		height:100%;
+	  	padding: 9px 15px;
+		margin-left:-1px;
+
+		&.first{
+			.border-radius(4px 0 0 4px);
+		}
+	
+		&.last{
+			.border-radius(0 4px 4px 0);
+			border-bottom:solid 1px @btnBorder;
+		}
+	}
+	
+	.accordion-toggle.active{
+		&.last{
+			.border-radius(0);
+		}
+	}
+	
+	.accordion-body {
+		float:left;
+		height:100%;
+		padding: 9px 15px;
+		border-left:none;
+		
+		&.last{
+			.border-radius(0 4px 4px 0);
+		}
+	}
+}
+;
 (function(){
 
 //we have to clear out activate
@@ -708,7 +579,7 @@ can.Control('can.ui.Selectable',{
 (function(){
 		
 /**
- * @class can.ui.nav.Accordion
+ * @class can.ui.Accordion
  * @parent canui
  * @test canui/nav/accordion/funcunit.html
  * 
@@ -731,14 +602,16 @@ can.Control("can.ui.Accordion",{
 		 * Css Classes to be assigned to 'active', 'hover', and 'selected'.
 		 *
 		 * Defaults are:
-		 * 		active - 'ui-state-active'
-		 *		hover - 'ui-state-hover'
+		 * 		active - 'active'
+		 *		hover - 'hover'
 		 *		selected - 'ui-state-selected'
 		 */
 		css: {
-			activated: "ui-state-active",
-			hover: "ui-state-hover",
-			selected: "ui-state-selected"
+			header: "accordion-toggle",
+			content: "accordion-body",
+			activated: "active",
+			hover: "hover",
+			selected: "selected"
 		},
 
 		/**
@@ -785,7 +658,7 @@ can.Control("can.ui.Accordion",{
 		 * Element for the active element.
 		 * Undefined by default.
 		 */
-		active: undefined,
+		active: ":first",
 
 		/**
 		 * @attribute fillSpace
@@ -818,17 +691,20 @@ can.Control("can.ui.Accordion",{
 	dirMap: {
 		horizontal: {
 			dim: "width",
-			outer: "outerWidth"
+			outer: "outerWidth",
+			inner: "innerWidth"
 		},
 		vertical: {
 			dim: "height",
-			outer: "outerHeight"
+			outer: "outerHeight",
+			inner: "innerHeight"
 		}
 	}
 	
 },{
 	init : function(){
 		this._setupDom();
+		this._setupDim();
 		
 		new can.ui.Selectable(this.element, {
 			selectedClassName: this.options.css.selected,
@@ -837,12 +713,8 @@ can.Control("can.ui.Accordion",{
 			outsideDeactivate: false
 		});
 		
-		if(this.options.fillSpace){
-			new can.ui.layout.Fill(this.element);
-		}
-		
 		if(this.options.active){
-			this.options.active.trigger('activate');
+			this.options.active.trigger('activate', true);
 		}
 	},
 	
@@ -850,14 +722,58 @@ can.Control("can.ui.Accordion",{
 	 * Sets up the dom for the widget, adds css, titles, and tab indexes.
 	 */
 	_setupDom:function(){
-		var expand = this.options.locale.expand;
-		this.element.addClass('ui-accordion ui-widget ui-helper-reset');
-		this.element.children(this.options.header).each(function(i){
-			$(this).addClass('ui-accordion-header ui-helper-reset ui-state-default');
-			$(this).attr('title', expand);
-			$(this).attr('tabindex', i)
-			$(this).next().addClass('ui-accordion-content ui-helper-reset ui-widget-content');
-		});
+		this.element.addClass('accordion accordion_' + this.options.dir);
+		
+		if(typeof this.options.active === "string"){
+			this.options.active = this.element.find(this.options.active);
+		}
+		
+		var headers = this.element.children(this.options.header);
+		headers.each(this.proxy(function(i,elm){
+			var $elm = $(elm).addClass(this.options.css.header)
+				  			 .attr('title', this.options.locale.expand)
+				  			 .attr('tabindex', i),
+				$next = $elm.next().addClass(this.options.css.content);
+				
+			if(i === 0){
+				$elm.addClass('first')
+				$next.addClass('first')
+			} else if(i === (headers.length - 1)){
+				$elm.addClass('last')
+				$next.addClass('last')
+			}
+		}));
+	},
+	
+	/**
+	 * Sets up the dimensions for the widget.
+	 */
+	_setupDim:function(){
+		if(this.options.fillSpace){
+			var dim = this.constructor.dirMap[this.options.dir].dim,
+				outer = this.constructor.dirMap[this.options.dir].outer,
+				inner = dim = this.constructor.dirMap[this.options.dir].inner,
+				maxDim = this.element.parent()[dim](),
+				maxPadding = 0,
+				headers = this.element.children(this.options.header);
+				
+			headers.each(function() {
+				maxDim -= $(this)[outer]();
+			});
+			
+			headers.next().each(function() {
+				maxPadding = Math.max(maxPadding, $(this)[inner]() - $(this)[dim]());
+			})[dim](maxDim - maxPadding);
+			
+		} else if(this.options.autoDim) {
+			var maxDim = 0,
+				dim = this.constructor.dirMap[this.options.dir].dim,
+				outer = this.constructor.dirMap[this.options.dir].outer;
+				
+			this.element.children(this.options.header).next().each(function() {
+				maxDim = Math.max(maxDim, $(this)[outer]());
+			})[dim](maxDim);
+		}
 	},
 	
 	/**
@@ -865,22 +781,33 @@ can.Control("can.ui.Accordion",{
 	 * Hides the old element and shows the new one.
 	 * @param {Object} elm
 	 * @param {Object} event
+	 * @param {Boolean} first
 	 */
-	"{header} activate":function(elm,ev){
-		var to = elm.next(),
-			dim = this.constructor.dirMap[this.options.dir].dim,
-			animation = {
-				duration: this.options.duration
-			};
+	"{header} activate":function(elm,ev,first){
+		var to = elm.next();
 		
-		if (!this.options.active) {
-			animation[dim] = "show";
-			to.animate(animation);
+		/**
+		 * @hide
+		 * If no other element is 'active',
+		 * just show the new one and return.
+		 */
+		if (this.options.active && first === true) {
+			to.show();
 			this.options.active = elm;
 			return;
 		}
 		
-		var from = this.options.active.next(),
+		/**
+		 * @hide
+		 * If we click the same elm, return.
+		 */
+		if(this.options.active.is(elm)){
+			return;
+		}
+		
+		var dim = this.constructor.dirMap[this.options.dir].dim,
+			animation = { duration: this.options.duration },
+			from = this.options.active.next(),
 			fromDim = from[this.constructor.dirMap[this.options.dir].outer](),
 			toDim = to[this.constructor.dirMap[this.options.dir].outer](),
 			diff = toDim / fromDim,
@@ -891,7 +818,7 @@ can.Control("can.ui.Accordion",{
 		from.attr('title', this.options.locale.expand)
 		to.attr('title', this.options.locale.collaspe)
 		
-		to.css({ height: 0, overflow: 'hidden' }).show();
+		to.css({ overflow: 'hidden' }).show();
 			
 		from.animate(animation, {
 			step:function(now){
