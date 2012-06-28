@@ -2,89 +2,94 @@
             "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="en">
 	<head>
-		<title>accordion</title>
-        <style type='text/css'>
-            body {font-family: verdana}
-            .error {border: solid 1px red;}
-            .error_text { color: red; font-size: 10px;}
-            td {padding: 3px;}
-			#accordion {
-				height: 500px;
-				width: 200px;
-				border: solid 1px #666;
-			}
-			ul {
-				margin: 0px;
-			}
-        </style>
-		<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" />
+		<title>can.ui.Accordion</title>
 	</head>
-	<body>
-		
-		 	<a href='javascript://' id='resize'>Resize</a>
-		 	
-	    <div id='accordion'>
-	    	<h3>Accordion</h3>
-			<ul class='content' style="overflow:auto;">
-				<li>Con1</li>
-				<li>Con1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
-				<li>Content for 1</li>
+<body>
+	
+<div id="demo-html">
+	
+	<h2>Vertical</h2>
+	<p>new can.ui.Accordion($('#demo1'));</p>
 
-				
-				 
-			</ul>
-			<h3>two</h3>
-			<div class='content'>Another Piece of Content 2 </div>
-			<h3>three</h3>
-			<div class='content'>content 3 </div>
-			
-			<h3>four</h3>
-			
-			<h3>five</h3>
-			<div class='content'> Content Five</div>
-			 
-	    </div>
-		<br clear="all" />
+	<div id="demo1">
+		<h2>Aliquam tincidunt</h2>
+		<ul>
+			<li>lorem ipsum dolor</li>
+			<li>lorem ipsum dolor</li>
+			<li>lorem ipsum dolor</li>
+		</ul>
 		
- 		<a href='javascript://' id='resize_scroll'>Resize Scroll</a>
-		<a href='javascript://' id='resize_unscroll'>Resize Unscroll</a>
+		<h2>Sit amet</h2>
+		<p>lorem ipsum dolor.</p>
+	
+		<h2>Lorem ipsum</h2>
+		<div>
+			<p>lorem ipsum dolor....</p>
+			<p>lorem ipsum dolor....</p>
+		</div>
 		
-		<script type='text/javascript' src='../../steal/steal.js'></script>
-		<script type='text/javascript'>
-		steal('canui/accordion').then(function(){
+		<h2>Lorem ipsum</h2>
+		<div id="css3">
+			<p>lorem ipsum dolor....</p>
+			<p>lorem ipsum dolor....</p>
+		</div>
+	</div>
+	
+	<h2>Horizontal</h2>
+	<p>new can.ui.Accordion($('#demo2'), {
+		dir: "horizontal"
+	});</p>
+	
+	<div id="demo2">
+		<h2>1</h2>
+		<ul>
+			<li>lorem ipsum dolor</li>
+			<li>lorem ipsum dolor</li>
+			<li>lorem ipsum dolor</li>
+		</ul>
+		
+		<h2>2</h2>
+		<p>lorem ipsum dolor.</p>
+	
+		<h2>3</h2>
+		<div>
+			<p>lorem ipsum dolor....</p>
+			<p>lorem ipsum dolor....</p>
+		</div>
+		
+		<h2>4</h2>
+		<div id="css3">
+			<p>lorem ipsum dolor....</p>
+			<p>lorem ipsum dolor....</p>
+		</div>
+	</div>
 
-				new can.ui.Accordion($('#accordion'));
+</div>	
 
-				$('#resize').click(function(){
-					$('#accordion').height(550).trigger('resize');
-				});
-			
-				$('#resize_scroll').click(function(){
-					$('#accordion').height(250).trigger('resize');
-				});
-			
-				$('#resize_unscroll').click(function(){
-					$('#accordion').height(800).trigger('resize');
-				});
-			
-			});
-		</script>
-	</body>
+<style id="demo-css">
+	#demo1{
+		margin:15px;
+		height:400px;
+		width:250px;
+	}
+	
+	#demo2{
+		margin:15px;
+		height:200px;
+		width:550px;
+	}
+</style>
+
+<script type='text/javascript' src='../../../steal/steal.js'></script>
+<script type='text/javascript'  id="demo-source">
+steal('canui/accordion',function(){
+
+	new can.ui.Accordion($('#demo1'));
+	new can.ui.Accordion($('#demo2'), {
+		dir: "horizontal"
+	});
+	
+});
+</script>
+</body>
 </html>
