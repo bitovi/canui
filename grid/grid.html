@@ -71,18 +71,21 @@
             return element.attr('name') + ' (' + element.attr('age') + ')';
           }
         }
-      ]
+      ],
+      list : filterCompute
     });
 
     $('#update-filter').click(function(ev) {
       ev.preventDefault();
-      filter.attr(getFilter());
+      // filter.attr(getFilter());
+      console.log([people[10], people[5]]);
+      console.log(grid.rows([people[10], people[5]]));
     });
 
-    $('#grid').trigger('loading', 'Custom loading text...');
-    setTimeout(function() {
-      grid.list(people);
-    }, 1500);
+    $('[data-cid]').click(function() {
+      var model = grid.items(this);
+      console.log(model);
+    });
   })
 </script>
 </body>
