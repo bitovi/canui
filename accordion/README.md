@@ -48,11 +48,33 @@ The accordion widget shows and hides content for a given header element, similar
 	Options: Boolean
 	Default: false
 	Description: Enables/Disables the accordion from expanding/collapsing.
+
+- animation
+	Options: Boolean, Object
+	Default: { effect: 'slide', speed: 'fast' }
+	Description: Animation to use when showing elements.  To disabled animations, pass false.  
 	
+- animation : effect
+	Options: 'blind', 'clip', 'drop', 'explode', 'fold', 'puff', 'slide', 'scale', 'size', 'pulsate'
+	Default: 'slide'
+	Description: Animation effect to use. For more information on animations, visit: http://jqueryui.com/demos/effect/ 
+
+- animation : speed
+	Options: Integer, 'slow' or 'fast'
+	Default: 'fast'
+	Descriopnt: A string representing one of the predefined speeds ("slow" or "fast") or the number of milliseconds to run the animation (e.g. 1000).
+
 ## Events
 
 - activate
-	Description: Occurs when an item is 'activated'.  Currently only supports 'click' but should add 'hover'.
+	Description: Occurs when an item is 'activated'.  
+	Notes: Currently only supports 'click' but should add 'hover'.
+
+# Methods
+
+- show
+	Arguments: Selector or Element
+	Description: Shows the passed element.
 
 ## Localization
 
