@@ -22,6 +22,7 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 		equal(container.find('th').length, 2, 'Both columns rendered as table headings');
 		ok(container.find('td:contains("No data")').length, 'Empty text columns exists');
 		equal(grid.items().length, 0, 'Grid item list is empty');
+		container.remove();
 	});
 
 	test("Initialize with Array, set Array", function () {
@@ -57,6 +58,7 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 		]);
 
 		equal(container.find('[data-cid] td').first().html(), 'Test 3', 'Content set properly');
+		container.remove();
 	});
 
 	test("Initialize with can.Observe.List", function () {
@@ -78,6 +80,7 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 		equal(container.find('th').length, 2, 'Both columns rendered as table headings');
 		equal(grid.items().length, 2, 'Grid list has two items');
 		equal(grid.items(), people, 'List got passed right through');
+		container.remove();
 	});
 
 	test("Initialize with can.Deferred, resolve with array", function () {
@@ -102,6 +105,7 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 		]);
 		equal(grid.items().length, 2, 'Grid list has two items');
 		equal(container.find('[data-cid] td').first().html(), 'Deferred Test 1', 'Content set properly');
+		container.remove();
 	});
 
 	test("Initialize with can.compute, return Array, set can.compute", function () {
@@ -144,6 +148,38 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 		equal(container.find('[data-cid] td').first().html(), 'Other Observer 1', 'Content set properly');
 		equal(grid.items().length, observe.attr('count') + 1, 'Added count items with different compute');
 		equal(grid.items()[0].age, 90, 'Also updated age');
+		container.remove();
+	});
+
+	test("Computed property columns", function() {
+		var container = $('<div>').appendTo('#qunit-test-area'),
+			people = new can.Observe.List([
+				{
+					name : 'Comp 1',
+					age : 87
+				},
+				{
+					name : 'Comp 2',
+					age : 55
+				}
+			]),
+			grid = new can.ui.Grid(container, {
+				columns : [{
+					header : 'Person',
+					attr : function(person) {
+						return person.attr('name') + ' (' + person.attr('age') + ')';
+					}
+				}],
+				list : people
+			});
+
+		equal(container.find('[data-cid] td:eq(0)').html(), 'Comp 1 (87)', 'Content set properly');
+		equal(container.find('[data-cid] td:eq(1)').html(), 'Comp 2 (55)', 'Content set properly');
+		people.attr('0.name', 'Updated comp');
+		people.attr('1.age', 90);
+		equal(container.find('[data-cid] td:eq(0)').html(), 'Updated comp (87)', 'Content set properly');
+		equal(container.find('[data-cid] td:eq(1)').html(), 'Comp 2 (90)', 'Computed content updated');
+		container.remove();
 	});
 
 	test("Live binding", function() {
@@ -177,14 +213,99 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 		people.pop();
 		equal(grid.items().length, 2, 'Item got removed');
 		equal(container.find('tr[data-cid]').length, 2, 'Row got removed');
+		container.remove();
 	});
 
 	test(".rows()", function () {
+		var container = $('<div>').appendTo('#qunit-test-area'),
+			people = new can.Observe.List([
+				{
+					name : 'Row 1',
+					age : 20
+				},
+				{
+					name : 'Row 2',
+					age : 21
+				}
+			]),
+			grid = new can.ui.Grid(container, {
+				columns : columns,
+				list : people
+			});
+
+		var rows = grid.rows(people[0]);
+		equal(rows.length, 1, 'Got one row');
+		equal(rows.find('td:first').html(), 'Row 1', 'First row');
+		var rows = grid.rows(people[1]);
+		equal(rows.length, 1, 'Got one row');
+		equal(rows.find('td:first').html(), 'Row 2', 'Second row');
+		container.remove();
 	});
 
 	test(".items()", function () {
+		var container = $('<div>').appendTo('#qunit-test-area'),
+			people = new can.Observe.List([
+				{
+					name : 'Item 1',
+					age : 100
+				},
+				{
+					name : 'Item 2',
+					age : 99
+				}
+			]),
+			grid = new can.ui.Grid(container, {
+				columns : columns,
+				list : people
+			});
+
+		var person = grid.items(container.find('tbody tr:first'));
+		ok(person instanceof can.Observe, 'Got an observe instance');
+		var people = grid.items(container.find('tbody tr'));
+		ok(people instanceof can.Observe.List, 'Got an observe list');
+		equal(people.length, 2, 'Got two instances');
+		equal(people[0].attr('name'), 'Item 1', 'Correct item');
+		container.remove();
 	});
 
-	test(".list() changing", function() {
+	test(".list() change", function() {
+		var container = $('<div>').appendTo('#qunit-test-area'),
+			oldList = [
+				{
+					name : 'Test 1',
+					age : 0
+				},
+				{
+					name : 'Test 2',
+					age : 1
+				}
+			],
+			grid = new can.ui.Grid(container, {
+				columns : columns,
+				list : oldList
+			}),
+			newList = [
+				{
+					name : 'Test 3',
+					age : 4
+				},
+				{
+					name : 'Test 4',
+					age : 2
+				}
+			],
+			dfd = can.Deferred(),
+			compute = can.compute(function() {
+				return oldList;
+			});
+
+		equal(grid.items()[0].attr('name'), 'Test 1', 'Item set');
+		grid.list(dfd);
+		ok(container.find('td:contains("Loading...")').length, 'Grid is showing loading text');
+		dfd.resolve(newList);
+		equal(grid.items()[0].attr('name'), 'Test 3', 'New item set');
+		grid.list(compute);
+		equal(grid.items()[0].attr('name'), 'Test 1', 'Compute set to old item');
+		container.remove();
 	});
 });
