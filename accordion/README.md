@@ -70,7 +70,7 @@ The accordion widget shows and hides content for a given header element, similar
 	Description: Occurs when an item is 'activated'.  
 	Notes: Currently only supports 'click' but should add 'hover'.
 
-# Methods
+## Methods
 
 - show
 	Arguments: Selector or Element
