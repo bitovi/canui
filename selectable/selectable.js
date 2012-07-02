@@ -222,7 +222,7 @@ can.Control('can.ui.Selectable',{
 	activated : function(el, ev){
 		ev = ev || {};
 		// if we should only select one element ...
-		if(!this.options.multiActivate || (!ev.shiftKey && !ev.ctrlKey)){
+		if(!this.options.multiActivate || (!ev.shiftKey && !ev.ctrlKey && !ev.metaKey)){
 			// remove the old activated ...
 			this.element
 				.find("." + this.options.activatedClassName)
@@ -232,7 +232,7 @@ can.Control('can.ui.Selectable',{
 			
 			el.trigger("activate", el.models ? [el.models()] : [el]);
 			
-		}else if(ev.ctrlKey){ // if we add to the 'activated' list
+		}else if(ev.ctrlKey || ev.metaKey){ // if we add to the 'activated' list
 			
 			// Toggle
 			if(el.hasClass(this.options.activatedClassName)){
