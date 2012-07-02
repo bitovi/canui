@@ -35,7 +35,8 @@
         src='../../steal/steal.js'>
 </script>
 <script type='text/javascript'>
-	steal( 'can/control/plugin').then('canui/table_scroll', 'canui/style').then('canui/table_scroll/table_scroll.less', function () {
+	steal( 'can/control/plugin').then('canui/table_scroll', 'canui/style')
+  .then('canui/table_scroll/table_scroll.less', function () {
 		var body = $('tbody'),
 				html = [],
 				cols = 8,
@@ -77,7 +78,7 @@
 		})
 
 		$('#changeColumn').click(function () {
-			els.thead.find('th:eq(1)').text('NEW COLUMN')
+			els.thead.find('th:eq(1)').text('NEW COLUMN WITHLONGERISHTEXT')
 			$('.canui_table_scroll').can_ui_table_scroll('changed')
 		})
 	})

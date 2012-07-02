@@ -1,4 +1,9 @@
-steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jquery/event/move').then('./position.js').then(function($){
+steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jquery/event/reverse')
+.then('./position.js').then(function($){
+	if(!$.event.special.move) {
+		$.event.reverse('move');
+	}
+
 	/**
 	 * @class can.ui.layout.Positionable
 	 * @parent canui

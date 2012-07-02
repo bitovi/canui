@@ -1,6 +1,4 @@
-steal('can/construct/proxy',
-	'can/construct/super',
-	'can/control',
+steal('can/control',
 	'canui/fills',
 	'canui/util/scrollbar_width.js')
 .then(function ($) {
@@ -20,13 +18,13 @@ steal('can/construct/proxy',
 					this.$ = {
 						table : el
 					}
-					this._super(this.$.table.wrap("<div></div>").parent(),
+					can.Control.prototype.setup.call(this, this.$.table.wrap("<div></div>").parent(),
 						options)
 				} else {
 					this.$ = {
 						table : el.find('table:first')
 					}
-					this._super(el, options);
+					can.Control.prototype.setup.call(this, el, options);
 				}
 
 			},
@@ -170,7 +168,7 @@ steal('can/construct/proxy',
 				// as a buffer for the scroll bar
 				this.$.body = this.$.scrollBody.parent();
 
-				this._super(this.$.body.parent()[0], options);
+				can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
 			},
 
 			init : function () {
@@ -178,7 +176,7 @@ steal('can/construct/proxy',
 				this.$.body.css("width", "100%");
 
 				// get the thead, and tfoot into their own table.
-				$.each(['thead', 'tfoot'], this.proxy('_wrapWithTable'))
+				$.each(['thead', 'tfoot'], can.proxy(this._wrapWithTable, this));
 
 
 				// get the tbody
@@ -222,7 +220,7 @@ steal('can/construct/proxy',
 				//make a quick resize
 				//then redraw the titles
 
-				this.$.scrollBody.on('scroll', this.proxy('bodyScroll'));
+				this.$.scrollBody.on('scroll', can.proxy(this.bodyScroll, this));
 				this._sizeHeaderAndFooters();
 			},
 
@@ -438,9 +436,9 @@ steal('can/construct/proxy',
 			},
 
 			destroy : function () {
-				this.$.scrollBody.off('scroll', this.proxy('bodyScroll'));
+				this.$.scrollBody.off('scroll', can.proxy(this.bodyScroll, this));
 				delete this.$;
-				this._super();
+				can.Control.prototype.destroy.call(this);
 			}
 		})
 })

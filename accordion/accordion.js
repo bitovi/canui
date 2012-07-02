@@ -2,7 +2,6 @@ steal('can/control',
 	  'can/construct/proxy',
 	  'canui/selectable',
 	  'jquery/dom/dimensions',
-	  'canui/accordion/accordion.less',
 	  function(){
 		
 /**

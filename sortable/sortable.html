@@ -90,16 +90,16 @@
 		<div class='verticalDrag' id='vertDrag'>GO VERTICAL</div>
 		
 		<script type='text/javascript' 
-                src='../../../steal/steal.js'>   
+                src='../../steal/steal.js'>
         </script>
 		<script type='text/javascript'>
-			steal("canui/layout/sortable" , function(){
+			steal("canui/sortable" , function(){
 				$('#sortable, #sortable2, #sortable3').on("sortable.addPlaceholder", function(){
 					$(document.body).append("<p>added placeholder</p>")
 				});
 
-				new can.ui.layout.Sortable($('#sortable'));
-				new can.ui.layout.Sortable($('#sortable2'), {
+				new can.ui.Sortable($('#sortable'));
+				new can.ui.Sortable($('#sortable2'), {
 				  makePlaceHolder: function(el, ev, drop, drag) {
 						// Example for if a multiple item drag UI was implemented (using a single drag target, but injecting multiple items)
 						var css = {
@@ -115,7 +115,7 @@
 					}
 				});
 
-				new can.ui.layout.Sortable($("#sortable3"), {
+				new can.ui.Sortable($("#sortable3"), {
 					direction: 'vertical'
 				});
 				

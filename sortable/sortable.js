@@ -9,9 +9,9 @@ steal('can/control',
 		VERTICAL = 'vertical';
 
 	/**
-	 * @class can.ui.layout.Sortable
+	 * @class can.ui.Sortable
 	 * @parent canui
-	 * @test canui/layout/sortable/funcunit.html
+	 * @test canui/sortable/funcunit.html
 	 *
 	 * @description Makes a sortable control that can accept outside draggables.
 	 *
@@ -118,7 +118,7 @@ steal('can/control',
 	 *
 	 * @return {can.ui.layout.Sortable}
 	 */
-	can.Control("can.ui.layout.Sortable",{
+	can.Control("can.ui.Sortable",{
 		defaults:{
 			//makes a placeholder for the element dragged over
 			makePlaceHolder : function(el, ev, drop, drag){
