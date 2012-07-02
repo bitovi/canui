@@ -113,6 +113,10 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 *	in the format of `{ top: x, left: y }` to handle the positioning. If a
 	 *	`using` parameter is passed, the element won't be positioned
 	 *	automatically, but must be positioned by hand in the `using` callback.
+	 * - `hideWhenOfInvisible` - `{Boolean}` - hide element when `of` element is
+	 * not visible because of scrolling. If you set this to `true` make sure that
+	 * `of` element's parent that is scrollable has `position` set to `relative` or
+	 *`absolute`
 	 *
 	 * 
 	 * This plugin is built on top of the [jQuery UI Position Plugin](http://docs.jquery.com/UI/Position),
@@ -222,6 +226,12 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 				return false;
 			} 
 			if(this.options.of.position().top > this.options.of.offsetParent().height()){
+				return false;
+			}
+			if(this.options.of.position().left < 0){
+				return false;
+			}
+			if(this.options.of.position().left + this.options.of.width() > this.options.of.offsetParent().width()){
 				return false;
 			}
 			return true;

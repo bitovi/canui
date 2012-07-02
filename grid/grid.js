@@ -162,24 +162,24 @@ function() {
 		/**
 		 * Returns all
 		 *
-		 * @param arg
+		 * @param {Collection} rows An array or DOM element collection
 		 * @return {can.Observe.List|can.Observe}
 		 */
-		items : function(arg) {
-			if(!arg) {
+		items : function(rows) {
+			if(!rows) {
 				return this.options.data || new can.Observe.List();
 			}
 
 			var result = new can.Observe.List(),
-				map = this._cidMap,
-				rows = can.isArray(arg) ? arg : can.makeArray(arguments);
+				map = this._cidMap;
 
-			can.each(rows, function(row) {
+			can.each(can.makeArray(rows), function(row) {
+				row = row[0] || row;
 				// Either use getAttribute or the name itself as the index
 				// that way you can pass a list of Observe._namespace IDs as well
-				var id = row[0] ? row[0].getAttribute('data-cid') : row;
+				var id = row.getAttribute('data-cid');
 				if(map[id]) {
-					result.push(observe);
+					result.push(map[id]);
 				}
 			});
 
