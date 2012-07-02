@@ -1,0 +1,110 @@
+// Can.UI.ACCORDION
+// ----------------
+
+@import "../style/bootstrap/less/reset.less";
+@import "../style/bootstrap/less/variables.less";
+@import "../style/bootstrap/less/mixins.less";
+
+.accordion{
+	font-family:@sansFontFamily;
+	
+	.accordion-toggle {
+		border: 1px solid @btnBorder;
+		background:@btnBackground;
+		color:@textColor;
+		
+		display: block;
+		margin:0;
+	  	padding:0;
+		outline:none;
+		cursor:pointer;
+		text-deocoration:none;
+		
+		font-size: @baseFontSize;
+	  	line-height: @baseLineHeight;
+		
+		&:hover {
+	    	background:#ddd;
+	  	}
+	}
+	
+	.accordion-toggle.active{
+		color: @white;
+		text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+		background-color: @linkColor;
+	}
+	
+	.accordion-body {
+		display:none;
+		margin:0;
+		list-style:none;
+		border: 1px solid @btnBorder;
+		background:@bodyBackground;
+	}
+}
+
+.accordion_vertical{
+
+	.accordion-toggle {
+		border-bottom:none;
+	  	padding: 8px 15px;
+
+		&.first{
+			.border-radius(4px 4px 0 0);
+		}
+	
+		&.last{
+			.border-radius(0 0 4px 4px);
+			border-bottom:solid 1px @btnBorder;
+		}
+	}
+	
+	.accordion-toggle.active{
+		&.last{
+			.border-radius(0);
+		}
+	}
+	
+	.accordion-body {
+		border-top:none;
+		margin-bottom:-1px;
+		
+		&.last{
+			.border-radius(0 0 4px 4px);
+		}
+	}
+}
+
+.accordion_horizontal{
+
+	.accordion-toggle {
+		float:left;
+	  	padding: 9px 15px;
+		border-left:none;
+
+		&.first{
+			border-left:solid 1px @btnBorder;
+			.border-radius(4px 0 0 4px);
+		}
+	
+		&.last{
+			.border-radius(0 4px 4px 0);
+		}
+	}
+	
+	.accordion-toggle.active{
+		&.last{
+			.border-radius(0);
+		}
+	}
+	
+	.accordion-body {
+		float:left;
+		padding: 9px 0;
+		border-left:none;
+		
+		&.last{
+			.border-radius(0 4px 4px 0);
+		}
+	}
+}

@@ -1,17 +1,22 @@
-steal('can/construct/proxy',
+steal(
+	'can/construct/proxy',
 	'can/construct/super',
 	'can/control',
 	'can/view/ejs',
+	'can/util/function',
 	'canui/positionable',
 	'steal/less'
 ).then(
+	"./views/tooltip.ejs",
 	'./tooltip.less',
-	function( $ ) {
-		
+function() {
+
 	var	prefixes = ' -webkit- -moz- -o- -ms- -khtml-'.split(' '),
-		supportsTransitions = (function() {
+	supportsTransitions = (function() {
+
 			var elem = $("<div />"),
-				support = false;
+			support = false;
+
 			$.each(prefixes, function( i, prefix ) {
 				var prop = prefix + "transition",
 					value = "all 1s ease-in-out";
@@ -24,8 +29,18 @@ steal('can/construct/proxy',
 			return support;
 		}());
 
-
-	can.Control("can.ui.Tooltip", {
+	can.Control("can.ui.Tooltip",
+	/**
+	 * @static
+	 */
+	{
+		/**
+		 * This is just a hash map that holds some values for positionable as
+		 * well as some classes that get applied to the arrow depending on
+		 * which position you choose for the tooltip.
+		 *
+		 * @hide 
+		 */
 		positions: {
 			n : {
 				my: "bottom",
@@ -52,8 +67,36 @@ steal('can/construct/proxy',
 				arrowMargin: "margin-left"
 			}
 		},
+		/**
+		 * Default options for the tooltip.
+		 *
+		 * * `theme` - {String} String name of the theme to be applied to the
+		 * tooltip. Possible values:
+		 *		* `info`
+		 *		* `success`
+		 *		* `error`
+		 *		* `notice`
+		 *	Default: `info`.
+		 *	* `showEvent` - {String|Boolean} The name of the event that should 
+		 *	trigger the tooltip to be shown. Set to `false` to have the tooltip 
+		 *	shown on initialization. Default: `mouseenter`.
+		 *	* `hideEvent` - {String} The name of the event that should trigger
+		 *	the tooltip to hide. Default: `mouseleave`.
+		 *	* `showEffect` - {String} Animation effect to be used to display the
+		 *	tooltip. Default: `show`.
+		 *	* `hideEffect` - {String} Animation effect to be used to hide the
+		 *	tooltip. Default: `fadeOut`.
+		 *	* `showTimeout` - {Integer} Length of time in ms to wait before
+		 *	showing the tooltip. Default: `200`.
+		 *	* `hideTimeout` - {Integer} Length of time in ms to wait before
+		 *	hiding the tooltip. Default: `500`.
+		 *	* `position` - {String} The position the tooltip should be relative
+		 *	to the element it's being initialized on.
+		 *
+		 * @attribute
+		 */
 		defaults: {
-			theme: "error",
+			theme: "info",
 			showEvent: "mouseenter",
 			hideEvent: "mouseleave",
 			showEffect: "show",
@@ -64,27 +107,31 @@ steal('can/construct/proxy',
 			hideTimeoutId: null,
 			position: "n"
 		}
-	}, {
+	}, 
+	/** @prototype */
+	{
 
 		setup : function( el, options ) {
+		
 			options = $.extend( this.constructor.defaults, options || {} );
-			options.$ = {
-				tooltip : $( can.view( "./views/tooltip.ejs", options ) )
-			}
-			$.each( ["outer", "inner", "arrow"], this.proxy( function( i, className ) {
-				options.$[ className ] = options.$.tooltip.find( "." + className );
-			}));
-			this._super( el, options );
-		},
-
-
-		init : function() {
-
-
-			// save references to each compontent of the tooltip
 
 			// Append template to the offset parent
-			this.element.offsetParent().append( this.options.$.tooltip );
+			var offsetParent = el.offsetParent();
+			offsetParent.append( can.view( "./views/tooltip.ejs", options ) );
+
+			// save references to each component of the tooltip
+			options.$ = {
+				tooltip : offsetParent.children().eq(-1)
+			}
+			can.each( ["outer", "inner", "arrow"], function( className ) {
+				options.$[ className ] = options.$.tooltip.find( "." + className );
+			});
+
+			this._super( el, options );
+		
+		},
+
+		init : function() {
 
 			// Spacing for arrows and stuff is calculated off the margin,
 			// perhaps should be changed to a setting
@@ -114,23 +161,33 @@ steal('can/construct/proxy',
 			}
 		},
 
+		/**
+		 * Methods to ensure that the tooltip doesn't hide when your mouse is
+		 * over it.
+		 * @hide
+		 */
 		"{$.tooltip} mouseenter" : function() {
 			if ( this.options.showEvent == "mouseenter" ) {
 				this.show();
 			}
 		},
-
+		/** @hide */
 		"{$.tooltip} mouseleave" : function() {
 			if ( this.options.showEvent == "mouseenter" ) {
 				this.hide();
 			}
 		},
 
+		/**
+		 * Determines where to position the "tip" of the tooltip depending on
+		 * where the tooltip is being positioned.
+		 * @hide
+		 */
 		determineCorners: function() {
 			var arrowSpacing = this.space * 2,
-				offsetSpacing = this.space * 4;
+			    offsetSpacing = this.space * 4;
 
-			this.corners= {
+			this.corners = {
 				ne: {
 					arrowCss: {
 						left: arrowSpacing
@@ -188,6 +245,10 @@ steal('can/construct/proxy',
 			}
 		},
 
+		/**
+		 * Determines where to position the tooltip.
+		 * @hide
+		 */
 		determinePosition: function() {
 
 			var parts = "my at".split(" "),
@@ -198,8 +259,8 @@ steal('can/construct/proxy',
 				position = {};
 
 			// ZOMG double each, thats like, O(n^2)
-			$.each( parts, this.proxy( function( i, part ) {
-				$.each( this.options.position.split(""), function( i, c ) {
+			can.each( parts, this.proxy( function( part ) {
+				can.each( this.options.position.split(""), function( c ) {
 					positionArrays[part].push( can.ui.Tooltip.positions[ c ][part] );
 				});
 
@@ -210,15 +271,14 @@ steal('can/construct/proxy',
 					positionArrays[part] : 
 					positionArrays[part].reverse()
 					).join(" ");
-			} ));
+			}));
 
 			this.position = $.extend({},
 				can.ui.Tooltip.positions[ this.options.position.charAt(0) ],
 				position
 			);
 
-			this.options.$
-				.arrow
+			this.options.$.arrow
 				.addClass( this.position.arrowClass )
 				.css( "border-width", this.space )
 
@@ -235,8 +295,15 @@ steal('can/construct/proxy',
 
 		},
 
+		/**
+		 * Sets the position of the tooltip. Takes into account if the tooltip
+		 * is visible or not.
+		 * @hide
+		 */
 		setPosition: function() {
-			var isHidden = this.options.$.tooltip.css("display") == "none", positionable;
+
+			var isHidden = this.options.$.tooltip.css("display") == "none",
+			    positionable;
 
 			if ( isHidden ) {
 				this.options.$.tooltip.css({
@@ -244,7 +311,7 @@ steal('can/construct/proxy',
 					display: "block"
 				})
 
-				positionable = new can.ui.layout.Positionable(this.options.$.tooltip,
+				positionable = new can.ui.Positionable(this.options.$.tooltip,
 					$.extend({
 						of : this.element,
 						collision : "none"
@@ -256,7 +323,7 @@ steal('can/construct/proxy',
 					display: "none"
 				})
 			} else {
-				positionable = new can.ui.layout.Positionable(this.options.$.tooltip,
+				positionable = new can.ui.Positionable(this.options.$.tooltip,
 					$.extend({
 						of : this.element,
 						collision : "none",
@@ -269,38 +336,51 @@ steal('can/construct/proxy',
 			positionable.move();
 		},
 
+		/**
+		 * Manually shows the tooltip according to the `showEvent` and
+		 * `showEffect`.
+		 */
 		show : function() {
 			clearTimeout( this.options.hideTimeoutId );
 			this.options.$.tooltip.stop( true, true )[ this.options.showEffect ]();
 		},
 
+		/**
+		 * Manually hides the tooltip according to the `hideEvent` and
+		 * `hideEffect`.
+		 */
 		hide : function() {
 			this.options.hideTimeoutId = setTimeout(this.proxy( function() {
 				this.options.$.tooltip[ this.options.hideEffect ]();
 			}), this.options.hidetimeout );
 		},
 
-		"{showEvent}" : function() {
-			this.show();
-		},
+		/**
+		 * Binding of the show and hide events.
+		 * @hide
+		 */
+		" {showEvent}" : "show",
 
-		"{hideEvent}" : function() {
-			this.hide();
-		},
+		/** @hide */
+		" {hideEvent}" : "hide",
 
+		/**
+		 * Destroys the tooltip and unbinds events.
+		 */
 		"destroy" : function() {
 			this.options.$.tooltip.remove();
 			delete this.options.$;
 			this._super();
 		},
 
-		"{window} resize" : (function() {
-			var timeout;
-			return function() {
-				clearTimeout( timeout );
-				setTimeout( this.proxy( this.callback("setPosition")), 100 );
-			}
-		}())
+		/**
+		 * Debounced window resize event to reposition the tooltip when the
+		 * window resizes.
+		 */
+		"{window} resize" : function() {
+			clearTimeout( this.windowTimeout );
+			this.windowTimeout = setTimeout( this.proxy( this.setPosition, this ), 100);
+		}
 	});
 
 });

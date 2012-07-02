@@ -1,10 +1,12 @@
 steal('can/control',
+	  'can/construct/proxy',
 	  'canui/selectable',
-	  'canui/fills',
+	  'jquery/dom/dimensions',
+	  'canui/accordion/accordion.less',
 	  function(){
 		
 /**
- * @class can.ui.nav.Accordion
+ * @class can.ui.Accordion
  * @parent canui
  * @test canui/nav/accordion/funcunit.html
  * 
@@ -27,14 +29,16 @@ can.Control("can.ui.Accordion",{
 		 * Css Classes to be assigned to 'active', 'hover', and 'selected'.
 		 *
 		 * Defaults are:
-		 * 		active - 'ui-state-active'
-		 *		hover - 'ui-state-hover'
+		 * 		active - 'active'
+		 *		hover - 'hover'
 		 *		selected - 'ui-state-selected'
 		 */
 		css: {
-			activated: "ui-state-active",
-			hover: "ui-state-hover",
-			selected: "ui-state-selected"
+			header: "accordion-toggle",
+			content: "accordion-body",
+			activated: "active",
+			hover: "hover",
+			selected: "selected"
 		},
 
 		/**
@@ -81,7 +85,7 @@ can.Control("can.ui.Accordion",{
 		 * Element for the active element.
 		 * Undefined by default.
 		 */
-		active: undefined,
+		active: ":first",
 
 		/**
 		 * @attribute fillSpace
@@ -96,14 +100,7 @@ can.Control("can.ui.Accordion",{
 		 * Possible values: 'vertical' or 'horizontal'.
 		 * 'vertical' by default.
 		 */
-		dir: 'vertical',
-		
-		/**
-		 * @attribute autoDim
-		 * Resets the dimension to 'auto' after activate.
-		 * 'false' by default.
-		 */
-		autoDim: false
+		dir: 'vertical'
 	}, 
 	
 	/**
@@ -114,11 +111,13 @@ can.Control("can.ui.Accordion",{
 	dirMap: {
 		horizontal: {
 			dim: "width",
-			outer: "outerWidth"
+			outer: "outerWidth",
+			inner: "innerWidth"
 		},
 		vertical: {
 			dim: "height",
-			outer: "outerHeight"
+			outer: "outerHeight",
+			inner: "innerHeight"
 		}
 	}
 	
@@ -134,26 +133,60 @@ can.Control("can.ui.Accordion",{
 		});
 		
 		if(this.options.fillSpace){
-			new can.ui.layout.Fill(this.element);
+			var dim = this.dir().dim,
+				outer = this.dir().outer,
+				inner = this.dir().inner,
+				maxDim = this.element.parent()[dim](),
+				maxPadding = 0,
+				headers = this.element.children(this.options.header);
+				
+			headers.each(function() {
+				maxDim -= $(this)[outer]();
+			});
+			
+			headers.next().each(function() {
+				maxPadding = Math.max(maxPadding, $(this)[outer]() - $(this)[dim]());
+			})[dim](maxDim - maxPadding);
+		}
+		
+		if(this.options.dir === "horizontal"){
+			this.element.children().outerHeight(this.element.innerHeight());
 		}
 		
 		if(this.options.active){
-			this.options.active.trigger('activate');
+			this.options.active.trigger('activate', true);
 		}
+	},
+	
+	dir:function(){
+		return this.constructor.dirMap[this.options.dir];
 	},
 	
 	/**
 	 * Sets up the dom for the widget, adds css, titles, and tab indexes.
 	 */
 	_setupDom:function(){
-		var expand = this.options.locale.expand;
-		this.element.addClass('ui-accordion ui-widget ui-helper-reset');
-		this.element.children(this.options.header).each(function(i){
-			$(this).addClass('ui-accordion-header ui-helper-reset ui-state-default');
-			$(this).attr('title', expand);
-			$(this).attr('tabindex', i)
-			$(this).next().addClass('ui-accordion-content ui-helper-reset ui-widget-content');
-		});
+		this.element.addClass('accordion accordion_' + this.options.dir);
+		
+		if(typeof this.options.active === "string"){
+			this.options.active = this.element.find(this.options.active);
+		}
+		
+		var headers = this.element.children(this.options.header);
+		headers.each(this.proxy(function(i,elm){
+			var $elm = $(elm).addClass(this.options.css.header)
+				  			 .attr('title', this.options.locale.expand)
+				  			 .attr('tabindex', i),
+				$next = $elm.next().addClass(this.options.css.content);
+				
+			if(i === 0){
+				$elm.addClass('first')
+				$next.addClass('first')
+			} else if(i === (headers.length - 1)){
+				$elm.addClass('last')
+				$next.addClass('last')
+			}
+		}));
 	},
 	
 	/**
@@ -161,42 +194,54 @@ can.Control("can.ui.Accordion",{
 	 * Hides the old element and shows the new one.
 	 * @param {Object} elm
 	 * @param {Object} event
+	 * @param {Boolean} first
 	 */
-	"{header} activate":function(elm,ev){
-		var to = elm.next(),
-			dim = this.constructor.dirMap[this.options.dir].dim,
-			animation = {
-				duration: this.options.duration
-			};
+	"{header} activate":function(elm,ev,first){
+		ev.stopPropagation();
 		
-		if (!this.options.active) {
-			animation[dim] = "show";
-			to.animate(animation);
+		if(this.options.disabled){
+			return false;
+		}
+		
+		var to = elm.next();
+		
+		/**
+		 * @hide
+		 * If no other element is 'active',
+		 * just show the new one and return.
+		 */
+		if (this.options.active && first === true) {
+			to.show();
 			this.options.active = elm;
 			return;
 		}
 		
-		var from = this.options.active.next(),
-			fromDim = from[this.constructor.dirMap[this.options.dir].outer](),
-			toDim = to[this.constructor.dirMap[this.options.dir].outer](),
-			diff = toDim / fromDim,
-			autoDim = this.options.autoDim;		
+		/**
+		 * @hide
+		 * If we click the same elm, return.
+		 */
+		if(this.options.active.is(elm)){
+			return;
+		}
+		
+		var dim = this.dir().dim,
+			animation = { duration: this.options.duration },
+			from = this.options.active.next(),
+			fromDim = from[this.dir().outer](),
+			toDim = to[this.dir().outer](),
+			toInner = to[this.dir().dim](),
+			diff = toDim / fromDim;
 			
 		animation[dim] = "hide";
-			
+		
 		from.attr('title', this.options.locale.expand)
 		to.attr('title', this.options.locale.collaspe)
 		
-		to.css({ height: 0, overflow: 'hidden' }).show();
-			
+		to.css({ overflow: 'hidden' }).show();
+
 		from.animate(animation, {
 			step:function(now){
-				to[dim](Math.ceil((fromDim - now) * diff));
-			},
-			complete:function(){
-				if(autoDim){
-					to[dim]('auto')
-				}
+				to[dim](Math.min(Math.floor((fromDim - now) * diff), toInner));
 			}
 		});
 		

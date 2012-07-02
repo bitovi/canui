@@ -35,12 +35,12 @@
 
 		<script type='text/javascript' src='../../../steal/steal.js'></script>
 		<script type='text/javascript'>
-			steal('canui/nav/tooltip', function(){
+			steal('canui/tooltip', function(){
 				var themes = [ "info", "huawei", "success", "error", "notice" ],
 					dirs = [ "n", "ne", "en", "e", "es", "se", "s", "sw", "ws", "w", "wn", "nw" ];
 
 				$(".target").each(function( i, target ) {
-					new can.ui.nav.Tooltip($(target), {
+					new can.ui.Tooltip($(target), {
 						content: [ themes[ i % themes.length ], dirs[ i % dirs.length ] ].join(" "),
 						theme: themes[ i % themes.length ],
 						position: dirs[ i % dirs.length ]

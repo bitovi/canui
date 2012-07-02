@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CanUI Grid</title>
+</head>
+<body style="padding-top: 30px;">
+
+<div class="container">
+  <header class="well">
+    <h1>CanUI Expandable Grid Demo</h1>
+  </header>
+  <section>
+    <div id="grid"></div>
+  </section>
+</div>
+
+<script type="text/ejs" id="detailsEJS">
+  <tr class="details" style="display: none;">
+    <td colspan="<%= colspan %>">
+      <div class="well">
+        <h6><%= model.attr('id') %> : <%= model.attr('firstname') %> <%= model.attr('lastname') %></h6>
+        <span class="label label-info"><%= model.attr('age') %></span>
+      </div>
+    </td>
+  </tr>
+</script>
+
+<script type="text/javascript" src="../../../steal/steal.js"></script>
+<script type="text/javascript">
+  steal('canui/grid', 'can/model', 'canui/style', 'canui/table_scroll', function () {
+
+    // Setup
+    var Model = can.Model({}),
+        list = [],
+        random = function () {
+          var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+          var string_length = 8;
+          var randomstring = '';
+          for (var i = 0; i < string_length; i++) {
+            var rnum = Math.floor(Math.random() * chars.length);
+            randomstring += chars.substring(rnum, rnum + 1);
+          }
+          return randomstring;
+        };
+
+    for (var i = 0; i < 10; i++) {
+      list.push({
+        firstname : random(),
+        lastname : random(),
+        id : i,
+        age : Math.ceil(Math.random(100) * 100)
+      });
+    }
+
+    // Model list
+    var people = Model.models(list);
+
+    var grid = new can.ui.Grid('#grid', {
+      columns : [
+        {
+          header : 'First name',
+          attr : 'firstname'
+        },
+        {
+          header : 'Last name',
+          attr : 'lastname'
+        }
+      ],
+      list : people
+    });
+
+    grid.find('row').click(function() {
+      var model = can.data($(this), 'item'),
+          colspan = grid.columns().length;
+      if(!$(this).next().hasClass('details')) {
+        $(this).after(can.view('detailsEJS', {
+          colspan : colspan,
+          model : model
+        }));
+      }
+
+      $(this).next().toggle();
+    });
+  })
+</script>
+
+</body>
+</html>

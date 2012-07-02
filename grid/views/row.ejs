@@ -1,4 +1,4 @@
-<tr <% if(item.constructor.id) { %>data-id="<%= item.attr(item.constructor.id) %>"<% } %>>
+<tr data-cid="<%= item._namespace %>">
 <% can.each(columns, function(current) { %>
     <td><%= current() %></td>
 <% }); %>
