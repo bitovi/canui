@@ -216,13 +216,8 @@ steal('can/control',
 				});
 			}
 
-			this.on(this.$.scrollBody, "resize", "bodyResized")
-			//this.element.parent().triggerHandler('resize')
-			//make a quick resize
-			//then redraw the titles
-
 			this.$.scrollBody.on('scroll', can.proxy(this.bodyScroll, this));
-			this._sizeHeaderAndFooters();
+			this.updateColumns();
 		},
 
 		_wrapWithTable : function (i, tag) {
@@ -246,12 +241,9 @@ steal('can/control',
 		 * Returns useful elements of the table
 		 * the thead, tbody, tfoot, and scrollBody of the modified table:
 		 *
-		 *     $('.can_ui_layout_table_scroll')
-		 *       .controller().element() //-> {...}
-		 *
 		 * If you need to change the content of the table, you can
 		 * use elements for access.  If you change the content, make sure
-		 * you call changed.
+		 * you call `updateColumns()`.
 		 *
 		 * @return {Object} an object like:
 		 *
@@ -271,12 +263,12 @@ steal('can/control',
 		 *
 		 * ### Example:
 		 *
-		 *     $('th:eq(2)').text('New Text');
-		 *     $('.can_ui_layout_table_scroll')
-		 *        .can_ui_layout_table_scroll('changed')
+		 *      var scroll = new can.ui.TableScroll('table');
+		 *      $('th:eq(2)').text('New Text');
+		 *      scroll.updateColumns();
 		 *
 		 * @param {Boolean} [resize] By default, changed will trigger a resize,
-		 * which re-calculates the layout.  Pass false to prevent this
+		 * which re-calculates the layout. Pass `false` to prevent this
 		 * from happening.
 		 */
 		updateColumns : function (resize) {
@@ -293,6 +285,8 @@ steal('can/control',
 
 		/**
 		 * Returns all actual rows.
+		 *
+		 * @return The content of the table body without any spacers.
 		 */
 		rows : function() {
 			return this.$.tbody.children(":not(." + this.options.spacer + ")");
@@ -347,26 +341,14 @@ steal('can/control',
 			this.$.spacer = spacer;
 		},
 
-		/**
-		 * @hide
-		 * When the body is resized, resize the header and footer th and td elements
-		 */
-		bodyResized : function () {
-			this._sizeHeaderAndFooters();
-		},
-
 		bodyScroll : function (ev) {
 			this.$.head.scrollLeft($(ev.target).scrollLeft());
 		},
 
-		resize : '_sizeHeaderAndFooters',
-
 		/**
-		 * @hide
-		 * Sizes the table header cells to match the width of
-		 * the column widths.
+		 * Resizes when the table dimensions change.
 		 */
-		_sizeHeaderAndFooters : function () {
+		resize : function () {
 
 			var body = this.$.body,
 
