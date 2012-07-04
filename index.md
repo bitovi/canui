@@ -5,166 +5,218 @@ version: 1.0b
 
 # Welcome to CanUI
 
+CanUI brings the best of CanJS and jQuery++ together to help you build awesome user interfaces.
+It is not supposed to be a full UI widget library but instead provides the building blocks you need
+to create your own UI widgets the way you want them.
+
 ## Get CanUI
 
 ## Configuring CanUI
 
-### Styles
-
-By default, CanUI uses themeroller styles.  You can overwrite CanUI to use other classNames like:
-
-{% highlight javascript %}
-can.ui.classNames.active = "ui-active-state";
-{% endhighlight %}
-
-## Accordion `new can.ui.Accordion( element, [options] )`
-
-[can.ui.Accordion](http://donejs.com/docs.html#!can.ui.Accordion) provides basic
-vertical accordion functionality.
-
-### activate `accordion.activate( titleElement )`
-
- - probably renmaed show
-
-### expand `accordion.expand( titleElement )`
-
- - probably renamed activate
-
-### resize `accordionElement.resize()`
-
-
-
-## Block `new can.ui.Block( element, [blockedElement])`
-
-### resize `blockedElement.resize()`
-
-Tells the modal to resize, if it needs to.
-
-## Grid `new can.ui.Grid( element, options )`
-
-Options:
-
- - `list` - a [can.Observe.List] of items
- - `emptyText` - what to show when there are no items
- - `columns` - columns to display
-
-Issues:
- - filtering on list
- - adding widgets / editors
-
-
-### list `grid.list( newList )`
-
-Sets the list option.  It can also accept a deferred that resolves to `can.Observe.List`.
-
-{% highlight javascript %}
-var items = new can.Observe.List();
-
-var grid = new can.ui.Grid("#todos", {
-  list : items
-});
-
-// update the list
-grid.list( Task.findAll({}) )
-    .emptyText("Loading tasks")
-
-{% endhighlight %}
-
-
-### select
-
-### activate
-
-#### Forever Scroll
-
-{% highlight javascript %}
-var items = new can.Observe.List();
-
-var grid = new can.ui.Grid("#todos", {
-  list : items
-});
-
-$(grid.elements().scrollBody).bind("scroll", function(){
-  if( atBottom ){
-    Task.findAll(nextSet).then(function(tasks){
-      items.push(tasks);
-    })
-  }
-})
-{% endhighlight %}
-
-
-
-## Modal `new can.ui.Modal(element, options)`
-
-Options:
-
- - overlay (should probably be renamed to block)
- - overlayClass (should probably be configured elsewhere)
- - of 
- - destroyOnHide - ? be gone, you should just destroy.
-
-### show
-
-### hide
-
-
 ## Fills `$(element).fills([parent]) -> jQuery`
 
-[Annotated source](http://donejs.com/jquery/docs/jquery.fills.html)
-
-[jQuery.fills](http://donejs.com/docs.html#!jQuery.fills) adds `$.fn.fills` to make an element fill out a parent element.
+[can.ui.fills](http://donejs.com/docs.html#!canui.fills) adds `$.fn.fills` to make an element fill out a parent element.
 It takes care of any padding, margins and dimensions of other sibling elements and will update the dimensions when the parent
-[resizes](#resize). You can either pass a parent selector or jQuery element or an object with the following options:
+resizes. You can either pass a parent selector or jQuery element or an object with the following options:
 
 - __parent__ - The parent element selector or jQuery element
 - __className__ - The class name to add to the element. Not set by default
 - __all__ - Restore the parent element to its original size first
 
-`jQuery.fills` is extremely useful for complex layouts especially since it also takes care of elements that wrap automatically.
+This is extremely useful for complex layouts taking care of elements that wrap automatically.
 Resize the container in the following example using the blue square to see how the `#fill` element adjusts its size correctly
 to fill out the remaining space:
 
 <iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
-## Position
+## TableScroll `new can.ui.TableScroll(element);`
 
-Should update itself on it's element resizing.
-We probably need a "move" event too. jQuery++'s drag/drop should fire this. It should probably not bubble,
-but it should probably capture.  Basically if an element moves, 
+[can.ui.TableScroll](http://donejs.com/docs.html#!canui.table_scroll) makes an HTML table scrollable and keeps the
+headers fixed. It works for any table that has a fixed height container element.
+An instance of `can.ui.TableScroll` has the following methods:
 
-{% highlight javascript %}
-var position = can.ui.position("#foo", {
-  my : "left top",
-  at : "right top",
-  of : "#bar",
-  from : "#parent",
-  offset : "50 50",
-  collision : "flip"
-})
+- `scroller.elements()` - Returns an object with references to the `tbody`, `thead`, `tfoot` and `scrollBody` elements
+- `scroller.updateColumns([resize])` - Call when a column heading is changed, added or removed
+- `scroller.rows()` - Returns all actual rows. This can be used for removing or inserting new rows
+
+Considering a markup like this:
+
+{% highlight html %}
+<div style="height: 200px; overflow: auto;">
+  <table>
+    <thead>
+      <th>Firstname</th>
+      <th>Lastname</th>
+    </thead>
+    <tbody><!-- ... --></tbody>
+  </table>
+</div>
 {% endhighlight %}
 
-## Resize
+`can.ui.TableSceoll` can be used like this:
 
-## Selectable
+{% highlight javascript %}
+var scroller = new can.ui.TableScroll('table');
+// Delete all rows
+scroller.rows().remove();
+// Append a new row at the end
+$('<tr><td>Test</td><td>User</td></tr>')
+  .insertAfter(scroller.rows().last());
+// Resize when the table content changes
+scoller.resize();
+// or as a jQuery event
+$('table').trigger('resize');
+{% endhighlight %}
 
-## Slider
+The following example creates a randomly generated, scrollable table:
 
-## Sortable
+<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
-## Split
+## Grid `new can.ui.Grid( element, options )`
 
-## TableScroll
+[can.ui.Grid](http://donejs.com/docs.html#!canui.grid) provides a table that live binds to an observable list.
+Along with [can.ui.TableScroll](#tablescroll) this can be used to create a full grid like widget.
 
-## Tooltip
+Possible options:
 
-## Validator
+- `list` - The item provider which can be
+  - An array of items
+  - `can.Observe.List` of observes
+  - `can.Deferred` that resolves to the above
+  - `can.compute` that returns any of the above
+- `emptyText` - The content to display when there are no items
+- `loadingText` - The text to display when a deferred is being resolved
+- `columns` - The columns to display in the form of `{ header : 'Heading', attr : 'attribute }`
 
-## Utilities
+Create a grid like this:
 
-### Wrap
+{% highlight html %}
+<div id="grid"></div>
+{% endhighlight %}
 
+{% highlight javascript %}
+var people = new can.Observe.List([
+    {
+      firstname : 'John',
+      lastname : 'Doe',
+      age : 42
+    },
+    {
+      firstname : 'First',
+      lastname : 'Last',
+      age : 26
+    }
+  ]),
+  grid = new can.ui.Grid({
+    columns : [
+      {
+        header : 'Name',
+        attr : function(observe) {
+          return observe.attr('firstname') + ' ' + observe.attr('lastname');
+        }
+      },
+      {
+        header : 'Age',
+        attr : 'age'
+      }
+    ],
+    list : people
+  });
+{% endhighlight %}
 
+The methods available on a grid instance are:
+
+- `grid.draw()` - Rerenders the currently displayed list and fires the `redraw` event
+- `grid.rows([observes])` - Returns all row elements or all row elements for the given observe(s)
+- `grid.items([rows])` - Returns a `can.Observe.List` of all items or all items for the given row(s)
+- `grid.columns([columns])` - Gets or sets the current column configuration
+- `grid.list([list])` - Gets or set the list provider
+- `grid.emptyText([text])` - Gets or sets the content to display when there are no items
+- `grid.loadingText([loadingText])` - Gets or sets the text to display while a `can.Deferred` is being resolve
+
+### Managing columns
+
+Column definitions are provided as an array of objects, where each object must contain
+
+- `header` - The header text
+- `attr` - The attribute to display
+
+`attr` can either be the attribute name or a function that takes the element and the index in the list as the parameters
+and returns a computed property. From the above example:
+
+{% highlight javascript %}
+function(observe) {
+  return observe.attr('firstname') + ' ' + observe.attr('lastname');
+}
+{% endhighlight %}
+
+Returns the combined *firstname* and *lastname* property and live updates whenever the attributes change.
+
+### List providers
+
+There are several ways to provide the grid with a list of data. Usually it will be a `can.Observe.List` instance
+that contains the observable objects. When passing a normal Array, it will be converted to an observable list.
+Another option is to pass a `can.Deferred` that resolves to an observable list or array. The grid will show the
+content of `loadingText` while the Deferred is being resolved.
+
+This allows to directly pass `can.Model` requests:
+
+{% highlight javascript %}
+var Person = can.Model({
+    findAll : 'GET /people',
+    findOne : 'GET /people/{id}',
+    create  : 'POST /people',
+    update  : 'PUT /people/{id}',
+    destroy : 'DELETE /people/{id}'
+  }, {}),
+  grid = new can.ui.Grid({
+    columns : [
+      {
+        header : 'First name',
+        attr : 'firstname'
+      },
+      {
+        header : 'Last name',
+        attr : 'lastname'
+      }
+    ],
+    list : Person.findAll()
+  });
+{% endhighlight %}
+
+The last option is to pass a `can.compute` which returns an array a `can.Observe.List` or a `can.Deferred`.
+As an example, this could be used to load the new data whenever a pagination observe changes:
+
+{% highlight javascript %}
+var paginator = new can.Observe({
+    offset : 0,
+    limit : 10
+  }),
+  grid = new can.ui.Grid({
+    columns : [
+      {
+        header : 'First name',
+        attr : 'firstname'
+      },
+      {
+        header : 'Last name',
+        attr : 'lastname'
+      }
+    ],
+    list : can.compute(function() {
+      return Person.findAll({
+        offset : paginator.attr('offset'),
+        limit : paginator.attr('limit')
+      });
+    })
+  });
+{% endhighlight %}
+
+### Demo
+
+The following example shows the grid to add and remove items and reset the list:
+
+<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/hY3AS/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ## Get Help
 
