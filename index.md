@@ -27,7 +27,7 @@ This is extremely useful for complex layouts taking care of elements that wrap a
 Resize the container in the following example using the blue square to see how the `#fill` element adjusts its size correctly
 to fill out the remaining space:
 
-<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+<iframe style="width: 100%; height: 370px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ## TableScroll `new can.ui.TableScroll(element);`
 
@@ -53,7 +53,7 @@ Considering a markup like this:
 </div>
 {% endhighlight %}
 
-`can.ui.TableSceoll` can be used like this:
+`can.ui.TableScroll` can be used like this:
 
 {% highlight javascript %}
 var scroller = new can.ui.TableScroll('table');
