@@ -2,7 +2,7 @@ steal('funcunit').then(function(){
 	
 module("can.ui.layout.TableScroll", {
 	setup: function(){
-        S.open("//canui/table_scroll/table_scroll.html");
+        S.open("//canui/table_scroll/table_scroll_plain.html");
 		
 		// helps compare columns
 		this.compareCols = function(i, size){
@@ -31,23 +31,25 @@ test("columns are the right size", function(){
 	});
 });
 
-test("horizontal scroll", function(){
+test("horizontal scroll", 1, function(){
 	S("#scrollable").click().wait(100);
 
 	
-	S('.scrollBody').scroll("left",100);
-	S('.header').scrollLeft(100, function(){
+	S('.scrollBody').scroll("left",10);
+	S('.header').scrollLeft(10, function(){
 		ok(true, "assertions make people feel better")
 	});
 });
 
-test("resize test", function(){
+test("updateColumns and resize", function() {
 	S("#scrollable").click().wait(100);
-
+	var oldWidth;
+	S(function() {
+		oldWidth = S.win.$('th:eq(1)').width();
+	})
 	S("#resize").click().wait(100, function(){
-		ok(true, "assertions make people feel better")
+		ok(S.win.$('td:eq(1)').width() > oldWidth, 'Columns got resized as well');
 	});
-
 });
 
 })
