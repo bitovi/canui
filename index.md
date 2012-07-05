@@ -33,6 +33,12 @@ to fill out the remaining space:
 
 [can.ui.TableScroll](http://donejs.com/docs.html#!canui.table_scroll) makes an HTML table scrollable and keeps the
 headers fixed. It works for any table that has a fixed height container element.
+`can.ui.TableScroll` can be initialized with the following options:
+
+- __fill__ - The table should fill out it's parent
+- __spacer__ - The class for spacer rows
+- __wrapper__ - The wrapper HTML content
+
 An instance of `can.ui.TableScroll` has the following methods:
 
 - `scroller.elements()` - Returns an object with references to the `tbody`, `thead`, `tfoot` and `scrollBody` elements
