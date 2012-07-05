@@ -866,7 +866,12 @@ can.Control('can.ui.Selectable',{
 				});
 			}
 
-			this.$.scrollBody.on('scroll', can.proxy(this.bodyScroll, this));
+			var thead = this.$.head;
+			this.on(this.$.scrollBody, 'scroll', function (ev) {
+				thead.scrollLeft($(ev.target).scrollLeft());
+			});
+			this.on(this.$.table, 'resize', 'resize');
+
 			this.updateColumns();
 		},
 
@@ -972,10 +977,6 @@ can.Control('can.ui.Selectable',{
 			this.$.spacer = spacer;
 		},
 
-		bodyScroll : function (ev) {
-			this.$.head.scrollLeft($(ev.target).scrollLeft());
-		},
-
 		updateColumns : function(resize) {
 			if (this.$.foot) {
 				this._addSpacer('tfoot');
@@ -1026,7 +1027,6 @@ can.Control('can.ui.Selectable',{
 		},
 
 		destroy : function () {
-			this.$.scrollBody.off('scroll', can.proxy(this.bodyScroll, this));
 			delete this.$;
 			can.Control.prototype.destroy.call(this);
 		}
