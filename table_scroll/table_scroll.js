@@ -58,94 +58,6 @@ steal('can/control',
 			}
 		});
 
-	/**
-	 * @class can.ui.TableScroll
-	 * @parent canui
-	 * @test canui/layout/table_scroll/funcunit.html
-	 *
-	 * @description Makes a table body scroll under a table header.
-	 *
-	 * Makes a table body scroll under a table
-	 * header.  This is very useful for making grid-like widgets.
-	 *
-	 * ## Basic Example
-	 *
-	 * If you have the following html:
-	 *
-	 *     <div id='area' style='height: 500px'>
-	 *        <p>This is My Table</p>
-	 *        <table id='people'>
-	 *          <thead>
-	 *            <tr> <th>Name</th><th>Age</th><th>Location</th> </tr>
-	 *          </thead>
-	 *          <tbody>
-	 *            <tr> <td>Justin</td><td>28</td><td>Chicago</td> </tr>
-	 *            <tr> <td>Brian</td><td>27</td><td>Chicago</td> </tr>
-	 *            ...
-	 *          </tbody>
-	 *        </table>
-	 *     </div>
-	 *
-	 * The following make the list of people, the tbody, scrollable between
-	 * the table header and footer:
-	 *
-	 *     new can.ui.TableScroll($('#people'))
-	 *
-	 * It makes it so you can always see the table header
-	 * and footer.  The table will [jQuery.fn.can_ui_layout_fill fill] the height of it's parent
-	 * element. This means that if the `#area` element's height
-	 * is 500px, the table will take up everything outside the `p`aragraph element.
-	 *
-	 * ## Demo
-	 *
-	 * @demo canui/layout/table_scroll/demo.html
-	 *
-	 * ## How it works
-	 *
-	 * To scroll the `tbody` under the `thead`, TableScroll
-	 * wraps the table with `div`s and seperates out the
-	 * `thead` into its own div.  After changing the DOM,
-	 * the table looks like:
-	 *
-	 *     <div class='can_ui_layout_table_scroll'>
-	 *       <div class='header'>
-	 *          <table>
-	 *            <thead> THEAD CONTENT </thead>
-	 *          </table>
-	 *       </div>
-	 *       <div class='body'>
-	 *          <div class='scrollBody'>
-	 *            <table>
-	 *              <tbody> TBODY CONENT </tbody>
-	 *            </table>
-	 *          </div>
-	 *       </div>
-	 *     </div>
-	 *
-	 * The grid also maintains a copy of the `thead`'s content
-	 * in the scrolling table to ensure the columns are
-	 * sized correctly.
-	 *
-	 * ## Changing the table
-	 *
-	 * When you change the table's content, the table
-	 * often needs to update the positions of
-	 * the column header.  If you change the tbody's content,
-	 * you can simply trigger resize on the grid.
-	 *
-	 * But, if you change the columns, you must call
-	 * [can.ui.Fill.prototype.changed changed].
-	 *
-	 * @constructor
-	 *
-	 * @param {HTMLElement} el
-	 * @param {Object} [options] values to configure
-	 * the behavior of table scroll:
-	 *
-	 *    - `filler` - By default, the table fills
-	 *      it's parent's height. Pass false to not actually scroll the
-	 *      table.
-	 */
 	can.Control("can.ui.TableScroll", {
 		defaults : {
 			fill : true,
@@ -238,6 +150,9 @@ steal('can/control',
 		},
 
 		/**
+		 * @parent can.ui.TableScroll
+		 * @function elements
+		 *
 		 * Returns useful elements of the table
 		 * the thead, tbody, tfoot, and scrollBody of the modified table:
 		 *
@@ -259,34 +174,12 @@ steal('can/control',
 		},
 
 		/**
-		 * Call when columns are added or removed or the title's changed.
+		 * @function rows
+		 * @parent can.ui.TableScroll
 		 *
-		 * ### Example:
+		 * Returns all actual rows (excluding any spacers).
 		 *
-		 *      var scroll = new can.ui.TableScroll('table');
-		 *      $('th:eq(2)').text('New Text');
-		 *      scroll.updateColumns();
-		 *
-		 * @param {Boolean} [resize] By default, changed will trigger a resize,
-		 * which re-calculates the layout. Pass `false` to prevent this
-		 * from happening.
-		 */
-		updateColumns : function (resize) {
-			if (this.$.foot) {
-				this._addSpacer('tfoot');
-			}
-			if (this.$.head) {
-				this._addSpacer('thead');
-			}
-			if (resize !== false) {
-				this.element.resize()
-			}
-		},
-
-		/**
-		 * Returns all actual rows.
-		 *
-		 * @return The content of the table body without any spacers.
+		 * @return {can.$) The content elements of the table body without any spacers.
 		 */
 		rows : function() {
 			return this.$.tbody.children(":not(." + this.options.spacer + ")");
@@ -345,11 +238,24 @@ steal('can/control',
 			this.$.head.scrollLeft($(ev.target).scrollLeft());
 		},
 
+		updateColumns : function(resize) {
+			if (this.$.foot) {
+				this._addSpacer('tfoot');
+			}
+			if (this.$.head) {
+				this._addSpacer('thead');
+			}
+
+			if(resize) {
+				this.resize();
+			}
+		},
+
 		/**
-		 * Resizes when the table dimensions change.
+		 * This is either triggered by the `resize` event or should be called manually when
+		 * the table content or dimensions change.
 		 */
 		resize : function () {
-
 			var body = this.$.body,
 
 			// getting the outer widths is the most expensive thing

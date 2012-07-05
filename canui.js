@@ -1,7 +1,7 @@
 steal(
 	'canui/accordion',
-	'canui/grid'
-//	'canui/table_scroll'
+	'canui/table_scroll'
+//	'canui/grid',
 //	'canui/block',
 //	'canui/fills',
 //	'canui/grid',

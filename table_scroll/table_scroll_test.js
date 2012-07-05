@@ -41,13 +41,14 @@ test("horizontal scroll", 1, function(){
 	});
 });
 
-test("updateColumns and resize", function() {
+test("update columns and resize", function() {
 	S("#scrollable").click().wait(100);
 	var oldWidth;
 	S(function() {
 		oldWidth = S.win.$('th:eq(1)').width();
-	})
-	S("#resize").click().wait(100, function(){
+	});
+
+	S("#changeHeading").click().wait(100, function(){
 		ok(S.win.$('td:eq(1)').width() > oldWidth, 'Columns got resized as well');
 	});
 });

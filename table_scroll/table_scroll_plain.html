@@ -30,6 +30,7 @@
 </head>
 <body>
 <a href="javascript://" id='scrollable'>Make Scrollable</a>
+<a href="javascript://" id='changeHeading'>Change Heading</a>
 <a href="javascript://" id='changeColumn'>Change Column</a>
 <div id='container'>
   <p>I can't see the columns when I scroll down :(.</p>
@@ -81,19 +82,22 @@
 			html.push("</tr>")
 		}
 		body.html(html.join(''));
+
 		var scroll;
+
 		$('#scrollable').click(function () {
       scroll = new can.ui.TableScroll('#table');
 		});
 
-		$('#resize').click(function () {
-
-		})
-
-		$('#changeColumn').click(function () {
+		$('#changeHeading').click(function () {
 			$('th:eq(1)').text('NEW LONGERISHCOLUMN');
       scroll.updateColumns();
-		})
+		});
+
+    $('#changeColumn').click(function () {
+      $('td:eq(2)').text('Thisisareallylongnewcontent');
+      scroll.element.trigger('resize');
+    });
 	})
 </script>
 </body>
