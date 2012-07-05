@@ -129,11 +129,10 @@ steal('can/control',
 			}
 
 			var thead = this.$.head;
-			this.bodyScroll = function (ev) {
+			this.on(this.$.scrollBody, 'scroll', function (ev) {
 				thead.scrollLeft($(ev.target).scrollLeft());
-			};
+			});
 
-			this.$.scrollBody.on('scroll', this.bodyScroll);
 			this.updateColumns();
 		},
 
@@ -289,7 +288,6 @@ steal('can/control',
 		},
 
 		destroy : function () {
-			this.$.scrollBody.off('scroll', this.bodyScroll);
 			delete this.$;
 			can.Control.prototype.destroy.call(this);
 		}
