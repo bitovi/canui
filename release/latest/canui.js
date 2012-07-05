@@ -1,114 +1,279 @@
-// Can.UI.ACCORDION
-// ----------------
+(function ($) {
+	var div = $('<div id="out"><div style="height:200px;"></div></div>').css({
+			position : "absolute",
+			top : "0px",
+			left : "0px",
+			visibility : "hidden",
+			width : "100px",
+			height : "100px",
+			overflow : "hidden"
+		}).appendTo(document.body),
+		inner = $(div[0].childNodes[0]),
+		w1 = inner[0].offsetWidth,
+		w2;
 
-@import "../style/bootstrap/less/reset.less";
-@import "../style/bootstrap/less/variables.less";
-@import "../style/bootstrap/less/mixins.less";
+	div.css("overflow", "scroll");
+	var w2 = inner[0].offsetWidth;
+	if (w2 == w1) {
+		inner.css("width", "100%"); //have to set this here for chrome
+		w2 = inner[0].offsetWidth;
+	}
+	div.remove();
+	window.can || (window.can = {});
+	window.can.ui || (window.can.ui = {});
+	/**
+	 * @parent canui
+	 * @attribute can.ui.scrollbarWidth
+	 * @type {Number}
+	 *
+	 * Stores the width of the browsers scrollbars in can.ui.scrollbarWidth.
+	 *
+	 *      $('#element').width($('#element').width()
+	 *          - can.ui.scrollbarWidth);
+	 */
+	window.can.ui.scrollbarWidth = w1 - w2;
+})(jQuery);
+(function( $ ) {
+	//evil things we should ignore
+	var matches = /script|td/,
 
-.accordion{
-	font-family:@sansFontFamily;
-	
-	.accordion-toggle {
-		border: 1px solid @btnBorder;
-		background:@btnBackground;
-		color:@textColor;
-		
-		display: block;
-		margin:0;
-	  	padding:0;
-		outline:none;
-		cursor:pointer;
-		text-deocoration:none;
-		
-		font-size: @baseFontSize;
-	  	line-height: @baseLineHeight;
-		
-		&:hover {
-	    	background:#ddd;
-	  	}
-	}
-	
-	.accordion-toggle.active{
-		color: @white;
-		text-shadow: 0 -1px 0 rgba(0,0,0,.2);
-		background-color: @linkColor;
-	}
-	
-	.accordion-body {
-		display:none;
-		margin:0;
-		list-style:none;
-		border: 1px solid @btnBorder;
-		background:@bodyBackground;
-	}
-}
+		// if we are trying to fill the page
+		isThePage = function( el ) {
+			return el === document || el === document.documentElement || el === window || el === document.body
+		},
+		//if something lets margins bleed through
+		bleeder = function( el ) {
+			if ( el[0] == window ) {
+				return false;
+			}
+			var styles = el.styles('borderBottomWidth', 'paddingBottom')
+			return !parseInt(styles.borderBottomWidth) && !parseInt(styles.paddingBottom)
+		},
+		//gets the bottom of this element
+		bottom = function( el, offset ) {
+			//where offsetTop starts
+			return el.outerHeight() + offset(el);
+		}
+		pageOffset = function( el ) {
+			return el.offset().top
+		},
+		offsetTop = function( el ) {
+			return el[0].offsetTop;
+		},
+		inFloat = function( el, parent ) {
+			while ( el && el != parent ) {
+				var flt = $(el).css('float')
+				if ( flt == 'left' || flt == 'right' ) {
+					return flt;
+				}
+				el = el.parentNode
+			}
+		},
+		/**
+		 * @function jQuery.fn.fills
+		 * @parent jQuery.fills
+		 * @test jquery/dom/fills/funcunit.html
+		 * @plugin jquery/dom/fills
+		 *
+		 * Fills a parent element's height with the current element.
+		 * This is extremely useful for complex layout, especially when you want to account for line-wrapping.
+		 *
+		 * ## Basic Example
+		 *
+		 * If you have the following html:
+		 *
+		 *     <div id='box'>
+		 * 	    <p>I am a long heading.</p>
+		 * 	    <div id='child'>I'm a child.</div>
+		 *     </div>
+		 *
+		 * The follow makes `#child` fill up `#box`:
+		 *
+		 *     $('#child').can_ui_layout_fill("#box")
+		 *
+		 * ## Limitations
+		 *
+		 * Fill currently does not well with:
+		 *
+		 *   - Bleeding margins - Where margins leak through parent elements
+		 *     because the parent elements do not have a padding or border.
+		 *
+		 *   - Tables - You shouldn't be using tables to do layout anyway.
+		 *
+		 *   - Floated Elements - the child element has `float: left` or `float: right`
+		 *
+		 *
+		 * @param {HTMLElement|selector|Object} [parent] the parent element
+		 * to fill, defaults to the element's parent.
+		 *
+		 * The following fills the parent to `#child`:
+		 *
+		 *     $('#child').fills()
+		 *
+		 * A selector can also be pased.  This selector is passed to jQuery's
+		 * closet method.  The following matches the first `#parent` element that
+		 * is a parentNode of `#child`:
+		 *
+		 *     $('#child').fills("#parent")
+		 *
+		 * An element or window can also be passed.  The following will make
+		 * `#child` big enough so the entire window is filled:
+		 *
+		 *      $('#child').fills(window)
+		 *
+		 * If you pass an object, the following options are available:
+		 *
+		 * - __parent__ - The parent element selector or jQuery object
+		 * - __className__ - A class name to add to the element that fills
+		 * - __all__ - Reset the parents height when resizing
+		 *
+		 * @return {jQuery} the original jQuery collection for chaining.
+		 */
+		filler = $.fn.fills = function( parent ) {
+			var options = parent;
+			options || (options = {});
+			if(typeof options == 'string'){
+				options = this.closest(options)
+			}
+			if ( options.jquery || options.nodeName ) {
+				options = {parent: options };
+			}
+			// Set the parent
+			options.parent || (options.parent = $(this).parent());
+			options.parent = $(options.parent)
 
-.accordion_vertical{
+			// setup stuff on every element
+			if(options.className) {
+				this.addClass(options.className)
+			}
 
-	.accordion-toggle {
-		border-bottom:none;
-	  	padding: 8px 15px;
+			var thePage = isThePage(options.parent[0]);
+			
+			if ( thePage ) {
+				options.parent = $(window)
+			}
 
-		&.first{
-			.border-radius(4px 4px 0 0);
-		}
-	
-		&.last{
-			.border-radius(0 0 4px 4px);
-			border-bottom:solid 1px @btnBorder;
-		}
-	}
-	
-	.accordion-toggle.active{
-		&.last{
-			.border-radius(0);
-		}
-	}
-	
-	.accordion-body {
-		border-top:none;
-		margin-bottom:-1px;
-		
-		&.last{
-			.border-radius(0 0 4px 4px);
-		}
-	}
-}
+			this.each(function(){
+				var evData = {
+					filler: $(this),
+					inFloat: inFloat(this, thePage ? document.body : options.parent[0]),
+					options: options
+				},
+				cb = function() {
+					filler.parentResize.apply(this, arguments)
+				}
+				// Attach to the `resize` event
+				$(options.parent).bind('resize', evData, cb);
 
-.accordion_horizontal{
+				$(this).bind('destroyed', evData, function( ev ) {
+					if(options.className) {
+						$(ev.target).removeClass(options.className)
+					}
+					$(options.parent).unbind('resize', cb)
+				});
+				
+			});
 
-	.accordion-toggle {
-		float:left;
-	  	padding: 9px 15px;
-		border-left:none;
+			// resize to get things going
+			var func = function() {
+				options.parent.resize();
+			}
 
-		&.first{
-			border-left:solid 1px @btnBorder;
-			.border-radius(4px 0 0 4px);
+			if ( $.isReady ) {
+				func();
+			} else {
+				$(func)
+			}
+			return this;
+		};
+
+
+	$.extend(filler, {
+		parentResize : function( ev ) {
+			if (ev.data.filler.is(':hidden')) {
+				return;
+			}
+			
+			var parent = $(this),
+				isWindow = this == window,
+				container = (isWindow ? $(document.body) : parent),
+
+				//if the parent bleeds margins, we don't care what the last element's margin is
+				isBleeder = bleeder(parent),
+				children = container.children().filter(function() {
+					if ( matches.test(this.nodeName.toLowerCase()) ) {
+						return false;
+					}
+
+					var get = $.styles(this, ['position', 'display']);
+					return get.position !== "absolute" && get.position !== "fixed"
+						&& get.display !== "none" && !jQuery.expr.filters.hidden(this)
+				}),
+				last = children.eq(-1),
+				first,
+				parentHeight = parent.height() - (isWindow ? parseInt(container.css('marginBottom'), 10) || 0 : 0),
+				currentSize;
+			var div = '<div style="height: 0px; line-height:0px;overflow:hidden;' + (ev.data.inFloat ? 'clear: both' : '') + ';"/>'
+
+			if ( isBleeder ) {
+				//temporarily add a small div to use to figure out the 'bleed-through' margin
+				//of the last element
+				last = $(div).appendTo(container);
+				
+			}
+
+			//for performance, we want to figure out the currently used height of the parent element
+			// as quick as possible
+			// we can use either offsetTop or offset depending ...
+			if ( last && last.length > 0 ) {
+				if ( last.offsetParent()[0] === container[0] ) {
+
+					currentSize = last[0].offsetTop + last.outerHeight();
+				} else if (last.offsetParent()[0] === container.offsetParent()[0]) {
+					// add pos abs for IE7 but
+					// might need to adjust for the addition of first's hheight
+					var curLast =last[0].offsetTop;
+					first = $(div).prependTo(container);
+					
+					currentSize = ( curLast + last.outerHeight() ) - first[0].offsetTop;
+					
+					first.remove();
+				} else {
+					// add first so we know where to start from .. do not bleed in this case
+					first = $(div).prependTo(container);
+
+					currentSize = ( last.offset().top + last.outerHeight() ) - first.offset().top;
+					first.remove();
+				}
+			}
+
+			// what the difference between the parent height and what we are going to take up is
+			var delta = parentHeight - currentSize,
+				// the current height of the object
+				fillerHeight = ev.data.filler.height();
+
+			//adjust the height
+			if ( ev.data.options.all ) {
+				// we don't care about anything else, we are likely absolutely positioned
+				// we need to fill the parent width
+				// temporarily collapse, then expand
+				ev.data.filler.height(0).width(0);
+				var parentWidth = parent.width(),
+					parentHeight = parent.height();
+
+				ev.data.filler.outerHeight(parentHeight);
+				ev.data.filler.outerWidth(parentWidth);
+			} else {
+				ev.data.filler.height(fillerHeight + delta)
+			}
+
+			//remove the temporary element
+			if ( isBleeder ) {
+				last.remove();
+			}
 		}
-	
-		&.last{
-			.border-radius(0 4px 4px 0);
-		}
-	}
-	
-	.accordion-toggle.active{
-		&.last{
-			.border-radius(0);
-		}
-	}
-	
-	.accordion-body {
-		float:left;
-		padding: 9px 0;
-		border-left:none;
-		
-		&.last{
-			.border-radius(0 4px 4px 0);
-		}
-	}
-}
-;
+	});
+})(jQuery);
 (function(){
 
 //we have to clear out activate
@@ -330,7 +495,7 @@ can.Control('can.ui.Selectable',{
 	activated : function(el, ev){
 		ev = ev || {};
 		// if we should only select one element ...
-		if(!this.options.multiActivate || (!ev.shiftKey && !ev.ctrlKey)){
+		if(!this.options.multiActivate || (!ev.shiftKey && !ev.ctrlKey && !ev.metaKey)){
 			// remove the old activated ...
 			this.element
 				.find("." + this.options.activatedClassName)
@@ -340,7 +505,7 @@ can.Control('can.ui.Selectable',{
 			
 			el.trigger("activate", el.models ? [el.models()] : [el]);
 			
-		}else if(ev.ctrlKey){ // if we add to the 'activated' list
+		}else if(ev.ctrlKey || ev.metaKey){ // if we add to the 'activated' list
 			
 			// Toggle
 			if(el.hasClass(this.options.activatedClassName)){
@@ -574,6 +739,298 @@ can.Control('can.ui.Selectable',{
 	}
 });
 
+})(jQuery);
+(function ($) {
+
+	// helpers
+	var setWidths = function (cells, firstWidths) {
+			var length = cells.length - 1;
+			for (var i = 0; i < length; i++) {
+				cells.eq(i).outerWidth(firstWidths[i]);
+			}
+		},
+		TableFill = can.Control({
+			setup : function (el, options) {
+				//remove the header and put in another table
+				el = $(el);
+				if (el[0].nodeName.toLowerCase() == 'table') {
+					this.$ = {
+						table : el
+					}
+					can.Control.prototype.setup.call(this, this.$.table.wrap("<div></div>").parent(),
+						options)
+				} else {
+					this.$ = {
+						table : el.find('table:first')
+					}
+					can.Control.prototype.setup.call(this, el, options);
+				}
+
+			},
+			init : function () {
+				// add a filler ...
+				var options = {};
+				if (this.options.parent) {
+					options.parent = this.options.parent;
+					options.fill = this.options.fill;
+				}
+				this.element.fills(options).css('overflow', 'auto');
+
+			},
+			// listen on resize b/c we want to do this right away
+			// in case anyone else cares about the table's
+			// dimensions (like table scroll)
+			resize : function (ev) {
+				var table = this.$.table,
+					el = this.element[0];
+				//let the table flow naturally
+				table.css("width", "");
+
+				// is it scrolling vertically
+				if (el.offsetHeight < el.scrollHeight) {
+					table.outerWidth(this.element.width() - can.ui.scrollbarWidth)
+				} else {
+					table.outerWidth(this.element.width())
+				}
+
+			}
+		});
+
+	can.Control("can.ui.TableScroll", {
+		defaults : {
+			fill : true,
+			spacer : 'spacing',
+			wrapper : '<div><div class="body"><div class="scrollBody"></div></div></div>'
+		}
+	},
+	/**
+	 * @prototype
+	 */
+	{
+		setup : function (el, options) {
+			// a cache of elements.
+			this.$ = {
+				table : $(el)
+			}
+
+			// the area that scrolls
+			this.$.scrollBody = this.$.table.wrap((options && options.wrapper) || this.constructor.defaults.wrapper).parent();
+			// a div that houses the scrollable area.  IE < 8 needs this.  It acts
+			// as a buffer for the scroll bar
+			this.$.body = this.$.scrollBody.parent();
+
+			can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
+		},
+
+		init : function () {
+			// body acts as a buffer for the scroll bar
+			this.$.body.css("width", "100%");
+
+			// get the thead, and tfoot into their own table.
+			$.each(['thead', 'tfoot'], can.proxy(this._wrapWithTable, this));
+
+
+			// get the tbody
+			this.$.tbody = this.$.table.children('tbody')
+
+			// if one doesn't exist ... make it
+			if (!this.$.tbody.length) {
+				this.$.tbody = $('<tbody/>')
+				this.$.table.append(this.$.tbody)
+			}
+
+			// add thead
+			if (this.$.theadTable) {
+				this.$.head = $("<div class='header'></div>").css({
+					"visibility" : "hidden",
+					overflow : "hidden"
+				}).prependTo(this.element).append(this.$.theadTable);
+				this._addSpacer('thead');
+			}
+			if (this.$.tfootTable) {
+				this.$.foot = $("<div class='footer'></div>").css({
+					"visibility" : "hidden",
+					overflow : "hidden"
+				}).appendTo(this.element).append(this.$.tfootTable);
+				this._addSpacer('tfoot');
+			}
+
+
+			// add representations of the header cells to the bottom of the table
+
+			// fill up the parent
+			// make the scroll body fill up all other space
+			if (this.options.fill) {
+				new TableFill(this.$.scrollBody, {
+					parent : this.element.parent()
+				});
+			}
+
+			var thead = this.$.head;
+			this.on(this.$.scrollBody, 'scroll', function (ev) {
+				thead.scrollLeft($(ev.target).scrollLeft());
+			});
+			this.on(this.$.table, 'resize', 'resize');
+
+			this.updateColumns();
+		},
+
+		_wrapWithTable : function (i, tag) {
+			// save it
+			this.$[tag] = this.$.table.children(tag);
+			if (this.$[tag].length && this.$[tag].find('td, th').length) {
+				var table = $('<table>'), parent = this.$[tag].parent();
+				// We want to keep classes and styles
+				table.attr('class', parent.attr('class'));
+				table.attr('style', parent.attr('style'));
+
+				// remove it (w/o removing any widgets on it)
+				this.$[tag][0].parentNode.removeChild(this.$[tag][0]);
+
+				//wrap it with a table and save the table
+				this.$[tag + "Table"] = this.$.thead.wrap(table).parent()
+			}
+		},
+
+		/**
+		 * @parent can.ui.TableScroll
+		 * @function elements
+		 *
+		 * Returns useful elements of the table
+		 * the thead, tbody, tfoot, and scrollBody of the modified table:
+		 *
+		 * If you need to change the content of the table, you can
+		 * use elements for access.  If you change the content, make sure
+		 * you call `updateColumns()`.
+		 *
+		 * @return {Object} an object like:
+		 *
+		 *     {
+		 *         tbody : HTMLTableSelectionElement,
+		 *         tfoot : HTMLTableSelectionElement,
+		 *         thead : HTMLTableSelectionElement,
+		 *         scrollBody : HTMLDivElement
+		 *     }
+		 */
+		elements : function () {
+			return can.extend({}, this.$);
+		},
+
+		/**
+		 * @function rows
+		 * @parent can.ui.TableScroll
+		 *
+		 * Returns all actual rows (excluding any spacers).
+		 *
+		 * @return {can.$) The content elements of the table body without any spacers.
+		 */
+		rows : function() {
+			return this.$.tbody.children(":not(." + this.options.spacer + ")");
+		},
+
+		/**
+		 * @hide
+		 * Adds a spacer on the bottom of the table that mimicks the dimensions
+		 * of the table header elements.  This keeps the body columns for being
+		 * smaller than the header widths.
+		 *
+		 * This ONLY works when the table is visible.
+		 */
+		_addSpacer : function (tag) {
+			if (!this.$[tag].is(":visible")) {
+				return;
+			}
+			//check last element ...
+			var last = this.$.tbody.children("." + this.options.spacer + tag)
+			if (last.length) {
+				last.remove();
+			}
+
+			var spacer = this.$[tag].children(0).clone().addClass(this.options.spacer).addClass(tag);
+
+			// wrap contents with a spacing
+			spacer.children("th, td").each(function () {
+				var td = $(this);
+				td.html("<div style='float: left;'>" + td.html() + "</div>")
+			});
+
+			spacer.appendTo(this.$.tbody);
+
+			//now set spacing, and make minimal height
+			spacer.children("th, td").each(function () {
+				var $td = $(this),
+					$spacer = $td.children(':first'),
+					width = $spacer.outerWidth();
+
+				$td.css({
+					"padding-top" : 0,
+					"padding-bottom" : 0,
+					margin : 0,
+					width : ""
+				}) // If padding is removed from the cell sides, layout might break!
+				$spacer.outerWidth(width + 2).css({
+					"float" : "none",
+					"visibility" : "hidden",
+					height : "1px"
+				}).html("")
+			})
+			this.$.spacer = spacer;
+		},
+
+		updateColumns : function(resize) {
+			if (this.$.foot) {
+				this._addSpacer('tfoot');
+			}
+			if (this.$.head) {
+				this._addSpacer('thead');
+			}
+
+			if(resize) {
+				this.resize();
+			}
+		},
+
+		/**
+		 * This is either triggered by the `resize` event or should be called manually when
+		 * the table content or dimensions change.
+		 */
+		resize : function () {
+			var body = this.$.body,
+
+			// getting the outer widths is the most expensive thing
+				firstWidths = this.$.tbody.find("tr:first:not(." + this.options.spacer + ")").children().map(function () {
+					return $(this).outerWidth()
+				}),
+
+				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth : 0,
+				tableWidth = this.$.table.width();
+
+			if (tableWidth) {
+				if (this.$.foot) {
+					var cells = this.$.tfootTable.find("th, td")
+					if (cells.length == firstWidths.length) {
+						setWidths(cells, firstWidths);
+					}
+					this.$.foot.css('visibility', 'visible')
+					this.$.tfootTable.width(tableWidth + padding)
+				}
+
+				if (this.$.head) {
+					var cells = this.$.theadTable.find("th, td")
+					if (cells.length == firstWidths.length) {
+						setWidths(cells, firstWidths);
+					}
+					this.$.head.css('visibility', 'visible')
+					this.$.theadTable.width(tableWidth + padding)
+				}
+			}
+		},
+
+		destroy : function () {
+			delete this.$;
+			can.Control.prototype.destroy.call(this);
+		}
+	})
 })(jQuery);
 (function(){
 		
