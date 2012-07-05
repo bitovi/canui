@@ -41,15 +41,20 @@ test("horizontal scroll", 1, function(){
 	});
 });
 
-test("update columns and resize", function() {
+test("update columns and resize", 2, function() {
 	S("#scrollable").click().wait(100);
-	var oldWidth;
+	var oldThWidth, oldTdWidth;
 	S(function() {
-		oldWidth = S.win.$('th:eq(1)').width();
+		oldThWidth = S.win.$('th:eq(1)').width();
+		oldTdWidth = S.win.$('td:eq(2)').width();
 	});
 
-	S("#changeHeading").click().wait(100, function(){
-		ok(S.win.$('td:eq(1)').width() > oldWidth, 'Columns got resized as well');
+	S("#changeHeading").click().then(function(){
+		ok(S.win.$('td:eq(1)').width() > oldThWidth, 'Columns got resized as well');
+	});
+
+	S("#changeColumn").click().then(function(){
+		ok(S.win.$('th:eq(2)').width() > oldTdWidth, 'Heading got resized as well');
 	});
 });
 

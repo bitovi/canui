@@ -128,7 +128,12 @@ steal('can/control',
 				});
 			}
 
-			this.$.scrollBody.on('scroll', can.proxy(this.bodyScroll, this));
+			var thead = this.$.head;
+			this.bodyScroll = function (ev) {
+				thead.scrollLeft($(ev.target).scrollLeft());
+			};
+
+			this.$.scrollBody.on('scroll', this.bodyScroll);
 			this.updateColumns();
 		},
 
@@ -234,10 +239,6 @@ steal('can/control',
 			this.$.spacer = spacer;
 		},
 
-		bodyScroll : function (ev) {
-			this.$.head.scrollLeft($(ev.target).scrollLeft());
-		},
-
 		updateColumns : function(resize) {
 			if (this.$.foot) {
 				this._addSpacer('tfoot');
@@ -288,7 +289,7 @@ steal('can/control',
 		},
 
 		destroy : function () {
-			this.$.scrollBody.off('scroll', can.proxy(this.bodyScroll, this));
+			this.$.scrollBody.off('scroll', this.bodyScroll);
 			delete this.$;
 			can.Control.prototype.destroy.call(this);
 		}
