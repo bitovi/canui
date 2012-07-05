@@ -132,6 +132,7 @@ steal('can/control',
 			this.on(this.$.scrollBody, 'scroll', function (ev) {
 				thead.scrollLeft($(ev.target).scrollLeft());
 			});
+			this.on(this.$.table, 'resize', 'resize');
 
 			this.updateColumns();
 		},
