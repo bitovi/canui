@@ -4,84 +4,78 @@
 <head>
 	<title>fill</title>
 	<style type='text/css'>
-		body {
-			margin: 0px 0px 60px 0px;
-			padding: 10px;
-      font-family: verdana;
-		}
-
-		h4 {
-			background-color: gray;
-			margin: 15px 0;
-		}
-
-		p {
-			margin: 16px 0;
-		}
-
-		h3 {
-			margin: 18px 0;
-		}
-
-		#scrollable, #main {
-			width: 290px;
-			height: 290px;
-			border: solid 1px red;
-			padding: 10px;
-		}
-
-    #mainfiller {
-      background-color: green;
+    body{
+      font-family: Helvetica,"Lucida Grande","Lucida Sans",Arial,Helvetica,sans-serif;
     }
 
-		#fillthis {
-			overflow: auto
-		}
+    div {
+      overflow: hidden;
+    }
 
-		#long {
-			height: 400px;
-			background-color: yellow;
-		}
+    #container {
+      width: 480px;
+      height: 250px;
+      background-color: #EFEFEF;
+    }
+
+    #top {
+      background-color: yellow;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+
+    #bottom {
+      background-color: #66CCFF;
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    #fill {
+      background-color: green;
+      padding: 10px;
+      margin: 10px;
+    }
+
+    #resizer {
+      background-color: blue;
+      cursor: pointer;
+      position: absolute;
+      left: 450px;
+      padding: 5px;
+    }
 	</style>
-  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/smoothness/jquery-ui.css" />
 </head>
 <body>
 <div id="demo-html">
-	<h1>Filler</h1>
+	<h1>Fills</h1>
 
-  <div id="main">
-    <p>I am a longer paragraph with margin. I might wrap. Resize the area to see how #mainfiller adjusts.</p>
-    <div id="mainfiller">#mainfiller</div>
-    <p>Another paragraph</p>
+  <div id="container">
+    <div id="top">Longer text that might be wraped but everything still looks right.</div>
+    <div id="fill">#fill</div>
+    <div id="bottom">A bottom sibling.</div>
   </div>
+  <div id="resizer"></div>
 
-  <h1>Areas with Scrollbars</h1>
-
-  <div id='scrollable'>
-    <p>Hello World, How are You? <a href='javascript://' id='scrollfill'>Run</a></p>
-
-    <div id='fillthis'>
-      <div id='long'>I am very long ...</div>
-    </div>
-  </div>
 </div>
 
 
 <script type='text/javascript'
-        src='../../../steal/steal.js'>
+        src='../../steal/steal.js'>
 </script>
 <script type='text/javascript' id="demo-source">
-	steal('jquery/dom/fills').then('https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js').then(function () {
-		steal.clickReg = true;
+	steal('canui/fills', 'jquery/event/drag').then(function () {
+    var offset = $('#container').offset();
+    $('#resizer').css('top',  offset.top + $('#container').height())
+        .css('left', offset.left + $('#container').width())
+        .on('dragmove', function(ev, drag) {
+          $('#container')
+              .width(drag.location.x())
+              .height(drag.location.y() - offset.top)
+              .trigger('resize');
+         });
 
-    $('#main').resizable();
-
-    $('#mainfiller').fills();
-
-		$('#scrollfill').click(function () {
-			$('#fillthis').fills("#scrollable")
-		});
-	})
+    $('#fill').fills();
+	});
 </script>
 </body>
 </html>
