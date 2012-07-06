@@ -1,4 +1,5 @@
 steal('can/control',
+	'can/control/plugin',
 	'canui/fills',
 	'canui/util/scrollbar_width.js',
 	'jquery/event/resize')
@@ -61,7 +62,8 @@ steal('can/control',
 	can.Control("can.ui.TableScroll", {
 		defaults : {
 			fill : true
-		}
+		},
+		pluginName : 'table_scroll'
 	},
 	/**
 	 * @prototype

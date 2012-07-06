@@ -1,4 +1,4 @@
-steal('can/control', 'can/view/ejs', 'can/observe').then(
+steal('can/control', 'can/view/ejs', 'can/observe', 'can/control/plugin').then(
 '//canui/grid/views/init.ejs', '//canui/grid/views/row.ejs',
 '//canui/grid/views/single.ejs', '//canui/grid/views/head.ejs',
 function() {
@@ -6,6 +6,7 @@ function() {
 	var computes = [ 'columns', 'list', 'emptyText', 'loadingText' ];
 
 	can.Control('can.ui.Grid', {
+		pluginName : 'grid',
 		defaults : {
 			select : {
 				heading : 'thead',
@@ -107,19 +108,19 @@ function() {
 				self = this;
 
 			can.each(self.options.columns(), function(column, i) {
-				if(!column.attr) {
-					throw "Column " + i + " needs an 'attr' property!";
+				if(!column.content) {
+					throw "Column " + i + " needs an 'content' property!";
 				}
 
-				var defaultCallback = function() {
-					return item.attr(column.attr);
-				};
+				var content = can.compute(function() {
+					return item.attr(column.content);
+				});
 
-				var callback = can.isFunction(column.attr) ?
-						function() { return column.attr(item, index); } :
-						defaultCallback;
+				if(can.isFunction(column.content)) {
+					content = column.content(item, index);
+				}
 
-				columnData.push(can.compute(callback));
+				columnData.push(content);
 			});
 
 			self.body.append(self.render('row', {

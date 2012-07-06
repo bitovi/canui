@@ -23,6 +23,13 @@
   </section>
 </div>
 
+<script type="text/ejs" id="ageEJS">
+  <div class="progress progress-striped">
+    <div class="bar"
+         style="width: <%= person.attr('age') %>%;"></div>
+  </div>
+</script>
+
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
   steal('canui/grid', 'can/model', 'canui/style', 'canui/table_scroll', function () {
@@ -59,16 +66,20 @@
       columns : [
         {
           header : 'Name',
-          attr : 'name'
+          content : 'name'
         },
         {
           header : 'Age',
-          attr : 'age'
+          content : function(element, index) {
+            return can.view('ageEJS', { person : element });
+          }
         },
         {
           header : 'Stuff',
-          attr : function(element, index, data) {
-            return element.attr('name') + ' (' + element.attr('age') + ')';
+          content : function(element, index) {
+            return can.compute(function() {
+              return element.attr('name') + ' (' + element.attr('age') + ')';
+            });
           }
         }
       ],
