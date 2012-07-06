@@ -34,9 +34,9 @@ to fill out the remaining space:
 <iframe style="width: 100%; height: 370px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 
-## TableScroll `$(element).table_scroll([fillParent])`
+## TableScroll `$(element).tableScroll([fillParent])`
 
-[TableScroll](http://donejs.com/docs.html#!canui.table_scroll) makes a table scrollable while keeping headers and
+[TableScroll](http://donejs.com/docs.html#!canui.) makes a table scrollable while keeping headers and
 footers fixed. This is useful for tables that display big amounts of data in a grid like widget.
 A table like this:
 
@@ -55,10 +55,10 @@ A table like this:
 Can be made scrollable like this:
 
 {% highlight javascript %}
-$('table').table_scroll();
+$('table').tableScroll();
 {% endhighlight %}
 
-The following example creates a scrollable table with links to all CanUI builds on [ci.javascriptmvc.com](http://ci.javascriptmvc.com/job/CanUI):
+The following example shows a scrollable table with header and footer:
 
 <iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
@@ -68,60 +68,55 @@ The `resize` event should be triggered on a scrollable table whenever the table 
 or column content changes:
 
 {% highlight javascript %}
-$('table').table_scroll();
+$('table').tableScroll();
 $('table').find('td:first').html('AColumnNameThatIsLong');
 $('table').resize();
 {% endhighlight %}
 
-### elements `$('table').table_scroll('elements')`
+### elements `$('table').tableScroll('elements')`
 
-`$('table').table_scroll('elements')` returns an object with references to the `body`, `header`, `footer`
-and `scrollBody` elements. To add a class to the scroll body, for example, use this:
+`$('table').tableScroll('elements')` returns an object with references to the `body`, `header`, `footer`
+and `scrollBody` elements. This is different than the elements of the original table since TableScroll
+changes the DOM to keep the header and footer elements fixed.
+To add a class to the scroll body, for example, use this:
 
 {% highlight javascript %}
-$('table').table_scroll();
+$('table').tableScroll();
 // Get the elements
-var elements = $('table').table_scroll('elements');
+var elements = $('table').tableScroll('elements');
 // Add a class to scrollBody
 elements.scrollBody.addClass('scollable');
 {% endhighlight %}
 
-### updateCols `$(element).table_scroll('updateCols')`
+### updateCols `$(element).tableScroll('updateCols')`
 
-`$(element).table_scroll('updateCols')` should be called after a header or footer column on a TableScroll
-element has changed. This will also trigger a `resize` event.
+`$(element).tableScroll('updateCols')` should be called after a header or footer column has been updated, removed
+or inserted. This will also trigger a `resize` event.
 
 {% highlight javascript %}
-$('table').table_scroll();
+$('table').tableScroll();
 // Get the header element
-var header = $('table').table_scroll('elements').header;
+var header = $('table').tableScroll('elements').header;
 // Update the first heading column
 header.find('th:first').html('NewColumnName');
 // Update the columns
-$('table').table_scroll('updateCols');
+$('table').tableScroll('updateCols');
 {% endhighlight %}
 
-### rows `$(element).table_scroll('rows', [how], [newRows])`
+### rows `$(element).tableScroll('rows')`
 
-`$(element).table_scroll('rows', [how], [newRows])` retrieves all table rows or adds new rows to the table.
-`how` indicates how the new rows will be inserted and can have the following values:
-
-- __append__ - Appends `newRows` to the end of the table
-- __prepend__ - Adds `newRows` to the beginning of the table
-- __replaceWith__ - Replaces all current rows with `newRows`
-
-The default value is __append__. When adding rows this way, there is no need to explicitly trigger `resize`.
+`$(element).tableScroll('rows')` returns a jQuery collection containing all table rows. This can be used to
+remove, insert or replace certain rows. A [resize](#tablescroll-resize) needs to be triggered after any modification.
 
 {% highlight javascript %}
-var firstNewRow = $('<tr><td>John</td><td>Doe</td></tr>'),
-    secondNewRow = $('<tr><td>New</td><td>User</td></tr>');
-
-$('table').table_scroll();
-// Append newRow to the table
-$('table').table_scroll('rows', newRow);
-// Replace all rows with secondRow
-$('table').table_scroll('rows', 'replaceWith', secondRow);
-$('table').table_scroll('rows') // -> [<tr><td>New</td><td>User</td></tr>]
+// Insert a new row at the end
+$('<tr><td>John</td><td>Doe</td></tr>')
+  .insertAfter($('#grid').grid('rows').last());
+// Remove the second row
+$('#grid').grid('rows').eq(1).remove();
+// Resize everything
+$('#grid').resize();
+$('#grid').tableScroll('rows') // -> [<tr><td>New</td><td>User</td></tr>]
 {% endhighlight %}
 
 
