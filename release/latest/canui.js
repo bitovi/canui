@@ -801,7 +801,8 @@ can.Control('can.ui.Selectable',{
 	can.Control("can.ui.TableScroll", {
 		defaults : {
 			fill : true
-		}
+		},
+		pluginName : 'table_scroll'
 	},
 	/**
 	 * @prototype
