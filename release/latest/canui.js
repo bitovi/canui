@@ -1,37 +1,39 @@
 (function ($) {
-	var div = $('<div id="out"><div style="height:200px;"></div></div>').css({
-			position : "absolute",
-			top : "0px",
-			left : "0px",
-			visibility : "hidden",
-			width : "100px",
-			height : "100px",
-			overflow : "hidden"
-		}).appendTo(document.body),
-		inner = $(div[0].childNodes[0]),
-		w1 = inner[0].offsetWidth,
-		w2;
+	$(function() {
+		var div = $('<div id="out"><div style="height:200px;"></div></div>').css({
+				position : "absolute",
+				top : "0px",
+				left : "0px",
+				visibility : "hidden",
+				width : "100px",
+				height : "100px",
+				overflow : "hidden"
+			}).appendTo(document.body),
+			inner = $(div[0].childNodes[0]),
+			w1 = inner[0].offsetWidth,
+			w2;
 
-	div.css("overflow", "scroll");
-	var w2 = inner[0].offsetWidth;
-	if (w2 == w1) {
-		inner.css("width", "100%"); //have to set this here for chrome
-		w2 = inner[0].offsetWidth;
-	}
-	div.remove();
-	window.can || (window.can = {});
-	window.can.ui || (window.can.ui = {});
-	/**
-	 * @parent canui
-	 * @attribute can.ui.scrollbarWidth
-	 * @type {Number}
-	 *
-	 * Stores the width of the browsers scrollbars in can.ui.scrollbarWidth.
-	 *
-	 *      $('#element').width($('#element').width()
-	 *          - can.ui.scrollbarWidth);
-	 */
-	window.can.ui.scrollbarWidth = w1 - w2;
+		div.css("overflow", "scroll");
+		var w2 = inner[0].offsetWidth;
+		if (w2 == w1) {
+			inner.css("width", "100%"); //have to set this here for chrome
+			w2 = inner[0].offsetWidth;
+		}
+		div.remove();
+		window.can || (window.can = {});
+		window.can.ui || (window.can.ui = {});
+		/**
+		 * @parent canui
+		 * @attribute can.ui.scrollbarWidth
+		 * @type {Number}
+		 *
+		 * Stores the width of the browsers scrollbars in can.ui.scrollbarWidth.
+		 *
+		 *      $('#element').width($('#element').width()
+		 *          - can.ui.scrollbarWidth);
+		 */
+		window.can.ui.scrollbarWidth = w1 - w2;
+	});
 })(jQuery);
 (function( $ ) {
 	//evil things we should ignore
@@ -798,9 +800,7 @@ can.Control('can.ui.Selectable',{
 
 	can.Control("can.ui.TableScroll", {
 		defaults : {
-			fill : true,
-			spacer : 'spacing',
-			wrapper : '<div><div class="body"><div class="scrollBody"></div></div></div>'
+			fill : true
 		}
 	},
 	/**
@@ -814,7 +814,7 @@ can.Control('can.ui.Selectable',{
 			}
 
 			// the area that scrolls
-			this.$.scrollBody = this.$.table.wrap((options && options.wrapper) || this.constructor.defaults.wrapper).parent();
+			this.$.scrollBody = this.$.table.wrap('<div><div ><div></div></div></div>').parent();
 			// a div that houses the scrollable area.  IE < 8 needs this.  It acts
 			// as a buffer for the scroll bar
 			this.$.body = this.$.scrollBody.parent();
@@ -906,14 +906,20 @@ can.Control('can.ui.Selectable',{
 		 * @return {Object} an object like:
 		 *
 		 *     {
-		 *         tbody : HTMLTableSelectionElement,
-		 *         tfoot : HTMLTableSelectionElement,
-		 *         thead : HTMLTableSelectionElement,
+		 *         body : HTMLTableSelectionElement,
+		 *         footer : HTMLTableSelectionElement,
+		 *         header : HTMLTableSelectionElement,
 		 *         scrollBody : HTMLDivElement
 		 *     }
 		 */
 		elements : function () {
-			return can.extend({}, this.$);
+			return {
+				header : this.$.thead,
+				footer : this.$.tfoot,
+				body : this.$.body,
+				scrollBody : this.$.scrollBody
+			};
+			// can.extend({}, this.$);
 		},
 
 		/**
@@ -925,7 +931,7 @@ can.Control('can.ui.Selectable',{
 		 * @return {can.$) The content elements of the table body without any spacers.
 		 */
 		rows : function() {
-			return this.$.tbody.children(":not(." + this.options.spacer + ")");
+			return this.$.tbody.children(":not([data-spacer])");
 		},
 
 		/**
@@ -941,12 +947,12 @@ can.Control('can.ui.Selectable',{
 				return;
 			}
 			//check last element ...
-			var last = this.$.tbody.children("." + this.options.spacer + tag)
+			var last = this.$.tbody.children('[data-spacer="' + tag + '"]');
 			if (last.length) {
 				last.remove();
 			}
 
-			var spacer = this.$[tag].children(0).clone().addClass(this.options.spacer).addClass(tag);
+			var spacer = this.$[tag].children(0).clone().attr('data-spacer', tag);
 
 			// wrap contents with a spacing
 			spacer.children("th, td").each(function () {
@@ -998,7 +1004,7 @@ can.Control('can.ui.Selectable',{
 			var body = this.$.body,
 
 			// getting the outer widths is the most expensive thing
-				firstWidths = this.$.tbody.find("tr:first:not(." + this.options.spacer + ")").children().map(function () {
+				firstWidths = this.$.tbody.find("tr:first:not([data-spacer])").children().map(function () {
 					return $(this).outerWidth()
 				}),
 
