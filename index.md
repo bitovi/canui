@@ -13,37 +13,30 @@ to create your own UI widgets the way you want them.
 
 ## Configuring CanUI
 
-## Fills `$(element).fills([parent]) -> jQuery`
+## Fills `$(element).fills([parent])`
 
-[can.ui.fills](http://donejs.com/docs.html#!canui.fills) adds `$.fn.fills` to make an element fill out a parent element.
-It takes care of any padding, margins and dimensions of other sibling elements and will update the dimensions when the parent
-resizes. You can either pass a parent selector or jQuery element or an object with the following options:
+[Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it always fills out the remaining space of
+a parent element. This is extremely useful for complex page layouts because it takes any margin, padding
+and sibling element dimensions into consideration.
 
-- __parent__ - The parent element selector or jQuery element
-- __className__ - The class name to add to the element. Not set by default
-- __all__ - Restore the parent element to its original size first
+When no parent selector or jQuery element is passed, the elements direct parent element will be filled:
 
-This is extremely useful for complex layouts taking care of elements that wrap automatically.
+{% highlight javascript %}
+// Fill the parent
+$('#fill').fills();
+// Fill the #container element
+$('#fill').fills('#container');
+{% endhighlight %}
+
 Resize the container in the following example using the blue square to see how the `#fill` element adjusts its size correctly
 to fill out the remaining space:
 
 <iframe style="width: 100%; height: 370px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
-## TableScroll `new can.ui.TableScroll(element);`
+## TableScroll `$(element).table_scroll([fillParent])`
 
-[can.ui.TableScroll](http://donejs.com/docs.html#!canui.table_scroll) makes an HTML table scrollable and keeps the
-headers fixed. It works for any table that has a fixed height container element.
-`can.ui.TableScroll` can be initialized with the following options:
-
-- __fill__ - The table should fill out it's parent
-- __spacer__ - The class for spacer rows
-- __wrapper__ - The wrapper HTML content
-
-An instance of `can.ui.TableScroll` has the following methods:
-
-- `scroller.elements()` - Returns an object with references to the `tbody`, `thead`, `tfoot` and `scrollBody` elements
-- `scroller.updateColumns([resize])` - Call when a column heading is changed, added or removed
-- `scroller.rows()` - Returns all actual rows. This can be used for removing or inserting new rows
+[TableScroll](http://donejs.com/docs.html#!canui.table_scroll) makes a table scrollable while keeping headers and
+footers fixed. This is useful for grid like widgets.
 
 Considering a markup like this:
 
@@ -59,24 +52,85 @@ Considering a markup like this:
 </div>
 {% endhighlight %}
 
-`can.ui.TableScroll` can be used like this:
+The table can be made scrollable like this:
 
 {% highlight javascript %}
-var scroller = new can.ui.TableScroll('table');
-// Delete all rows
-scroller.rows().remove();
-// Append a new row at the end
-$('<tr><td>Test</td><td>User</td></tr>')
-  .insertAfter(scroller.rows().last());
-// Resize when the table content changes
-scoller.resize();
-// or as a jQuery event
-$('table').trigger('resize');
+$('table').table_scroll();
 {% endhighlight %}
 
+It works for any table that has a fixed height container element.
 The following example creates a randomly generated, scrollable table:
 
 <iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+
+### resize `$(element).resize()`
+
+The `resize` event on a scrollable table should be triggered whenever the tables dimensions
+or column content changes:
+
+{% highlight javascript %}
+$('table').table_scroll();
+$('table').find('td:first').html('AColumnNameThatIsLong');
+$('table').resize();
+{% endhighlight %}
+
+### updateCols `$(element).table_scroll('updateCols')`
+
+`$(element).table_scroll('updateCols')` should be called after a header or footer column has changed.
+This will also trigger a `resize` event.
+
+{% highlight javascript %}
+$('table').table_scroll();
+// Update the first heading column
+$('table').find('th:first').html('NewColumnName');
+// Update the columns
+$('table').table_scroll('updateCols');
+{% endhighlight %}
+
+### elements `$(element).control(can.ui.TableScroll).elements()`
+
+`$(element).control(can.ui.TableScroll).elements()` returns an object with references to the `body`, `header`, `footer`
+and `scrollBody` elements. To change the column heading, for example, use this:
+
+{% highlight javascript %}
+$('table').table_scroll();
+// Retrieve the can.ui.TableScroll instance
+var scroller = $(element).control(can.ui.TableScroll);
+var elements = scroller.elements();
+elements.body.find('td:first').html('Updated column content');
+// We need to resize whenever anything changes
+$('table').resize();
+{% endhighlight %}
+
+### rows `$(element).table_scroll('rows', [how], [newRows])`
+
+`$(element).table_scroll('rows', [how], [newRows])` allows you to add new rows to the table and automatically
+triggers the `resize` event. `how` indicates how the new rows will be inserted and can have the following values:
+
+- __append__ - Appends `newRows` to the end of the table
+- __prepend__ - Adds `newRows` to the beginning of the table
+- __replaceWith__ - Replaces all the current rows with `newRows`
+
+The default value is __append__.
+
+{% highlight javascript %}
+var firstNewRow = $('<tr><td>John</td><td>Doe</td></tr>'),
+    secondNewRow = $('<tr><td>New</td><td>User</td></tr>');
+$('table').table_scroll();
+// Append newRow to the table
+$('table').table_scroll('rows', newRow);
+// Replace all rows with secondRow
+$('table').table_scroll('rows', 'replaceWith', secondRow);
+{% endhighlight %}
+
+`rows` can also be used to retrieve all actual rows in the table:
+
+{% highlight javascript %}
+$('table').table_scroll();
+// Retrieve the can.ui.TableScroll instance
+var scroller = $(element).control(can.ui.TableScroll);
+scroller.rows().remove();
+{% endhighlight %}
 
 ## Grid `new can.ui.Grid( element, options )`
 
@@ -132,13 +186,20 @@ var people = new can.Observe.List([
 
 The methods available on a grid instance are:
 
-- `grid.draw()` - Rerenders the currently displayed list and fires the `redraw` event
 - `grid.rows([observes])` - Returns all row elements or all row elements for the given observe(s)
 - `grid.items([rows])` - Returns a `can.Observe.List` of all items or all items for the given row(s)
 - `grid.columns([columns])` - Gets or sets the current column configuration
 - `grid.list([list])` - Gets or set the list provider
 - `grid.emptyText([text])` - Gets or sets the content to display when there are no items
 - `grid.loadingText([loadingText])` - Gets or sets the text to display while a `can.Deferred` is being resolve
+
+### columns `$(el).grid('columns', [columns])`
+
+### list `$(el).grid('list', [list])`
+
+### rows `$(el).grid('rows', [rows])`
+
+### items `$(el).grid('items', [item])`
 
 ### Managing columns
 
