@@ -127,19 +127,16 @@ $('table').table_scroll('rows') // -> [<tr><td>New</td><td>User</td></tr>]
 
 ## Grid `$(element).grid(options)`
 
-[Grid](http://donejs.com/docs.html#!canui.grid) provides a table that live binds to an observable list.
+[Grid](http://donejs.com/docs.html#!canui.grid) provides a table that live binds to a
+[can.Observe.List](http://donejs.com/docs.html#!can.Observe.List).
 Along with [TableScroll](#tablescroll) this can be used to create a full grid widget.
 
 Possible options:
 
-- `list` - The item provider which can be
-  - An array of items
-  - `can.Observe.List` of observes
-  - `can.Deferred` that resolves to the above
-  - `can.compute` that returns any of the above
 - `emptyText` - The content to display when there are no items
 - `loadingText` - The text to display when a deferred is being resolved
-- `columns` - The columns to display
+- `list` - The item provider described in more detail in the [list](#grid-list) section
+- `columns` - The columns to display, see the [columns](#grid-column) section
 
 With a markup like this:
 
@@ -147,7 +144,7 @@ With a markup like this:
 <div id="grid"></div>
 {% endhighlight %}
 
-Initialize the grid like this:
+And this `can.Observe.List`:
 
 {% highlight javascript %}
 var people = new can.Observe.List([{
@@ -160,7 +157,11 @@ var people = new can.Observe.List([{
     age : 26
   }
 ]);
+{% endhighlight %}
 
+The Grid can be initialized like this:
+
+{% highlight javascript %}
 $('#grid').grid({
   columns : [
     { header : 'First name', content : 'firstname' },
@@ -171,29 +172,67 @@ $('#grid').grid({
 });
 {% endhighlight %}
 
-The following example shows the grid to add and remove items and reset the list:
+The following example shows a grid that allows you to add new and remove items and reset the list
+to its initial state:
 
 <iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/hY3AS/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
-### columns `$(el).grid('columns', [columns])`
+### columns `$(element).grid('columns', [columns])`
 
-Column definitions are provided as an array of objects, where each object must contain
+Column definitions can be provided as a `can.Observe.List` or an array of objects. Each object
+must at least contain:
 
-- `header` - The header text
-- `attr` - The attribute to display
+- `header` - The header content.
+- `content` - The content to display for this column. This can either be an attribute name
+or a callback in the form of `function(observe, index)` that returns the content or a [can.compute](#) for the current column.
 
-`attr` can either be the attribute name or a function that takes the element and the index in the list as the parameters
-and returns a computed property. From the above example:
+The following example creates a grid with a column that contains the combined first- and lastname:
 
 {% highlight javascript %}
-function(observe) {
-  return observe.attr('firstname') + ' ' + observe.attr('lastname');
-}
+$('#grid').grid({
+  columns : [
+    {
+      header : 'Name',
+      content : function(observe) {
+        return can.compute(function() {
+          return observe.attr('firstname') + ' ' + observe.attr('lastname');
+        });
+      }
+    },
+    { header : 'Age', content : 'age' }
+  ],
+  list : people
+});
 {% endhighlight %}
 
-Returns the combined *firstname* and *lastname* property and live updates whenever the attributes change.
+It is also possible to render [EJS views](http://canjs.us/#can_ejs). For example an EJS script
+that wraps a persons age into a custom element and adds a class if it is under 21:
 
-### list `$(el).grid('list', [list])`
+{% highlight html %}
+<script type="text/ejs" id="ageEJS">
+<span <% if(person.attr('age') < 21) { %>class="underage"<% } %>>
+  <%= person.attr('age') %>
+</span>
+</script>
+{% endhighlight %}
+
+{% highlight javascript %}
+$('#grid').grid({
+  columns : [
+    { header : 'First name', content : 'firstname' },
+    { header : 'Last name', content : 'latname' },
+    {
+      header : 'Age',
+      content : function(observe) {
+        return can.view('ageEJS', { person : observe });
+      }
+    }
+  ],
+  list : people
+});
+{% endhighlight %}
+
+### list `$(element).grid('list', [list])`
 
 There are several ways to provide the grid with a list of data. Usually it will be a `can.Observe.List` instance
 that contains the observable objects. When passing a normal Array, it will be converted to an observable list.
@@ -209,53 +248,62 @@ var Person = can.Model({
     create  : 'POST /people',
     update  : 'PUT /people/{id}',
     destroy : 'DELETE /people/{id}'
-  }, {}),
-  grid = new can.ui.Grid({
-    columns : [
-      {
-        header : 'First name',
-        attr : 'firstname'
-      },
-      {
-        header : 'Last name',
-        attr : 'lastname'
-      }
-    ],
-    list : Person.findAll()
-  });
+  }, {});
+
+$('#grid').grid({
+  columns : [{
+      header : 'First name',
+      attr : 'firstname'
+    }, {
+      header : 'Last name',
+      attr : 'lastname'
+    }
+  ],
+  list : Person.findAll()
+});
 {% endhighlight %}
 
-The last option is to pass a `can.compute` which returns an array a `can.Observe.List` or a `can.Deferred`.
-As an example, this could be used to load the new data whenever a pagination observe changes:
+The last option is to pass a `can.compute` which returns an array, a `can.Observe.List` or a `can.Deferred`.
+As an example, this can be used to load the new data whenever a pagination observe changes:
 
 {% highlight javascript %}
 var paginator = new can.Observe({
     offset : 0,
     limit : 10
-  }),
-  grid = new can.ui.Grid({
-    columns : [
-      {
-        header : 'First name',
-        attr : 'firstname'
-      },
-      {
-        header : 'Last name',
-        attr : 'lastname'
-      }
-    ],
-    list : can.compute(function() {
-      return Person.findAll({
-        offset : paginator.attr('offset'),
-        limit : paginator.attr('limit')
-      });
-    })
   });
+$('#grid').grid({
+  columns : [{
+      header : 'First name',
+      attr : 'firstname'
+    }, {
+      header : 'Last name',
+      attr : 'lastname'
+    }
+  ],
+  list : can.compute(function() {
+    return Person.findAll({
+      offset : paginator.attr('offset'),
+      limit : paginator.attr('limit')
+    });
+  })
+});
 {% endhighlight %}
 
-### rows `$(el).grid('rows', [rows])`
+### items `$(element).grid('items', [rows])`
 
-### items `$(el).grid('items', [item])`
+`$(element).grid('items', [rows])` returns a `can.Observe.List` of all items or all items for the given row elements.
+It will return a single `can.Observe` if only one row is passed. This makes it easy to retrieve an observable
+instance for a row that has been clicked:
+
+{% highlight javascript %}
+$('#grid').on('click', 'tr', function() {
+  var observe = $('#grid').grid('items', $(this));
+});
+{% endhighlight %}
+
+### rows `$(element).grid('rows', [observes])`
+
+`$(element).grid('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes.
 
 ## Get Help
 
