@@ -16,8 +16,8 @@ to create your own UI widgets the way you want them.
 ## Fills `$(element).fills([parent])`
 
 [Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it always fills out the remaining space of
-a parent element. This is extremely useful for complex page layouts because Fills takes any margin, padding
-and sibling element dimensions into consideration.
+a parent element. This is extremely useful for complex page layouts because Fills includes all margin, padding
+and sibling element dimensions to calculate the size.
 
 When no parent selector or jQuery element is passed, the elements direct parent element will be filled:
 
@@ -190,8 +190,7 @@ The following example creates a grid with a column that contains the combined fi
 
 {% highlight javascript %}
 $('#grid').grid({
-  columns : [
-    {
+  columns : [{
       header : 'Name',
       content : function(observe) {
         return can.compute(function() {
