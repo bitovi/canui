@@ -69,16 +69,12 @@
 		body.html(html.join(''));
 		var els;
 		$('#scrollable').click(function () {
-			$('.table').table_scroll();
-		})
-
-		$('#resize').click(function () {
-			$('#container').css("overflow", "hidden").canui_resize();
+			$('.table').tableScroll();
 		})
 
 		$('#changeColumn').click(function () {
-			els.thead.find('th:eq(1)').text('NEW COLUMN WITHLONGERISHTEXT')
-			$('.canui_table_scroll').table_scroll('changed')
+			els.header.find('th:eq(1)').text('NEW COLUMN WITHLONGERISHTEXT')
+			$('.table').tableScroll('updateCols')
 		})
 	})
 </script>

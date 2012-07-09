@@ -63,7 +63,7 @@ steal('can/control',
 		defaults : {
 			fill : true
 		},
-		pluginName : 'table_scroll'
+		pluginName : 'tableScroll'
 	},
 	/**
 	 * @prototype
@@ -82,6 +82,9 @@ steal('can/control',
 			this.$.body = this.$.scrollBody.parent();
 
 			can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
+			// We have to add the control to the original table element as well
+			(arr = can.data(this.$.table,"controls")) || can.data(this.$.table,"controls",arr = []);
+			arr.push(this);
 		},
 
 		init : function () {
@@ -134,7 +137,7 @@ steal('can/control',
 			});
 			this.on(this.$.table, 'resize', 'resize');
 
-			this.updateColumns();
+			this.updateCols();
 		},
 
 		_wrapWithTable : function (i, tag) {
@@ -181,7 +184,6 @@ steal('can/control',
 				body : this.$.body,
 				scrollBody : this.$.scrollBody
 			};
-			// can.extend({}, this.$);
 		},
 
 		/**
@@ -245,7 +247,7 @@ steal('can/control',
 			this.$.spacer = spacer;
 		},
 
-		updateColumns : function(resize) {
+		updateCols : function(resize) {
 			if (this.$.foot) {
 				this._addSpacer('tfoot');
 			}
@@ -295,6 +297,8 @@ steal('can/control',
 		},
 
 		destroy : function () {
+			var controls = can.data(this.element,"controls");
+			controls.splice(can.inArray(this, controls),1);
 			delete this.$;
 			can.Control.prototype.destroy.call(this);
 		}

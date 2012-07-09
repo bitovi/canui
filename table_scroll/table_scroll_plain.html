@@ -83,15 +83,13 @@
 		}
 		body.html(html.join(''));
 
-		var scroll;
-
 		$('#scrollable').click(function () {
-      scroll = new can.ui.TableScroll('#table');
+      $('#table').tableScroll();
 		});
 
 		$('#changeHeading').click(function () {
 			$('th:eq(1)').text('NEW LONGERISHCOLUMN');
-      scroll.updateColumns();
+      $('#table').tableScroll('updateCols');
 		});
 
     $('#changeColumn').click(function () {
