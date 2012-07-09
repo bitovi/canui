@@ -4,11 +4,11 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 
 	var columns = [
 		{
-			attr : "name",
+			content : "name",
 			header : "Name"
 		},
 		{
-			attr : "age",
+			content : "age",
 			header : "Age"
 		}
 	];
@@ -166,8 +166,10 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 			grid = new can.ui.Grid(container, {
 				columns : [{
 					header : 'Person',
-					attr : function(person) {
-						return person.attr('name') + ' (' + person.attr('age') + ')';
+					content : function(person) {
+						return can.compute(function() {
+							return person.attr('name') + ' (' + person.attr('age') + ')';
+						});
 					}
 				}],
 				list : people
@@ -179,6 +181,37 @@ steal("canui/grid", 'funcunit/qunit').then(function () {
 		people.attr('1.age', 90);
 		equal(container.find('[data-cid] td:eq(0)').html(), 'Updated comp (87)', 'Content set properly');
 		equal(container.find('[data-cid] td:eq(1)').html(), 'Comp 2 (90)', 'Computed content updated');
+		container.remove();
+	});
+
+	test("EJS columns", function() {
+		var script = $('<script type="text/ejs" id="personEJS">' +
+			'<%= person.attr("name") %>: <%= person.attr("age") %>' +
+		'</script>').appendTo('body');
+
+		var container = $('<div>').appendTo('#qunit-test-area'),
+			people = new can.Observe.List([
+				{
+					name : 'EJS rendered',
+					age : 87
+				}
+			]),
+			grid = new can.ui.Grid(container, {
+				columns : [{
+					header : 'Person',
+					content : function(observe) {
+						return can.view('personEJS', {
+							person : observe
+						});
+					}
+				}],
+				list : people
+			});
+
+		equal(container.find('[data-cid] td:eq(0)').html(), 'EJS rendered: 87', 'Content set properly');
+		people[0].attr('age', 99);
+		equal(container.find('[data-cid] td:eq(0)').html(), 'EJS rendered: 99', 'Live bind EJS update');
+		script.remove();
 		container.remove();
 	});
 
