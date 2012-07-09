@@ -226,6 +226,12 @@ $('#grid').grid({
 });
 {% endhighlight %}
 
+Columns are acessible as a `can.Observe.List`, which makes it easy to update its attributes:
+
+{% highlight javascript %}
+$('#grid').grid('columns').attr('0.header', 'Full name');
+{% endhighlight %}
+
 ### list `$(element).grid('list', [list])`
 
 There are several ways to provide the grid with a list of data. Usually it will be a `can.Observe.List` instance
@@ -286,11 +292,11 @@ $('#grid').grid({
 ### items `$(element).grid('items', [rows])`
 
 `$(element).grid('items', [rows])` returns a `can.Observe.List` of all items or all items for the given row elements.
-It will return a single `can.Observe` if only one row is passed. This makes it easy to retrieve an observable
+It will return a single `can.Observe` if only one row is passed. This makes it easy to retrieve the observable
 instance for a row that has been clicked:
 
 {% highlight javascript %}
-$('#grid').on('click', 'tr', function() {
+$('#grid tr').click(function() {
   var observe = $('#grid').grid('items', $(this));
 });
 {% endhighlight %}
