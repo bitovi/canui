@@ -802,7 +802,7 @@ can.Control('can.ui.Selectable',{
 		defaults : {
 			fill : true
 		},
-		pluginName : 'table_scroll'
+		pluginName : 'tableScroll'
 	},
 	/**
 	 * @prototype
@@ -821,6 +821,9 @@ can.Control('can.ui.Selectable',{
 			this.$.body = this.$.scrollBody.parent();
 
 			can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
+			// We have to add the control to the original table element as well
+			(arr = can.data(this.$.table,"controls")) || can.data(this.$.table,"controls",arr = []);
+			arr.push(this);
 		},
 
 		init : function () {
@@ -873,7 +876,7 @@ can.Control('can.ui.Selectable',{
 			});
 			this.on(this.$.table, 'resize', 'resize');
 
-			this.updateColumns();
+			this.updateCols();
 		},
 
 		_wrapWithTable : function (i, tag) {
@@ -920,7 +923,6 @@ can.Control('can.ui.Selectable',{
 				body : this.$.body,
 				scrollBody : this.$.scrollBody
 			};
-			// can.extend({}, this.$);
 		},
 
 		/**
@@ -984,7 +986,7 @@ can.Control('can.ui.Selectable',{
 			this.$.spacer = spacer;
 		},
 
-		updateColumns : function(resize) {
+		updateCols : function(resize) {
 			if (this.$.foot) {
 				this._addSpacer('tfoot');
 			}
@@ -1034,6 +1036,8 @@ can.Control('can.ui.Selectable',{
 		},
 
 		destroy : function () {
+			var controls = can.data(this.element,"controls");
+			controls.splice(can.inArray(this, controls),1);
 			delete this.$;
 			can.Control.prototype.destroy.call(this);
 		}
