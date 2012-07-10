@@ -51,7 +51,7 @@ steal('can/control',
 
 				// is it scrolling vertically
 				if (el.offsetHeight < el.scrollHeight) {
-					table.outerWidth(this.element.width() - can.ui.scrollbarWidth)
+					table.outerWidth(this.element.width() - can.ui.scrollbarWidth())
 				} else {
 					table.outerWidth(this.element.width())
 				}
@@ -272,7 +272,7 @@ steal('can/control',
 					return $(this).outerWidth()
 				}),
 
-				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth : 0,
+				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth() : 0,
 				tableWidth = this.$.table.width();
 
 			if (tableWidth) {
