@@ -1,5 +1,7 @@
 steal('jquery').then(function ($) {
-	$(function() {
+	window.can || (window.can = {});
+	window.can.ui || (window.can.ui = {});
+	window.can.ui.scrollbarWidth = function() {
 		var div = $('<div id="out"><div style="height:200px;"></div></div>').css({
 				position : "absolute",
 				top : "0px",
@@ -20,8 +22,7 @@ steal('jquery').then(function ($) {
 			w2 = inner[0].offsetWidth;
 		}
 		div.remove();
-		window.can || (window.can = {});
-		window.can.ui || (window.can.ui = {});
+
 		/**
 		 * @parent canui
 		 * @attribute can.ui.scrollbarWidth
@@ -32,6 +33,6 @@ steal('jquery').then(function ($) {
 		 *      $('#element').width($('#element').width()
 		 *          - can.ui.scrollbarWidth);
 		 */
-		window.can.ui.scrollbarWidth = w1 - w2;
-	});
+		return w1 - w2;
+	}
 });

@@ -215,7 +215,6 @@ steal('can/control',
 			if(this.options.hideWhenOfInvisible){
 				this.element.toggle(this.isOfVisible());
 			}
-			
 		},
 
 		isOfVisible : function(){
@@ -371,7 +370,7 @@ steal('can/control',
 					});
 				}
 			});
-			return position
+			return position;
 		},
 
 		/**
