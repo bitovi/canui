@@ -1,27 +1,33 @@
 (function ($) {
-	$(function() {
-		var div = $('<div id="out"><div style="height:200px;"></div></div>').css({
-				position : "absolute",
-				top : "0px",
-				left : "0px",
-				visibility : "hidden",
-				width : "100px",
-				height : "100px",
-				overflow : "hidden"
-			}).appendTo(document.body),
-			inner = $(div[0].childNodes[0]),
-			w1 = inner[0].offsetWidth,
-			w2;
+	window.can || (window.can = {});
+	window.can.ui || (window.can.ui = {});
 
-		div.css("overflow", "scroll");
-		var w2 = inner[0].offsetWidth;
-		if (w2 == w1) {
-			inner.css("width", "100%"); //have to set this here for chrome
-			w2 = inner[0].offsetWidth;
+	var cached = null;
+	window.can.ui.scrollbarWidth = function() {
+		if(width === null) {
+			var cached = $('<div id="out"><div style="height:200px;"></div></div>').css({
+					position : "absolute",
+					top : "0px",
+					left : "0px",
+					visibility : "hidden",
+					width : "100px",
+					height : "100px",
+					overflow : "hidden"
+				}).appendTo(document.body),
+				inner = $(div[0].childNodes[0]),
+				w1 = inner[0].offsetWidth,
+				w2;
+
+			div.css("overflow", "scroll");
+			var w2 = inner[0].offsetWidth;
+			if (w2 == w1) {
+				inner.css("width", "100%"); //have to set this here for chrome
+				w2 = inner[0].offsetWidth;
+			}
+			div.remove();
+			cached = w1- w2;
 		}
-		div.remove();
-		window.can || (window.can = {});
-		window.can.ui || (window.can.ui = {});
+
 		/**
 		 * @parent canui
 		 * @attribute can.ui.scrollbarWidth
@@ -32,8 +38,8 @@
 		 *      $('#element').width($('#element').width()
 		 *          - can.ui.scrollbarWidth);
 		 */
-		window.can.ui.scrollbarWidth = w1 - w2;
-	});
+		return cached;
+	}
 })(jQuery);
 (function( $ ) {
 	//evil things we should ignore
@@ -790,7 +796,7 @@ can.Control('can.ui.Selectable',{
 
 				// is it scrolling vertically
 				if (el.offsetHeight < el.scrollHeight) {
-					table.outerWidth(this.element.width() - can.ui.scrollbarWidth)
+					table.outerWidth(this.element.width() - can.ui.scrollbarWidth())
 				} else {
 					table.outerWidth(this.element.width())
 				}
@@ -1011,7 +1017,7 @@ can.Control('can.ui.Selectable',{
 					return $(this).outerWidth()
 				}),
 
-				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth : 0,
+				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth() : 0,
 				tableWidth = this.$.table.width();
 
 			if (tableWidth) {
