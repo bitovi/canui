@@ -1,4 +1,10 @@
-steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jquery/event/reverse')
+steal('can/control',
+	'can/construct/proxy',
+	'can/construct/super',
+	'jquery',
+	'jquery/event/reverse',
+	'can/control/plugin',
+	'canui/util/scrollbar_width.js')
 .then('./position.js').then(function($){
 	if(!$.event.special.move) {
 		$.event.reverse('move');
@@ -96,7 +102,7 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 * current element against another.
 	 *
 	 *	- `my` {String} - String containing the edge of the positionable element to be
-	 *	used in positioning. Possbile values are:
+	 *	used in positioning. Possible values are:
 	 *	- `at` {String} - String containing the edge of the target element to be
 	 *	used in positioning.
 	 *	- Possible values for both the `my` and `at` options include:
@@ -129,6 +135,7 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 */
 	can.Control("can.ui.Positionable",
 	 {
+		pluginName : 'positionable',
 	 	rhorizontal : /left|center|right/,
 		rvertical : /top|center|bottom/,
 		hdefault : "center",
@@ -140,31 +147,12 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			hideWhenOfInvisible : false
 	 	},
 		
-		scrollbarWidth: function() {
-			var w1, w2,
-				div = $( "<div style='display:block;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>" ),
-				innerDiv = div.children()[0];
-	
-			$( "body" ).append( div );
-			w1 = innerDiv.offsetWidth;
-			div.css( "overflow", "scroll" );
-	
-			w2 = innerDiv.offsetWidth;
-	
-			if ( w1 === w2 ) {
-				w2 = div[0].clientWidth;
-			}
-	
-			div.remove();
-	
-			return w1 - w2; 
-		},
 		getScrollInfo: function(within) {
 			var notWindow = within[0] !== window,
 				overflowX = notWindow ? within.css( "overflow-x" ) : "",
 				overflowY = notWindow ? within.css( "overflow-y" ) : "",
-				scrollbarWidth = overflowX === "auto" || overflowX === "scroll" ? $.position.scrollbarWidth() : 0,
-				scrollbarHeight = overflowY === "auto" || overflowY === "scroll" ? $.position.scrollbarWidth() : 0;
+				scrollbarWidth = overflowX === "auto" || overflowX === "scroll" ? can.ui.scrollbarWidth() : 0,
+				scrollbarHeight = overflowY === "auto" || overflowY === "scroll" ? can.ui.scrollbarWidth() : 0;
 	
 			return {
 				height: within.height() < within[0].scrollHeight ? scrollbarHeight : 0,
@@ -188,6 +176,7 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 	 		}
 	 		this._super(element, options);
 	 	},
+
 		init : function(element, options) {
 			//if(this.element.length === 0) return;
 			this.element.css("position","absolute");
@@ -201,10 +190,12 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 				
 			}
 		},
+
 		show : function(el, ev, position){
 			this.move.apply(this, arguments)
-			  //clicks elsewhere should hide
+			//clicks elsewhere should hide
 		},
+
 		move : function( el, ev, positionFrom ) {
 			var position = this.position.apply(this, arguments),
 				elem     = this.element,
@@ -226,25 +217,20 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			}
 			
 		},
+
 		isOfVisible : function(){
-			if(this.options.of.position().top < 0){
-				return false;
+			var of = this.options.of,
+				pos = of.position();
+
+			if(pos.top < 0 ||
+				pos.top > of.offsetParent().height() ||
+				pos.left < 0 ||
+				pos.left + of.width() > of.offsetParent().width()) {
+					return false;
 			} 
-			if(this.options.of.position().top > this.options.of.offsetParent().height()){
-				return false;
-			}
-			if(this.options.of.position().left < 0){
-				return false;
-			}
-			if(this.options.of.position().left + this.options.of.width() > this.options.of.offsetParent().width()){
-				return false;
-			}
 			return true;
 		},
-		update : function(options){
-			can.extend(this.options, options);
-			this.on();
-		},
+
 		/**
 		 * Calculate the position of the element.
 		 */
@@ -342,10 +328,7 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 				elemWidth = elem.outerWidth(),
 				elemHeight = elem.outerHeight(),
 				position = $.extend( {}, basePosition ),
-				getScrollInfo = this.constructor.getScrollInfo,
-				over,
-				myOffset,
-				atOffset;
+				getScrollInfo = this.constructor.getScrollInfo;
 
 			if ( options.my[0] === "right" ) {
 				position.left -= elemWidth;
@@ -390,6 +373,7 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			});
 			return position
 		},
+
 		/**
 		 * Move element when the `of` element is moving
 		 */
@@ -399,14 +383,6 @@ steal('can/control', 'can/construct/proxy', 'can/construct/super', 'jquery', 'jq
 			this._finalMove = setTimeout(this.proxy(function(){
 				this.move(this.element, ev, el);
 			}), 1)
-		},
-		/**
-		 * Reposition element when `move` event is triggered
-		 */
-		" move" : function(){
-			this.move.apply(this, arguments)
 		}
-	})
-
-
+	});
 });

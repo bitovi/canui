@@ -126,14 +126,14 @@
 </div>
 
 <script type='text/javascript' 
-                src='../../../steal/steal.js'
+                src='../../steal/steal.js'
                 package='main.js'
                 compress='false'>   
 </script>
 <script type='text/javascript'>
 	
 	steal(
-		"canui/layout/positionable",
+		"canui/positionable",
 		'jquery/event/drag',
 		'jquery'
 	).then(function() {
@@ -180,8 +180,7 @@
 			options.of    = $parent
 
 			$positionable.each(function() {
-				var controls = $(this).data().controls;
-				new can.ui.layout.Positionable(this, options);
+        $(this).positionable(options);
 				$(this).trigger( "move", $parent );
 			});
 		}

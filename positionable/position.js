@@ -20,31 +20,12 @@
 		_position = $.fn.position;
 
 	$.position = {
-		scrollbarWidth: function() {
-			var w1, w2,
-				div = $( "<div style='display:block;width:50px;height:50px;overflow:hidden;'><div style='height:100px;width:auto;'></div></div>" ),
-				innerDiv = div.children()[0];
-
-			$( "body" ).append( div );
-			w1 = innerDiv.offsetWidth;
-			div.css( "overflow", "scroll" );
-
-			w2 = innerDiv.offsetWidth;
-
-			if ( w1 === w2 ) {
-				w2 = div[0].clientWidth;
-			}
-
-			div.remove();
-
-			return w1 - w2;
-		},
 		getScrollInfo: function(within) {
 			var notWindow = within[0] !== window,
 				overflowX = notWindow ? within.css( "overflow-x" ) : "",
 				overflowY = notWindow ? within.css( "overflow-y" ) : "",
-				scrollbarWidth = overflowX === "auto" || overflowX === "scroll" ? $.position.scrollbarWidth() : 0,
-				scrollbarHeight = overflowY === "auto" || overflowY === "scroll" ? $.position.scrollbarWidth() : 0;
+				scrollbarWidth = overflowX === "auto" || overflowX === "scroll" ? can.ui.scrollbarWidth() : 0,
+				scrollbarHeight = overflowY === "auto" || overflowY === "scroll" ? can.ui.scrollbarWidth() : 0;
 
 			return {
 				height: within.height() < within[0].scrollHeight ? scrollbarHeight : 0,
@@ -405,41 +386,5 @@
 			}
 		}
 	};
-
-// DEPRECATED
-	if ( $.uiBackCompat !== false ) {
-		// offset option
-		(function( $ ) {
-			var _position = $.fn.position;
-			$.fn.position = function( options ) {
-				if ( !options || !options.offset ) {
-					return _position.call( this, options );
-				}
-				var offset = options.offset.split( " " ),
-					at = options.at.split( " " );
-				if ( offset.length === 1 ) {
-					offset[ 1 ] = offset[ 0 ];
-				}
-				if ( /^\d/.test( offset[ 0 ] ) ) {
-					offset[ 0 ] = "+" + offset[ 0 ];
-				}
-				if ( /^\d/.test( offset[ 1 ] ) ) {
-					offset[ 1 ] = "+" + offset[ 1 ];
-				}
-				if ( at.length === 1 ) {
-					if ( /left|center|right/.test( at[ 0 ] ) ) {
-						at[ 1 ] = "center";
-					} else {
-						at[ 1 ] = at[ 0 ];
-						at[ 0 ] = "center";
-					}
-				}
-				return _position.call( this, $.extend( options, {
-					at: at[ 0 ] + offset[ 0 ] + " " + at[ 1 ] + offset[ 1 ],
-					offset: undefined
-				} ) );
-			}
-		}( $ ) );
-	}
 
 }( $ ) );

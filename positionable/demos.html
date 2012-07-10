@@ -40,13 +40,13 @@
 				border: 1px solid black;
 				overflow: auto;
 				position: relative;
-				width: 150px;
+				width: 300px;
 			}
 			.scrollable table{
 				width: 800px;
 			}
 			.scrollable table td {
-				padding-left: 200px;
+				padding-left: 100px;
 			}
 		</style>
 	</head>
@@ -102,12 +102,12 @@
 				$('a').click(function(){
 					var tooltip = $('.tooltip').show();
 					tooltip.find('span').html($(this).data('tooltip'));
-					new can.ui.Positionable(tooltip, {
+          tooltip.positionable({
 						of: $(this),
 						my: "bottom",
 						at: "top",
 						hideWhenOfInvisible: true
-					})
+					});
 					tooltip.trigger('move')
 					return false;
 				})
