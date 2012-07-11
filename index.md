@@ -119,6 +119,9 @@ $('#grid').resize();
 $('#grid').tableScroll('rows') // -> [<tr><td>New</td><td>User</td></tr>]
 {% endhighlight %}
 
+## List `$(element).list(options)`
+
+[List](http://donejs.com/docs.html#!canui.list) binds
 
 ## Grid `$(element).grid(options)`
 
@@ -304,6 +307,75 @@ $('#grid tr').click(function() {
 ### rows `$(element).grid('rows', [observes])`
 
 `$(element).grid('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes.
+
+## Positionable `$(element).positionable(options)`
+
+[Positionable](http://donejs.com/docs.html#!canui.positionable) allows to position an element relative to
+another. This is very useful for implementing UI widgets, such as tooltips and autocompletes. Positionable
+uses the [jQueryUI position plugin](http://jqueryui.com/demos/position/) and takes the following options:
+
+- __my__ - Edge of the positionable element to use for positioning. Can be one of `top`, `center`, `bottom`, `left` and `right`.
+Combined values like `bottom left` are also possible.
+- __at__ - Edge of the target element to use for positioning. Accepts the same values as `my`.
+- __of__ - The target element or selector to use for positioning.
+- __collision__ - The collision strategy to use when the positionable element doesn't fit in the window. Possible values:
+  - `fit` - Attempts to position the element as close as possible to the target without clipping the positionable.
+  - `flip` - Flips the element to the opposite side of the target.
+  - `none` - Doesn't use any collision strategey.
+- __hideWhenOfInvisible__ - Hide the positionable element when the target element scrolls out of visibility range.
+
+### move `$(element).trigger('move')`
+
+The `move` event should be triggered whenever a positionable needs to reposition itself.
+For example, when the target element scrolls within an overflowing container:
+
+{% highlight javascript %}
+$('#tooltip').positionable({
+  of: $('#element'),
+  my: "bottom",
+  at: "top",
+  hideWhenOfInvisible: true
+});
+
+$('.scrollable').bind('scroll', function(){
+  $('#tooltip').trigger('move')
+});
+{% endhighlight %}
+
+If the target element is [draggable](http://jquerypp.com/#drag), `move` will be triggered automatically when the
+draggable moves.
+
+### isOfVisible `$(element).positionable('isOfVisible')`
+
+`$(element).positionable('isOfVisible')` returns if the target element is currently visible. This is used internally
+for the `hideWhenOfInvisible` option to hide the positionable when the target element moves out of the visible area but
+it also can be used to perform other actions when the positionable moves:
+
+{% highlight javascript %}
+$('#tooltip').on('move', function() {
+  if(!$(this).positionable('isOfVisible')) {
+    // target element became invisble
+  }
+});
+{% endhighlight %}
+
+## Selectable `$(element).selectable(options)`
+
+[Selectable](http://donejs.com/docs.html#!canui.selectable) provides keyboard and mouse selection for a group
+of elements.
+Instead of listening to click and key events, add selectable and listen to activate and select events.
+It also provides multi-selection and activation with the shift and ctrl key.
+
+## Resize
+
+Resize allows to resize an element with draggable handles.
+
+
+## Splitter
+
+Splitte manages a container whose content "panels" can be independently resized. It
+does this by inserting a "splitter bar" between each panel element, which can be dragged or
+optionally collapsed.
 
 ## Get Help
 
