@@ -362,9 +362,67 @@ $('#tooltip').on('move', function() {
 ## Selectable `$(element).selectable(options)`
 
 [Selectable](http://donejs.com/docs.html#!canui.selectable) provides keyboard and mouse selection for a group
-of elements.
-Instead of listening to click and key events, add selectable and listen to activate and select events.
-It also provides multi-selection and activation with the shift and ctrl key.
+of elements. It handles keyboard navigation, multi selection and automatic deselection. A selectable can be
+initialized with the following options:
+
+- __selectOn__ (default: `"[tabindex]"`) - The selector to use for selectable items
+- __selectedClassName__ (default: `"selected"`) - The class name to add to a selected item
+- __activateClassName__ (default: `"activated"`) - The class name to add to an activated item
+- __multiActivate__ (default: `true`) - If multi selection is enabled
+- __outsideDeactivate__ (default: `true`) - Deactivate everything when a click or keypress happens outside of the selectable
+- __deactivateParent__ (default: `document`) - If `outsideDeactivate` is true, the parent element to use for deactivating
+
+### selectables `$(element).selectable('selectables')`
+
+Returns all visible elements that are selectable:
+
+{% highlight html %}
+<ul>
+  <li tabindex="0">Item 1</li>
+  <li tabindex="1">Item 2</li>
+  <li tabindex="2" style="display: none;">Item 3</li>
+</ul>
+{% endhighlight %}
+
+{% highlight javascript %}
+$('ul').selectable();
+$('ul').selectable('selectables')
+// -> [<li tabindex="0">Item 1</li>, <li tabindex="1">Item 2</li>]
+{% endhighlight %}
+
+### selected `$(element).selectable('selected', [selection])`
+
+Gets or sets the selected element. When setting the element, the `select` event will be triggered.
+Only one element can be selected at a time. The second `li` from the above example can be selected
+programmatically like this:
+
+{% highlight javascript %}
+// Listen to the select event
+$('ul li').on('select', function() {
+  console.log('Selected', this);
+});
+$('ul').selectable('selected', $('ul li:eq(1)'));
+$('ul').selectable('selected') // -> <li tabindex="1">Item 2</li>
+{% endhighlight %}
+
+### deselect `$(element).selectable('deselect')`
+
+Deselect the currently selected element and trigger the `deselect` event:
+
+{% highlight javascript %}
+// Listen to the deselect event
+$('ul li').on('deselect', function() {
+  console.log('Deselected', this);
+});
+$('ul').selectable('deselect');
+{% endhighlight %}
+
+### activated `$(element).selectable('activated', [el], [ev])`
+
+Returns the currently activated elements or activates an element and triggers the `activate` event.
+`ev` is an event object used to read the `shiftKey`, `ctrlKey` or `metaKey` to activate multiple items.
+
+
 
 ## Resize
 
