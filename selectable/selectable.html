@@ -119,7 +119,7 @@
 		<script type='text/javascript'>
 		steal('canui/selectable').then(function(){
 
-			new can.ui.Selectable($('#menu, #nested_menu, #overflow_menu, #table'));
+			$('#menu, #nested_menu, #overflow_menu, #table').selectable();
 			$('#overflow_menu .selectable').each(function(i, el){
 				$(el).attr("tabindex", "0");
 			});
