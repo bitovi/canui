@@ -44,7 +44,7 @@ can.Control('can.ui.layout.TableFill',{
 		
 		// is it scrolling vertically
 		if(el.offsetHeight < el.scrollHeight){
-			table.outerWidth(this.element.width() - can.ui.scrollbarWidth)
+			table.outerWidth(this.element.width() - can.ui.scrollbarWidth())
 		} else {
 			table.outerWidth(this.element.width() )
 		}

@@ -18,4 +18,12 @@ test('clicking activates', function(){
 	});
 });
 
+test('Keyboard navigation', function(){
+	S('#menu [tabindex="0"]').type('\r\t[shift]\r', function() {
+		ok(S('#menu li:eq(0) span').hasClass('activated'), 'First item is activated');
+		ok(S('#menu li:eq(1) span').hasClass('activated'), 'Second item is activated');
+		ok(S('#menu li:eq(1) span').hasClass('selected'), 'Second item is selected');
+	});
+});
+
 })

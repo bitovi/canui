@@ -48,7 +48,6 @@ steal('can/control',
 					el = this.element[0];
 				//let the table flow naturally
 				table.css("width", "");
-
 				// is it scrolling vertically
 				if (el.offsetHeight < el.scrollHeight) {
 					table.outerWidth(this.element.width() - can.ui.scrollbarWidth())
