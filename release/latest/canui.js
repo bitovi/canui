@@ -372,9 +372,7 @@ $.event.special.activate = {
  *   - __multiActivate__ `true` - True for multi-selection, 
  *     false if only a single item can be activated at a time.
  *     
- *   - __cache__ `false` - Cache selectables for performance.
- *   
- *   - __outsideDeactivate__ `true` - Deactivate selected when a click or 
+ *   - __outsideDeactivate__ `true` - Deactivate selected when a click or
  *     keypress happens outside the selectable. 
  *     
  * Use them like:
@@ -384,11 +382,11 @@ $.event.special.activate = {
  *       selectedClassName : "ui-hover",
  *       activateClassName: "ui-active",
  *       multiActivate: false,
- *       cache: true,
  *       outsideDeactivate: false
  *     })
  */
 can.Control('can.ui.Selectable',{
+	pluginName : 'selectable',
     defaults : {
         // what can be selected
 		selectOn: "[tabindex]",
@@ -397,8 +395,6 @@ can.Control('can.ui.Selectable',{
 		// 
         activatedClassName : "activated",
 		multiActivate: true,
-		// caches 
-		cache : false,
 		outsideDeactivate: true,
 		deactivateParent: document
     }
@@ -436,7 +432,7 @@ can.Control('can.ui.Selectable',{
 		this.mousein = false;
 		
 		if(!this._focused){
-			this.deselected();
+			this.deselect();
 		} else {
 			// re-select what is focused ...
 			this.selected(this._focused)
@@ -484,11 +480,11 @@ can.Control('can.ui.Selectable',{
 			}
 			
 			//add select event
-			el.trigger("select", el.model && el.model());
+			el.trigger("select", el);
 		}
 	},
 	// deselects the selected
-	deselected : function(){
+	deselect : function(){
 		this._getSelected().trigger("deselect");
 	},
 	/**
@@ -501,6 +497,10 @@ can.Control('can.ui.Selectable',{
 	 * @param {Event} [ev] an event used to test if ctrlKey or shiftKey was held.
 	 */
 	activated : function(el, ev){
+		if(!el) {
+			return this.element.find("."+this.options.activatedClassName);
+		}
+
 		ev = ev || {};
 		// if we should only select one element ...
 		if(!this.options.multiActivate || (!ev.shiftKey && !ev.ctrlKey && !ev.metaKey)){
@@ -535,7 +535,7 @@ can.Control('can.ui.Selectable',{
 				lastSelected= this.lastSelected,
 				activated = $().add(el).add(lastSelected);
 				
-			if(lastSelected.length && lastSelected[0] != el[0]){
+			if(lastSelected && lastSelected.length && lastSelected[0] != el[0]){
 				for(var i =0; i < selectable.length;i++){
 					var select = selectable[i];
 					if( select ===  lastSelected[0] || select == el[0] ){
@@ -549,10 +549,8 @@ can.Control('can.ui.Selectable',{
 					}
 				}
 			}
-			activated.addClass(this.options.activatedClassName)
-			el.trigger("activate",el.models ? 
-					[activated.models()] :
-					[activated]);
+			activated.addClass(this.options.activatedClassName);
+			el.trigger("activate", [activated]);
 		}
 	},
 	// determines if the mouse event was 
@@ -572,7 +570,7 @@ can.Control('can.ui.Selectable',{
 			// deselect if we haven't focused, or we are 
 			// leaving something not the focused element
 			if(!this._focused ){ //make sure it's deselected
-				this.deselected();
+				this.deselect();
 			}
 			
 		}
@@ -591,7 +589,7 @@ can.Control('can.ui.Selectable',{
 		this._focused = null;
 		// we are not in the element, and we are not focused on anything
 		if(!this.mousein){
-			this.deselected();
+			this.deselect();
 		}
     },
     "{selectOn} activate": function(el, ev, keys){
@@ -643,7 +641,7 @@ can.Control('can.ui.Selectable',{
 	cache : function(){
 		this._cache = this.element.find(this.options.selectOn);
 	},
-	selectable : function(){
+	selectables : function(){
 		return this._cache ?
 				this._cache.filter(":visible") :
 				this.element.find(this.options.selectOn+":visible")
@@ -664,7 +662,7 @@ can.Control('can.ui.Selectable',{
 				return way ?  current[dir] - el[dir] : el[dir] - current[dir];
 			}
 		}
-		var xtest, ytest, traverse;
+		var dirtest, closetest, traverse;
 		if(dir == "right"){
 			dirtest = diff("left",false);
 			closetest = abs("top");
@@ -690,7 +688,7 @@ can.Control('can.ui.Selectable',{
 		var currentOffset = current.offset(),
 			el,
 			elOffset,
-			els = selectables || this.selectable(),
+			els = selectables || this.selectables(),
 			index= els.index(current),
 			i,
 			min = Infinity,
@@ -703,7 +701,7 @@ can.Control('can.ui.Selectable',{
 		for(i = index+traverse;i < els.length && i >= 0; i = i + traverse){
 			
 			var el = els.eq(i),
-				elOffset = el.offset()
+				elOffset = el.offset(),
 				res = dirtest( currentOffset, elOffset );
 			// if we havent set dist, and res is > 5 set it to dist
 			// 5 is basically a threshold for weirdness
