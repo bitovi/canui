@@ -1,4 +1,5 @@
 steal('can/control',
+	'can/control/plugin',
 	'jquery/event/drag/limit', 
 	'jquery/dom/dimensions', 
 	'jquery/event/key', 
@@ -103,6 +104,7 @@ function( $ ) {
 	 * @static
 	 */
 	{
+		pluginName : 'split',
 		defaults: {
 			active: "active",
 			hover: "split-hover",

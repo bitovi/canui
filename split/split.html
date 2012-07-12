@@ -169,10 +169,10 @@
 					$(this).farthest('.container').after(buttons);
 				};
 
-				$('.vertical-splitter').can_ui_split({ direction: "vertical", panelClass: "panel" })
+				$('.vertical-splitter').split({ direction: "vertical", panelClass: "panel" })
 					.each(addButtons).resizable();
 
-				$('.horizontal-splitter').can_ui_split({ direction: "horizontal", panelClass: "panel" })
+				$('.horizontal-splitter').split({ direction: "horizontal", panelClass: "panel" })
 					.each(addButtons);
 
 				$('#container3').resizable();
@@ -215,11 +215,11 @@
 				{
 					if(elm.text() == "Hide Last"){
 						elm.text('Show Last');
-						container.can_ui_split('hidePanel', container.find('.panel:last'));
+						container.split('hidePanel', container.find('.panel:last'));
 
 					} else {
 						elm.text('Hide Last');
-						container.can_ui_split('showPanel', container.find('.panel:last'));
+						container.split('showPanel', container.find('.panel:last'));
 					}
 				}
 

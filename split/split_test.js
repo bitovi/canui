@@ -3,7 +3,7 @@ steal('funcunit').then(function(){
 	module("can.ui.Split", {
 		setup: function(){
 			S.open("//canui/split/split.html");
-			S('.can_ui_split').exists();
+			S('.split').exists();
 			S.wait(10); // so things can get settled ...
 		}
 	});

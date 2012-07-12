@@ -1,6 +1,6 @@
 steal('funcunit').then(function(){
 	
-module("can.ui.layout.TableScroll", {
+module("can.ui.TableScroll", {
 	setup: function(){
         S.open("//canui/table_scroll/table_scroll_plain.html");
 		

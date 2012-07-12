@@ -1,6 +1,6 @@
 steal("canui/grid", 'funcunit/qunit').then(function () {
 
-	module("canui/grid/list");
+	module("can.ui.Grid");
 
 	var columns = [
 		{
