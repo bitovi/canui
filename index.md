@@ -431,16 +431,43 @@ $('ul').selectable('activated', $('ul li:eq(0)'), true);
 
 Deactivates all active elements and triggers the `deactivate` event.
 
-## Resize
+## Resizable
 
-Resize allows to resize an element with draggable handles.
+[Resizable](http://donejs.com/docs.html#!canui.resizable) allows to resize an element by adding draggable handles and can
+be initialized with these options:
 
+- __aspectRatio__ (default: `false`) - Whether to keep the ratio between width and height
+- __autoHide__ (default: `false`) - If `true`, hide the handles unless the mouse is inside the resizable element
+- __delay__  - The time to wait (in milliseconds) until resizing starts
+- __distance__ - How far, in pixels, to wait before resizing starts
+- __handles__ - Which handles sould be displayed (an array containing `s`, `se` and `e`)
+- __maxHeight__ - The maxiumum height the element can be resized to
+- __maxWidth__ - The maxiumum width the element can be resized to
+- __minHeight__ - The minimum height the element should have
+- __minWidth__ - The minimum width the element should have
+- __handleClassName__ (default: `'ui-resizable-handle'`) - A class name to use for the resizing handles.
 
-## Splitter
+A resizable element will trigger the following events:
 
-Splitte manages a container whose content "panels" can be independently resized. It
-does this by inserting a "splitter bar" between each panel element, which can be dragged or
+- __resizestart__ - When the resize motion start
+- __resize__ - Every time after the resizable has changed the element dimension.
+See the [resize event](http://jquerypp.com/#resize) for more information.
+- __resizestop__ - When the resize motion has ended
+
+## Split `$(element).split(options)`
+
+[Split](http://donejs.com/docs.html#!canui.split) manages a container with independently resizable content
+panels. It does this by inserting a "splitter bar" between each panel element, which can be dragged or
 optionally collapsed.
+
+### panels `$(elements).split('panels')`
+
+Returns the panel elements.
+
+### resize `$(element).resize()`
+
+The `resize` event should be triggered whenever a panel is added or removed or the dimensions changed.
+
 
 ## Get Help
 
