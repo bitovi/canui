@@ -8,27 +8,27 @@ module("can.ui.Resize",{
 
 test("resize box", function() {
 	S('#resize').exists().click(function() {
-		equal(S('.can_ui_resize').size(), 1, 'resize created');	
-		var height = S('.can_ui_resize').height(),
-			width = S('.can_ui_resize').width();
-		S('.can_ui_resize .ui-resizable-se').drag('+100 +100', function() {
-			ok(S('.can_ui_resize').height() > height, 'height increased');
-			ok(S('.can_ui_resize').width() > width, 'width increased');
+		equal(S('.resizable').size(), 1, 'resize created');
+		var height = S('.resizable').height(),
+			width = S('.resizable').width();
+		S('.resizable .ui-resizable-se').drag('+100 +100', function() {
+			ok(S('.resizable').height() > height, 'height increased');
+			ok(S('.resizable').width() > width, 'width increased');
 		});
 	});
 })
 
 test('handle hidden until mouse moves into resize', function() {
 	S('#resizeAutoHide').exists().click(function() {
-		equal(S('.can_ui_resize').size(), 1, 'resize created');	
+		equal(S('.resizable').size(), 1, 'resize created');	
 
-		S('#resizeAutoHide').move('.can_ui_resize');
+		S('#resizeAutoHide').move('.resizable');
 
-		S('.can_ui_resize .ui-resizable-se').exists().css('display', 'block')
+		S('.resizable .ui-resizable-se').exists().css('display', 'block')
 
-		S('.can_ui_resize').move('#resizeAutoHide')
+		S('.resizable').move('#resizeAutoHide')
 
-		S('.can_ui_resize .ui-resizable-se').exists().css('display', 'none')
+		S('.resizable .ui-resizable-se').exists().css('display', 'none')
 
 	});
 })

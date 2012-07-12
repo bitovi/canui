@@ -61,11 +61,11 @@
 
     <div id="suite">
       <div id="disable-content">
+        <div id="test">Test Resize that can't be wider than 400px</div>
         <div class="temp_content"></div>
         <div id="resizable">Nam metus purus, convallis eu mollis lacinia, consequat eu erat. Cras ac velit sit amet dolor luctus pulvinar vel lobortis metus. Donec vehicula varius blandit. Aenean ultrices lacinia mi adipiscing pulvinar. Etiam tincidunt, magna quis pretium mattis, arcu augue varius leo, ut aliquam ligula diam sed lorem. Phasellus faucibus, nulla in aliquet tempus, quam lectus fermentum turpis, fringilla aliquet nibh ante a leo. Morbi interdum adipiscing quam, porttitor lacinia nulla pulvinar vel. Curabitur vitae venenatis lectus. Fusce lobortis dolor pellentesque est tempus suscipit. Praesent eget nunc id mauris faucibus dapibus id sed turpis. Suspendisse potenti. Etiam eros orci, porttitor sed venenatis at, accumsan ut dolor.</div>
         <div class="status">Drag to show more content</div>
       </div>
-      <div id="test">Test Resize that can't be wider than 400px</div>
 
        <div id="modal" class="modal">
         <h3>Some Modal</h3>
@@ -83,13 +83,12 @@
     </div>
 
     <script type='text/javascript' 
-      src='../../../steal/steal.js'
+      src='../../steal/steal.js'
       package='main.js'
       compress='false'>   
     </script>
     <script type='text/javascript'>
       steal('jquery', 'canui/resize', 'canui/modal').then(function() {
-
         var disableWhenAllShownResize = can.ui.Resize({ }, {
           init: function(el, ev) {
             this.options.handles = ['s'];
