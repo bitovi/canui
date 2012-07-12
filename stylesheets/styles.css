@@ -394,7 +394,7 @@ html.lt-ie7 .github-fork img {
 }
 
 #builder .button.disabled {
-	background-color: #BBC2C7;
+	background-color: #BBC2C7 !important;
 	cursor: auto;
 }
 

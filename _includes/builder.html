@@ -1,96 +1,51 @@
 <form id="builder" action="http://bitbuilder.herokuapp.com/donejs">
-  <h4><a href="#dom_helpers">DOM HELPERS</a> - faster and easier DOM manipulation with:</h4>
-
   <label>
-    <input type="checkbox" value="jquery/dom/animate" name="plugins"/>
-    <a href="#animate">jQuery.animate</a> - animate using CSS animations
+    <input type="checkbox" value="canui/fills" name="plugins"/>
+    <a href="#fills">Fills</a> - fill out a parent elements dimensions
   </label>
 
   <label>
-    <input type="checkbox" value="jquery/dom/compare" name="plugins"/>
-    <a href="#compare">jQuery.compare</a> - compare element document position
+    <input type="checkbox" value="canui/table_scroll" name="plugins"/>
+    <a href="#tablescroll">TableScroll</a> - make a table scrollable
   </label>
 
   <label>
-    <input type="checkbox" value="jquery/dom/cookie" name="plugins"/>
-    <a href="#cookie">jQuery.cookie</a> - read and write cookies
+    <input type="checkbox" value="canui/grid" name="plugins"/>
+    <a href="#grid">Grid</a> - a live binding grid widget
   </label>
 
   <label>
-    <input type="checkbox" value="jquery/dom/dimensions" name="plugins"/>
-    <a href="#dimensions">jQuery.dimensions</a> - set and animate innerWidth and outerWidth
+    <input type="checkbox" value="canui/positionable" name="plugins"/>
+    <a href="#positionable">Positionable</a> - position elements relative to each other
   </label>
 
   <label>
-    <input type="checkbox" value="jquery/dom/form_params" name="plugins"/>
-    <a href="#dimensions">jQuery.formParams</a> - serializes a form into an object
+    <input type="checkbox" value="canui/selectable" name="plugins"/>
+    <a href="#selectable">Selectable</a> - provides keyboard and mouse selection for items
   </label>
 
   <label>
-    <input type="checkbox" value="jquery/dom/range" name="plugins"/>
-    <a href="#range">jQuery.range</a> - create and manipulate text ranges
+    <input type="checkbox" value="canui/resize" name="plugins"/>
+    <a href="#resize">Resize</a> - resize elements with draggable handles
   </label>
 
   <label>
-    <input type="checkbox" value="jquery/dom/selection" name="plugins"/>
-    <a href="#selection">jQuery.selection</a> - get and set the current text selection
+    <input type="checkbox" value="canui/split" name="plugins"/>
+    <a href="#split">Split</a> - independently resize or collapse content panels
   </label>
 
+  <h3>Exclude dependencies</h3>
+  <p>
+    By default CanJS and jQuery++ dependencies will be included in the generated download.
+    Check it if you are using your own builds.
+  </p>
   <label>
-    <input type="checkbox" value="jquery/dom/styles" name="plugins"/>
-    <a href="#styles">jQuery.styles</a> - quickly read computed styles
+    <input type="checkbox" value="can/" name="excludes" />
+    <a href="#">CanJS</a> - Can do JS, better, faster, easier.
   </label>
-
   <label>
-    <input type="checkbox" value="jquery/dom/within" name="plugins"/>
-    <a href="#within">jQuery.within</a> - get elements within an area or at a point
-  </label>
-
-  <h4><a href="#events">EVENTS</a> - listen to special events with:</h4>
-
-  <label>
-    <input type="checkbox" value="jquery/event/destroyed" name="plugins"/>
-    <a href="#destroyed">jQuery.event.destroyed</a> - an element is removed from the DOM
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/drag" name="plugins"/>
-    <a href="#drag">jQuery.event.drag</a> - delegatable drag events
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/drop" name="plugins"/>
-    <a href="#drop">jQuery.event.drop</a> - delegatable drop events
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/fastfix" name="plugins"/>
-    <a href="#fastfix">jQuery.event.fastfix</a> - faster jQuery.event.fix using ES5 getters
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/hover" name="plugins"/>
-    <a href="#hover">jQuery.event.hover</a> - delegatable hover events
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/key" name="plugins"/>
-    <a href="#key">jQuery.event.key</a> - returns a string representation of the key pressed
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/pause" name="plugins"/>
-    <a href="#pause">jQuery.event.pause</a> - pause and resume event propagation
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/resize" name="plugins"/>
-    <a href="#resize">jQuery.event.resize</a> - listen to a resize event on every object
-  </label>
-
-  <label>
-    <input type="checkbox" value="jquery/event/swipe" name="plugins"/>
-    <a href="#swipe">jQuery.event.swipe</a> - delegatable swipe events
+    <input type="checkbox" value="jquery/" name="excludes" />
+    <a href="#">jQuery++</a> - jQuery's missing utils and special events
   </label>
 
   <button class="button disabled" disabled="disabled" type="submit">Download</button>

@@ -11,6 +11,8 @@ to create your own UI widgets the way you want them.
 
 ## Get CanUI
 
+{% include builder.html %}
+
 ## Configuring CanUI
 
 ## Fills `$(element).fills([parent])`
@@ -118,11 +120,6 @@ $('#grid').grid('rows').eq(1).remove();
 $('#grid').resize();
 $('#grid').tableScroll('rows') // -> [<tr><td>New</td><td>User</td></tr>]
 {% endhighlight %}
-
-## List `$(element).list(options)`
-
-[List](http://donejs.com/docs.html#!canui.list) binds
-
 ## Grid `$(element).grid(options)`
 
 [Grid](http://donejs.com/docs.html#!canui.grid) provides a table that live binds to a
@@ -420,9 +417,19 @@ $('ul').selectable('deselect');
 ### activated `$(element).selectable('activated', [el], [ev])`
 
 Returns the currently activated elements or activates an element and triggers the `activate` event.
-`ev` is an event object used to read the `shiftKey`, `ctrlKey` or `metaKey` to activate multiple items.
+`ev` can be either an event object used to check if a multi selection key (shift, control or meta)
+is pressed or `true` to add the element to a multi selection.
 
+The following example activates the second list item and then adds the first item:
 
+{% highlight javascript %}
+$('ul').selectable('activated', $('ul li:eq(1)'));
+$('ul').selectable('activated', $('ul li:eq(0)'), true);
+{% endhighlight %}
+
+### deactivate `$(element).selectable('deactivate')`
+
+Deactivates all active elements and triggers the `deactivate` event.
 
 ## Resize
 
