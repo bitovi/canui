@@ -2,7 +2,8 @@ steal(
 	'canui/accordion',
 	'canui/table_scroll',
 	'canui/fills',
-	'canui/selectable'
+	'canui/selectable',
+	'canui/split'
 //	'canui/grid',
 //	'canui/block',
 //	'canui/grid',

@@ -1,5 +1,4 @@
-steal('./split.css',
-	'can/control',
+steal('can/control',
 	'jquery/event/drag/limit', 
 	'jquery/dom/dimensions', 
 	'jquery/event/key', 

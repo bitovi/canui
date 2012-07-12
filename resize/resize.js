@@ -302,12 +302,12 @@ steal('jquery',
 		'.{handleClassName} dragmove' : function (el, ev, drag) {
 			ev.preventDefault();
 			if (this.delayMet) {
-				this.doMove(el, ev, drag);
+				this._move(el, ev, drag);
 				this.original.trigger('resize', arguments);
 			}
 		},
 
-		doMove : function (el, ev, drag) {
+		_move : function (el, ev, drag) {
 			var direction = this._getDirection(el);
 
 			if (direction.indexOf('s') > -1) {

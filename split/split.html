@@ -4,6 +4,7 @@
 	<head>
 		<title>splitter</title>
 		<link type="text/css" href="../resize/resize.css" rel="stylesheet" />
+    <link type="text/css" href="split.css" rel="stylesheet" />
 				<style type='text/css'>
 						body {font-family: verdana}
 						.error {border: solid 1px red;}
@@ -169,12 +170,12 @@
 				};
 
 				$('.vertical-splitter').can_ui_split({ direction: "vertical", panelClass: "panel" })
-					.each(addButtons).can_ui_resize();
+					.each(addButtons).resizable();
 
 				$('.horizontal-splitter').can_ui_split({ direction: "horizontal", panelClass: "panel" })
 					.each(addButtons);
 
-				$('#container3').can_ui_resize();
+				$('#container3').resizable();
 
 				$(document.body).delegate("a","click", function(ev){
 					var action = this.className,
