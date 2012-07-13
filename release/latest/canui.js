@@ -382,6 +382,7 @@
 	 * @static
 	 */
 	{
+		pluginName : 'split',
 		defaults: {
 			active: "active",
 			hover: "split-hover",
