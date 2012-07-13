@@ -458,16 +458,71 @@ See the [resize event](http://jquerypp.com/#resize) for more information.
 
 [Split](http://donejs.com/docs.html#!canui.split) manages a container with independently resizable content
 panels. It does this by inserting a "splitter bar" between each panel element, which can be dragged or
-optionally collapsed.
+optionally collapsed. Use [split.css](#) as the base CSS for split elements.
+
+- __hover__ (default `"split-hover"`) - CSS class to apply to a splitter when the mouse enters it
+- __direction__ - The panel split orientation. Either `"vertical"` or `"horizontal"`
+- __dragDistance__ (default: `5`) - Maximum number of pixels away from the slider element to initiate a drag
+- __panelSelector__ - The selector for panel elements
+
+Given markup like this:
+
+{% highlight html %}
+<div id="container">
+  <div class="panel">Content 1</div>
+  <div class="panel">Content 2</div>
+  <div class="panel">Content 3</div>
+</div>
+{% endhighlight %}
+
+Split will create three separate content panels like this:
+
+{% highlight javascript %}
+$('#container').split({
+  panelSelector : '.panel'
+});
+// Split vertically
+$('#container').split({
+  direction : 'vertical',
+  panelSelector : '.panel'
+});
+{% endhighlight %}
 
 ### panels `$(elements).split('panels')`
 
-Returns the panel elements.
+Returns the panel elements. From the above example:
+
+{% highlight javascript %}
+$('#container').split('panels');
+// -> [<div class="panel">Content 1</div>,
+// <div class="panel">Content 2</div>,
+// <div class="panel">Content 3</div>]
+{% endhighlight %}
 
 ### resize `$(element).resize()`
 
 The `resize` event should be triggered whenever a panel is added or removed or the dimensions changed.
 
+{% highlight javascript %}
+// Remove the first panel
+$('#container').split('panels').first().remove();
+// Resizes all other panels properly
+$('#container').resize();
+{% endhighlight %}
+
+### hide/show
+
+To collapse a visible panel use `$(element).split('hidePanel', panel, [keepSplitter])`. `keepSplitter` is a boolean
+indicating if the split handle should be hidden as well.
+
+`$(element).split('showPanel', panel, [width])` shows a collapsed panel, optionally setting it to the given width.
+
+{% highlight javascript %}
+var firstPanel = $('#container').split('panels').first();
+$('#container').split('hidePanel', firstPanel);
+// Show first panel and set width to 300px
+$('#container').split('showPanel', firstPanel, 300);
+{% endhighlight %}
 
 ## Get Help
 
