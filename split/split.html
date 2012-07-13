@@ -169,10 +169,10 @@
 					$(this).farthest('.container').after(buttons);
 				};
 
-				$('.vertical-splitter').split({ direction: "vertical", panelClass: "panel" })
+				$('.vertical-splitter').split({ direction: "vertical", panelSelector: ".panel" })
 					.each(addButtons).resizable();
 
-				$('.horizontal-splitter').split({ direction: "horizontal", panelClass: "panel" })
+				$('.horizontal-splitter').split({ direction: "horizontal", panelSelector: ".panel" })
 					.each(addButtons);
 
 				$('#container3').resizable();
