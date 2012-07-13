@@ -18,8 +18,8 @@ to create your own UI widgets the way you want them.
 ## Fills `$(element).fills([parent])`
 
 [Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it always fills out the remaining space of
-a parent element. This is extremely useful for complex page layouts because Fills includes all margin, padding
-and sibling element dimensions to calculate the size.
+a parent element. This is very useful for complex, desktop like page layouts where content panels should fill out the
+browser window.
 
 When no parent selector or jQuery element is passed, the elements direct parent element will be filled:
 
@@ -39,8 +39,15 @@ to fill out the remaining space:
 ## TableScroll `$(element).tableScroll([fillParent])`
 
 [TableScroll](http://donejs.com/docs.html#!canui.) makes a table scrollable while keeping headers and
-footers fixed. This is useful for tables that display big amounts of data in a grid like widget.
-A table like this:
+footers fixed. This is useful for making grid like widgets.
+
+To make a table scrollable class:
+
+{% highlight javascript %}
+$('table').tableScroll();
+{% endhighlight %}
+
+On a table like this:
 
 {% highlight html %}
 <div style="height: 200px; overflow: auto;">
@@ -54,11 +61,8 @@ A table like this:
 </div>
 {% endhighlight %}
 
-Can be made scrollable like this:
-
-{% highlight javascript %}
-$('table').tableScroll();
-{% endhighlight %}
+TableScroll will take the table and put the`thead` and `tfoot` elements in their own container so that they can stay
+fixed. The original table will be wrapped into a scrollable `div`.
 
 The following example shows a scrollable table with header and footer:
 
@@ -87,7 +91,7 @@ $('table').tableScroll();
 // Get the elements
 var elements = $('table').tableScroll('elements');
 // Add a class to scrollBody
-elements.scrollBody.addClass('scollable');
+elements.scrollBody.addClass('scrollable');
 {% endhighlight %}
 
 ### updateCols `$(element).tableScroll('updateCols')`
@@ -111,15 +115,12 @@ $('table').tableScroll('updateCols');
 remove, insert or replace certain rows. A [resize](#tablescroll-resize) needs to be triggered after any modification.
 
 {% highlight javascript %}
-// Insert a new row at the end
-$('<tr><td>John</td><td>Doe</td></tr>')
-  .insertAfter($('#grid').grid('rows').last());
-// Remove the second row
-$('#grid').grid('rows').eq(1).remove();
+// Remove the last row
+$('#grid').grid('rows').last().remove();
 // Resize everything
 $('#grid').resize();
-$('#grid').tableScroll('rows') // -> [<tr><td>New</td><td>User</td></tr>]
 {% endhighlight %}
+
 ## Grid `$(element).grid(options)`
 
 [Grid](http://donejs.com/docs.html#!canui.grid) provides a table that live binds to a
@@ -158,6 +159,8 @@ The Grid can be initialized like this:
 
 {% highlight javascript %}
 $('#grid').grid({
+  emptyText : 'Sorry, nothing found',
+  loadingText : 'Retrieving people list...',
   columns : [
     { header : 'First name', content : 'firstname' },
     { header : 'Last name', content : 'latname' },
@@ -167,7 +170,7 @@ $('#grid').grid({
 });
 {% endhighlight %}
 
-The following example shows a grid that allows you to add new and remove items and reset the list
+The following example shows a grid that allows you to add and remove items and reset the list
 to its initial state:
 
 <iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/hY3AS/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
@@ -235,7 +238,7 @@ $('#grid').grid('columns').attr('0.header', 'Full name');
 ### list `$(element).grid('list', [list])`
 
 There are several ways to provide the grid with a list of data. Usually it will be a `can.Observe.List` instance
-that contains the observable objects. When passing a normal Array, it will be converted to an observable list.
+that contains observable objects. When passing a normal Array, it will be converted to an observable list.
 Another option is to pass a `can.Deferred` that resolves to an observable list or array. The grid will show the
 content of `loadingText` while the Deferred is being resolved.
 
@@ -263,7 +266,7 @@ $('#grid').grid({
 });
 {% endhighlight %}
 
-The last option is to pass a `can.compute` which returns an array, a `can.Observe.List` or a `can.Deferred`.
+The last option is to pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`.
 As an example, this can be used to load the new data whenever a pagination observe changes:
 
 {% highlight javascript %}
@@ -296,7 +299,7 @@ It will return a single `can.Observe` if only one row is passed. This makes it e
 instance for a row that has been clicked:
 
 {% highlight javascript %}
-$('#grid tr').click(function() {
+$('#grid tr').on('click', function() {
   var observe = $('#grid').grid('items', $(this));
 });
 {% endhighlight %}
