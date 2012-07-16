@@ -36,13 +36,12 @@
   <p>I can't see the columns when I scroll down :(.</p>
   <table id='table'>
     <thead>
-    <tr></tr>
+      <tr></tr>
     </thead>
     <tbody>
     </tbody>
     <tfoot>
-    <tr>
-    </tr>
+      <tr></tr>
     </tfoot>
   </table>
 </div>
@@ -73,6 +72,7 @@
 			head.push("<th>col ", c, "</th>")
 		}
 		$("thead tr").html(head.join(''))
+    $("tfoot tr").html($('<td>').attr('colspan', cols).html("Footer"));
 
 		for (var r = 0; r < 100; r++) {
 			html.push("<tr>")
