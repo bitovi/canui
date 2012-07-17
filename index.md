@@ -18,8 +18,8 @@ to create your own UI widgets the way you want them.
 ## Fills `$(element).fills([parent])`
 
 [Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it always fills out the remaining space of
-a parent element. This is very useful for complex, desktop like page layouts where content panels should fill out the
-full height of the browser window.
+a parent element. This is very useful for complex, desktop like page layouts where different content panels should fill
+out the full remaining height of the browser window.
 
 When no parent selector or jQuery element is passed, the elements direct parent element will be filled:
 
@@ -40,7 +40,7 @@ to fill out the remaining space:
 [TableScroll](http://donejs.com/docs.html#!canui.) makes a table scrollable while keeping headers and
 footers fixed. This is useful for making grid like widgets.
 
-To make a table scrollable class:
+To make a table scrollable call:
 
 {% highlight javascript %}
 $('table').tableScroll();
@@ -60,12 +60,25 @@ On a table like this:
 </div>
 {% endhighlight %}
 
-TableScroll will take the table and put the`thead` and `tfoot` elements in their own container so that they can stay
-fixed. The original table will be wrapped into a scrollable `div`.
-
-The following example shows a scrollable table with header and footer:
+TableScroll will take the table and put the `thead` and `tfoot` elements in their own container so that they can stay
+fixed. The original table will be wrapped into a scrollable `div`:
 
 <iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+
+### elements `$('table').tableScroll('elements')`
+
+`$('table').tableScroll('elements')` returns an object with references to the `body`, `header`, `footer`
+and `scrollBody` elements. This is different than the elements of the original table since TableScroll
+changes the DOM to keep the header and footer elements fixed.
+To add a class to the scroll body, for example, use this:
+
+{% highlight javascript %}
+$('table').tableScroll();
+// Get the elements
+var elements = $('table').tableScroll('elements');
+// Add a class to scrollBody
+elements.scrollBody.addClass('scrollable');
+{% endhighlight %}
 
 ### update `$(element).tableScroll()`
 
@@ -84,7 +97,7 @@ $('table').tableScroll('updateCols');
 
 ### resize `$(element).resize()`
 
-The `resize` event should be triggered whenever the table dimensions change.
+The `resize` event should be triggered whenever any table dimensions might have changed.
 
 {% highlight javascript %}
 $('table').tableScroll();
@@ -92,26 +105,11 @@ $('table').width(700);
 $('table').resize();
 {% endhighlight %}
 
-### elements `$('table').tableScroll('elements')`
-
-`$('table').tableScroll('elements')` returns an object with references to the `body`, `header`, `footer`
-and `scrollBody` elements. This is different than the elements of the original table since TableScroll
-changes the DOM to keep the header and footer elements fixed.
-To add a class to the scroll body, for example, use this:
-
-{% highlight javascript %}
-$('table').tableScroll();
-// Get the elements
-var elements = $('table').tableScroll('elements');
-// Add a class to scrollBody
-elements.scrollBody.addClass('scrollable');
-{% endhighlight %}
-
 ### rows `$(element).tableScroll('rows')`
 
 `$(element).tableScroll('rows')` returns a jQuery collection containing all table rows. This can be used to
 remove, insert or replace certain rows. A [resize event](#tablescroll-resize) should be triggered after any
-modification to keep content, header and footer synchronized.
+modification to keep content, header and footer sizes synchronized.
 
 {% highlight javascript %}
 // Remove the last row
