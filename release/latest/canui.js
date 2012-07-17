@@ -1619,29 +1619,42 @@ can.Control('can.ui.Selectable',{
 				});
 			}
 
-			var thead = this.$.head;
+			var scrolls = $(this.$.head).add(this.$.foot);
 			this.on(this.$.scrollBody, 'scroll', function (ev) {
-				thead.scrollLeft($(ev.target).scrollLeft());
+				scrolls.scrollLeft($(ev.target).scrollLeft());
 			});
 			this.on(this.$.table, 'resize', 'resize');
 
-			this.updateCols();
+			this.update();
+		},
+
+		update : function() {
+			if (this.$.foot) {
+				this._addSpacer('tfoot');
+			}
+			if (this.$.head) {
+				this._addSpacer('thead');
+			}
+
+			if(resize) {
+				this.resize();
+			}
 		},
 
 		_wrapWithTable : function (i, tag) {
 			// save it
-			this.$[tag] = this.$.table.children(tag);
-			if (this.$[tag].length && this.$[tag].find('td, th').length) {
-				var table = $('<table>'), parent = this.$[tag].parent();
+			var el = this.$[tag] = this.$.table.children(tag);
+			if (el.length && el.find('td, th').length) {
+				var table = $('<table>'), parent = el.parent();
 				// We want to keep classes and styles
 				table.attr('class', parent.attr('class'));
 				table.attr('style', parent.attr('style'));
 
 				// remove it (w/o removing any widgets on it)
-				this.$[tag][0].parentNode.removeChild(this.$[tag][0]);
+				// el[0].parentNode.removeChild(el);
 
 				//wrap it with a table and save the table
-				this.$[tag + "Table"] = this.$.thead.wrap(table).parent()
+				this.$[tag + "Table"] = el.wrap(table).parent();
 			}
 		},
 
@@ -1654,7 +1667,7 @@ can.Control('can.ui.Selectable',{
 		 *
 		 * If you need to change the content of the table, you can
 		 * use elements for access.  If you change the content, make sure
-		 * you call `updateColumns()`.
+		 * you call `update()`.
 		 *
 		 * @return {Object} an object like:
 		 *
@@ -1730,22 +1743,9 @@ can.Control('can.ui.Selectable',{
 					"float" : "none",
 					"visibility" : "hidden",
 					height : "1px"
-				}).html("")
+				}).html("");
 			})
 			this.$.spacer = spacer;
-		},
-
-		updateCols : function(resize) {
-			if (this.$.foot) {
-				this._addSpacer('tfoot');
-			}
-			if (this.$.head) {
-				this._addSpacer('thead');
-			}
-
-			if(resize) {
-				this.resize();
-			}
 		},
 
 		/**
@@ -1754,9 +1754,9 @@ can.Control('can.ui.Selectable',{
 		 */
 		resize : function () {
 			var body = this.$.body,
-
-			// getting the outer widths is the most expensive thing
-				firstWidths = this.$.tbody.find("tr:first:not([data-spacer])").children().map(function () {
+				children = body.find("tr:first:not([data-spacer])").children(),
+				// getting the outer widths is the most expensive thing
+				firstWidths = children.map(function () {
 					return $(this).outerWidth()
 				}),
 
