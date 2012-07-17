@@ -35,7 +35,6 @@ to fill out the remaining space:
 
 <iframe style="width: 100%; height: 370px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
-
 ## TableScroll `$(element).tableScroll([fillParent])`
 
 [TableScroll](http://donejs.com/docs.html#!canui.) makes a table scrollable while keeping headers and
@@ -111,8 +110,8 @@ elements.scrollBody.addClass('scrollable');
 ### rows `$(element).tableScroll('rows')`
 
 `$(element).tableScroll('rows')` returns a jQuery collection containing all table rows. This can be used to
-remove, insert or replace certain rows. A [resize event](#tablescroll-resize) needs to be triggered after any
-modification.
+remove, insert or replace certain rows. A [resize event](#tablescroll-resize) should be triggered after any
+modification to keep content, header and footer synchronized.
 
 {% highlight javascript %}
 // Remove the last row
@@ -120,6 +119,34 @@ $('#grid').grid('rows').last().remove();
 // Resize everything
 $('#grid').resize();
 {% endhighlight %}
+
+## List `$(element).list(options)`
+
+[List](http://donejs.com/docs.html#!canui.list) offers an element list that is bound to a `can.Observe.List`.
+It can be initialized with the following options:
+
+- `list` - The `can.Observe.List` instance to render
+- `view` - List view to render
+- `cid` (default : `'data-cid'`) - The attribute the `can.Observe` unique id for each row is stored in.
+
+### update `$(element).list(options)`
+
+Once initialized, any call to `$(element).list(options)` will force it to rerender the current list
+with the updated options.
+
+### items `$(element).list('items', [rows])`
+
+`$(element).list('items', [rows])` returns a `can.Observe.List` of all items or all items for the given row elements.
+It will return a single `can.Observe` if only one row is passed. This makes it easy to retrieve the observable
+instance for a row that has been clicked:
+
+{% highlight javascript %}
+// TODO
+{% endhighlight %}
+
+### rows `$(element).grid('rows', [observes])`
+
+`$(element).list('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes.
 
 ## Grid `$(element).grid(options)`
 
