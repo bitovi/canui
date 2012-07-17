@@ -136,7 +136,20 @@ steal('can/control',
 			});
 			this.on(this.$.table, 'resize', 'resize');
 
-			this.updateCols();
+			this.update();
+		},
+
+		update : function() {
+			if (this.$.foot) {
+				this._addSpacer('tfoot');
+			}
+			if (this.$.head) {
+				this._addSpacer('thead');
+			}
+
+			if(resize) {
+				this.resize();
+			}
 		},
 
 		_wrapWithTable : function (i, tag) {
@@ -165,7 +178,7 @@ steal('can/control',
 		 *
 		 * If you need to change the content of the table, you can
 		 * use elements for access.  If you change the content, make sure
-		 * you call `updateColumns()`.
+		 * you call `update()`.
 		 *
 		 * @return {Object} an object like:
 		 *
@@ -246,19 +259,6 @@ steal('can/control',
 			this.$.spacer = spacer;
 		},
 
-		updateCols : function(resize) {
-			if (this.$.foot) {
-				this._addSpacer('tfoot');
-			}
-			if (this.$.head) {
-				this._addSpacer('thead');
-			}
-
-			if(resize) {
-				this.resize();
-			}
-		},
-
 		/**
 		 * This is either triggered by the `resize` event or should be called manually when
 		 * the table content or dimensions change.
@@ -273,11 +273,6 @@ steal('can/control',
 
 				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth() : 0,
 				tableWidth = this.$.table.width();
-
-			// TODO auto detect if updateCols needs to be called
-			// if(children.length != body.find('tr[data-spacer]:first').children().length) {
-			//	this.updateCols();
-			// }
 
 			if (tableWidth) {
 				if (this.$.foot) {

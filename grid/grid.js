@@ -39,12 +39,17 @@ function() {
 		init : function() {
 			this._cidMap = {};
 			this.element.html(this.render('init'));
-			this.heading = this.find('heading').html(this.render('head', {
+			this.heading = this.find('heading');
+			this.body = this.find('body');
+			this.element.trigger('init', this);
+			this.update();
+		},
+
+		update : function() {
+			this.heading.html(this.render('head', {
 				options : this.options,
 				columns : this.options.columns()
 			}));
-			this.body = this.find('body');
-			this.element.trigger('init', this);
 			this._update(this.options.list());
 		},
 
@@ -198,7 +203,7 @@ function() {
 		'{data} add' : 'draw',
 
 		// When the columns change we can reinitialize everything
-		'{columns} change' : 'init'
+		'{columns} change' : 'update'
 	});
 
 	// Create direct accessors for computed properties
