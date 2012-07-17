@@ -125,28 +125,67 @@ $('#grid').resize();
 [List](http://donejs.com/docs.html#!canui.list) offers an element list that is bound to a `can.Observe.List`.
 It can be initialized with the following options:
 
-- `list` - The `can.Observe.List` instance to render
-- `view` - List view to render
-- `cid` (default : `'data-cid'`) - The attribute the `can.Observe` unique id for each row is stored in.
+- `data` - The `can.Observe.List` instance to render
+- `cid` (default : `'_namespace'`) - The unique id attribute to identify a `can.Observe`
+- `attribute` (default : `'data-cid'`) - The attribute the `can.Observe` unique id for each row is stored in
+- `view` - List view to render. Gets the original options passed as view data
+
+In the view, each row needs to set have the attribute property set to the `cid` of the current `can.Observe`.
+An [EJS](http://canjs.us/#can_ejs) list view can look like this:
+
+{% highlight html %}
+<script type="text/ejs" id="listEJS">
+  <ul>
+  <% list(data, function(item) { %>
+    <li data-cid="<%= item[cid] %>">
+      <%= item.attr('firstname') %>
+    </li>
+  <% }) %>
+  </ul>
+</script>
+{% endhighlight %}
+
+And used like this:
+
+{% highlight javascript %}
+var people = new can.Observe.List([{
+  firstname : 'John'
+}, {
+  firstname : 'Dave'
+}]);
+
+$('#list').list({
+  view : 'listEJS',
+  data : people
+});
+{% endhighlight %}
 
 ### update `$(element).list(options)`
 
-Once initialized, any call to `$(element).list(options)` will force it to rerender the current list
+Once initialized on an element, any other call to `$(element).list(options)` will force it to rerender the list
 with the updated options.
 
 ### items `$(element).list('items', [rows])`
 
 `$(element).list('items', [rows])` returns a `can.Observe.List` of all items or all items for the given row elements.
 It will return a single `can.Observe` if only one row is passed. This makes it easy to retrieve the observable
-instance for a row that has been clicked:
+instance for a row that has been clicked for the above example:
 
 {% highlight javascript %}
-// TODO
+$('li[data-cid]').on('click', function() {
+  var observe = $('#list').list('items', this);
+});
 {% endhighlight %}
 
 ### rows `$(element).grid('rows', [observes])`
 
-`$(element).list('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes.
+`$(element).list('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes:
+
+{% highlight javascript %}
+// Retrieves the row element for the first observe
+$('#list').list('rows', people[0])
+// -> [<li data-cid="...">John</li>]
+{% endhighlight %}
 
 ## Grid `$(element).grid(options)`
 
