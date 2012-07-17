@@ -19,7 +19,7 @@ to create your own UI widgets the way you want them.
 
 [Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it always fills out the remaining space of
 a parent element. This is very useful for complex, desktop like page layouts where content panels should fill out the
-browser window.
+full height of the browser window.
 
 When no parent selector or jQuery element is passed, the elements direct parent element will be filled:
 
@@ -68,14 +68,28 @@ The following example shows a scrollable table with header and footer:
 
 <iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
-### resize `$(element).resize()`
+### update `$(element).tableScroll()`
 
-The `resize` event should be triggered on a scrollable table whenever the table dimensions
-or column content changes:
+Once initialized, `$(element).tableScroll()` should be called after a header or footer column has been updated, removed
+or inserted. This will also trigger a `resize` event.
 
 {% highlight javascript %}
 $('table').tableScroll();
-$('table').find('td:first').html('AColumnNameThatIsLong');
+// Get the header element
+var header = $('table').tableScroll('elements').header;
+// Update the first heading column
+header.find('th:first').html('NewColumnName');
+// Update the columns
+$('table').tableScroll('updateCols');
+{% endhighlight %}
+
+### resize `$(element).resize()`
+
+The `resize` event should be triggered whenever the table dimensions change.
+
+{% highlight javascript %}
+$('table').tableScroll();
+$('table').width(700);
 $('table').resize();
 {% endhighlight %}
 
@@ -94,25 +108,11 @@ var elements = $('table').tableScroll('elements');
 elements.scrollBody.addClass('scrollable');
 {% endhighlight %}
 
-### updateCols `$(element).tableScroll('updateCols')`
-
-`$(element).tableScroll('updateCols')` should be called after a header or footer column has been updated, removed
-or inserted. This will also trigger a `resize` event.
-
-{% highlight javascript %}
-$('table').tableScroll();
-// Get the header element
-var header = $('table').tableScroll('elements').header;
-// Update the first heading column
-header.find('th:first').html('NewColumnName');
-// Update the columns
-$('table').tableScroll('updateCols');
-{% endhighlight %}
-
 ### rows `$(element).tableScroll('rows')`
 
 `$(element).tableScroll('rows')` returns a jQuery collection containing all table rows. This can be used to
-remove, insert or replace certain rows. A [resize](#tablescroll-resize) needs to be triggered after any modification.
+remove, insert or replace certain rows. A [resize event](#tablescroll-resize) needs to be triggered after any
+modification.
 
 {% highlight javascript %}
 // Remove the last row
@@ -129,10 +129,11 @@ Along with [TableScroll](#tablescroll) this can be used to create a full grid wi
 
 Possible options:
 
-- `emptyText` - The content to display when there are no items
-- `loadingText` - The text to display when a deferred is being resolved
+- `emptyContent` - The content to display when there are no items
+- `loadingContent` - The content to display while a deferred is being resolved
 - `list` - The item provider described in more detail in the [list](#grid-list) section
 - `columns` - The columns to display, see the [columns](#grid-column) section
+- `scrollable` - If this grid should become scrollable using [TableScroll](#tablescroll)
 
 With a markup like this:
 
@@ -159,8 +160,8 @@ The Grid can be initialized like this:
 
 {% highlight javascript %}
 $('#grid').grid({
-  emptyText : 'Sorry, nothing found',
-  loadingText : 'Retrieving people list...',
+  emptyContent : 'Sorry, nothing found',
+  loadingContent : 'Retrieving people list...',
   columns : [
     { header : 'First name', content : 'firstname' },
     { header : 'Last name', content : 'latname' },
@@ -182,7 +183,8 @@ must at least contain:
 
 - `header` - The header content.
 - `content` - The content to display for this column. This can either be an attribute name
-or a callback in the form of `function(observe, index)` that returns the content or a [can.compute](#) for the current column.
+or a callback in the form of `function(observe, index)` that returns the content or a
+[can.compute](#) for the current column with computed properties.
 
 The following example creates a grid with a column that contains the combined first- and lastname:
 
@@ -202,8 +204,8 @@ $('#grid').grid({
 });
 {% endhighlight %}
 
-It is also possible to render [EJS views](http://canjs.us/#can_ejs). For example an EJS script
-that wraps a persons age into a custom element and adds a class if it is under 21:
+It is also possible to render [views](http://canjs.us/#can_view). For example this [EJS](http://canjs.us/#can_ejs)
+script:
 
 {% highlight html %}
 <script type="text/ejs" id="ageEJS">
@@ -240,7 +242,7 @@ $('#grid').grid('columns').attr('0.header', 'Full name');
 There are several ways to provide the grid with a list of data. Usually it will be a `can.Observe.List` instance
 that contains observable objects. When passing a normal Array, it will be converted to an observable list.
 Another option is to pass a `can.Deferred` that resolves to an observable list or array. The grid will show the
-content of `loadingText` while the Deferred is being resolved.
+content of `loadingContent` while the Deferred is being resolved.
 
 This allows to directly pass `can.Model` requests:
 
@@ -254,6 +256,7 @@ var Person = can.Model({
   }, {});
 
 $('#grid').grid({
+  loadingContent : 'Please wait...',
   columns : [{
       header : 'First name',
       attr : 'firstname'
@@ -283,12 +286,12 @@ $('#grid').grid({
       attr : 'lastname'
     }
   ],
-  list : can.compute(function() {
+  list : function() {
     return Person.findAll({
       offset : paginator.attr('offset'),
       limit : paginator.attr('limit')
     });
-  })
+  }
 });
 {% endhighlight %}
 
@@ -307,6 +310,51 @@ $('#grid tr').on('click', function() {
 ### rows `$(element).grid('rows', [observes])`
 
 `$(element).grid('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes.
+
+### tableScroll `$(element).grid('tableScroll')`
+
+If the `scrollable` option is set to true, `$(element).grid('tableScroll')` will return the [TableScroll](#tablescroll)
+instance that is used to make the grid scrollable, `null` otherwise.
+This can be used to automatically load new data when scrolled to the bottom of the grid:
+
+{% highlight javascript %}
+var offset = 0;
+$('#grid').grid({
+  loadingContent : 'Loading data...',
+  columns : [{
+      header : 'First name',
+      attr : 'firstname'
+    }, {
+      header : 'Last name',
+      attr : 'lastname'
+    }
+  ],
+  list : Person.findAll({
+    offset : offset,
+    limit : 10
+  })
+});
+
+var elements = $('#grid').grid('tableScroll').elements(),
+  deferred = null;
+
+elements.scrollBody.on('scroll', function() {
+  if($(this).scrollTop() == $(this).parent().height()) {
+    offset += 10;
+    if(!deferred || deferred.isResolved()) {
+      deferred = Person.findAll({
+        offset : offset,
+        limit : 10
+      }).done(function(people) {
+        var data = $('#grid').grid('items');
+        can.each(people, function(person) {
+          data.push(people);
+        });
+      });
+    }
+  }
+});
+{% endhighlight %}
 
 ## Positionable `$(element).positionable(options)`
 
