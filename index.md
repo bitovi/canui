@@ -15,29 +15,46 @@ to create your own UI widgets the way you want them.
 
 ## Configuring CanUI
 
-## Fills `$(element).fills([parent])`
+## Fills `$(element).fills([container])`
 
-[Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it always fills out the remaining space of
-a parent element. This is very useful for complex, desktop like page layouts where different content panels should fill
-out the full remaining height of the browser window.
+[Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it fills up the remaining space of
+a parent element. When no container selector or jQuery element is passed, the window element will be filled.
+For example, with this HTML markup:
 
-When no parent selector or jQuery element is passed, the elements direct parent element will be filled:
+{% highlight html %}
+<div id="container">
+    <div id="top">Longer text that might be wraped but everything still looks right.</div>
+    <div id="fill">#fill</div>
+    <div id="bottom">A bottom sibling.</div>
+</div>
+{% endhighlight %}
+
+To make the `#container` element fill up the window and the `#fill` element fill the remaining space in `#container`
+use this:
 
 {% highlight javascript %}
-// Fill the parent
-$('#fill').fills();
-// Fill the #container element
+$('#container').fills();
 $('#fill').fills('#container');
 {% endhighlight %}
 
-Resize the container in the following example using the blue square to see how the `#fill` element adjusts its size correctly
-to fill out the remaining space:
+Resize the container in the following example using the blue square to see how the `#fill`
+element adjusts its size correctly to fill out the container:
 
 <iframe style="width: 100%; height: 370px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
+### resize `$(element).resize()`
+
+Fills listens to the [resize]() event to recalculate the fill element dimensions. Therefore `resize` has to
+be triggered when the container dimensions changed programatically:
+
+{% highlight javascript %}
+$('#fill').fills('#container');
+$('#container').height(500).resize();
+{% endhighlight %}
+
 ## TableScroll `$(element).tableScroll([fillParent])`
 
-[TableScroll](http://donejs.com/docs.html#!canui.) makes a table scrollable while keeping headers and
+[TableScroll](http://donejs.com/docs.html#!canui.) makes a tables body scrollable while keeping the tables headers and
 footers fixed. This is useful for making grid like widgets.
 
 To make a table scrollable call:
@@ -52,20 +69,40 @@ On a table like this:
 <div style="height: 200px; overflow: auto;">
   <table>
     <thead>
-      <th>Firstname</th>
-      <th>Lastname</th>
+      <tr>
+        <th>Firstname</th>
+        <th>Lastname</th>
+      </tr>
     </thead>
-    <tbody><!-- ... --></tbody>
+    <tbody>
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
   </table>
 </div>
 {% endhighlight %}
 
-TableScroll will take the table and put the `thead` and `tfoot` elements in their own container so that they can stay
-fixed. The original table will be wrapped into a scrollable `div`:
+The following example:
 
 <iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ### elements `$('table').tableScroll('elements')`
+
+TableScroll rearranges the original table to allow the table body to scroll and the `thead` and `tfoot` elements
+to stay fixed. The HTML from the above example will look like this:
+
+Useful?
+
+// TODO
+
+will take the table and put the `thead` and `tfoot` elements in their own container so that they can stay
+fixed. The original table will be wrapped into a scrollable `div`:
 
 `$('table').tableScroll('elements')` returns an object with references to the `body`, `header`, `footer`
 and `scrollBody` elements. This is different than the elements of the original table since TableScroll
@@ -82,8 +119,11 @@ elements.scrollBody.addClass('scrollable');
 
 ### update `$(element).tableScroll()`
 
-Once initialized, `$(element).tableScroll()` should be called after a header or footer column has been updated, removed
+Once created, `$(element).tableScroll()` should be called after a header or footer column has been updated, removed
 or inserted. This will also trigger a `resize` event.
+
+After creating a tableScoll, future calls to ts are used to update the table’s layout after a header or
+footer column has been added, removed, or had it’s contents changed.
 
 {% highlight javascript %}
 $('table').tableScroll();
@@ -92,12 +132,12 @@ var header = $('table').tableScroll('elements').header;
 // Update the first heading column
 header.find('th:first').html('NewColumnName');
 // Update the columns
-$('table').tableScroll('updateCols');
+$('table').tableScroll('update');
 {% endhighlight %}
 
 ### resize `$(element).resize()`
 
-The `resize` event should be triggered whenever any table dimensions might have changed.
+The `resize` event should be triggered whenever any table dimensions have changed.
 
 {% highlight javascript %}
 $('table').tableScroll();
@@ -105,9 +145,11 @@ $('table').width(700);
 $('table').resize();
 {% endhighlight %}
 
-### rows `$(element).tableScroll('rows')`
+### rows `$(element).tableScroll('rows', [replaceRows])`
 
-`$(element).tableScroll('rows')` returns a jQuery collection containing all table rows. This can be used to
+`$(element).tableScroll('rows', [replaceRows])` returns a jQuery collection containing all table rows.
+
+This can be used to
 remove, insert or replace certain rows. A [resize event](#tablescroll-resize) should be triggered after any
 modification to keep content, header and footer sizes synchronized.
 
@@ -120,68 +162,69 @@ $('#grid').resize();
 
 ## List `$(element).list(options)`
 
-[List](http://donejs.com/docs.html#!canui.list) offers an element list that is bound to a `can.Observe.List`.
-It can be initialized with the following options:
+[List](http://donejs.com/docs.html#!canui.list) displays the contents of a `can.Observe.List`. It is faster than
+live binding to an observable list because it only updates the affected rows instead of re-rendering the entire
+list. It is also possible to provide different list sources like a `can.Deferred` or a `can.compute`.
+Initialize it with the following options:
 
-- `data` - The `can.Observe.List` instance to render
-- `cid` (default : `'_namespace'`) - The unique id attribute to identify a `can.Observe`
-- `attribute` (default : `'data-cid'`) - The attribute the `can.Observe` unique id for each row is stored in
-- `view` - List view to render. Gets the original options passed as view data
+- `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the list data to render.
+- `view` - The view to render a single row. Gets the current `can.Observe` passed.
+- `emptyContent` - The content to show when the list is empty.
+- `loadingContent` - The content to show while a deferred is being resolved.
+- `cid` (default : `'_cid'`) - The unique id attribute to identify a `can.Observe`.
+- `attribute` (default : `'data-cid'`) - The rows attribute name that stores the `cid` value.
 
-In the view, each row needs to set have the attribute property set to the `cid` of the current `can.Observe`.
-An [EJS](http://canjs.us/#can_ejs) list view can look like this:
+A row is identified by having the `attribute` property set to the unique id of a `can.Observe`, usually in the
+form of `data-cid="<%= this._cid %>"` in an [EJS](http://canjs.us/#can_ejs) view.
+A simple row view for an ordered or unordered list can look like this:
 
 {% highlight html %}
-<script type="text/ejs" id="listEJS">
-  <ul>
-  <% list(data, function(item) { %>
-    <li data-cid="<%= item[cid] %>">
-      <%= item.attr('firstname') %>
-    </li>
-  <% }) %>
-  </ul>
+<script type="text/ejs" id="rowEJS">
+  <li data-cid="<%= this._cid %>">
+    <%= this.attr('name') %>
+  </li>
 </script>
 {% endhighlight %}
 
-And used like this:
+And be used like this:
 
 {% highlight javascript %}
 var people = new can.Observe.List([{
-  firstname : 'John'
+  name : 'John'
 }, {
-  firstname : 'Dave'
+  name : 'Dave'
 }]);
 
-$('#list').list({
-  view : 'listEJS',
-  data : people
+$('ul').list({
+  view : 'rowEJS',
+  emptyContent : '<li class="empty">Nothing found</li>',
+  list : people
 });
 {% endhighlight %}
 
 ### update `$(element).list(options)`
 
-Once initialized on an element, any other call to `$(element).list(options)` will force it to rerender the list
+Once created on an element, any other call to `$(element).list(options)` will force rerendering the list
 with the updated options.
 
-### items `$(element).list('items', [rows])`
+### list `$(element).list('list', [rows])`
 
-`$(element).list('items', [rows])` returns a `can.Observe.List` of all items or all items for the given row elements.
-It will return a single `can.Observe` if only one row is passed. This makes it easy to retrieve the observable
-instance for a row that has been clicked for the above example:
+`$(element).list('list', [rows])` returns a `can.Observe.List` of all observes or all observes for the given row elements.
+This can be used to retrieve the observable for a row that was clicked:
 
 {% highlight javascript %}
 $('li[data-cid]').on('click', function() {
-  var observe = $('#list').list('items', this);
+  var observe = $('#list').list('list', this)[0];
 });
 {% endhighlight %}
 
-### rows `$(element).grid('rows', [observes])`
+### rowElements `$(element).list('rowElements', [observes])`
 
-`$(element).list('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes:
+`$(element).list('rowElements', [observes])` returns a jQuery collection of all rows or all rows for the given observes:
 
 {% highlight javascript %}
 // Retrieves the row element for the first observe
-$('#list').list('rows', people[0])
+$('#list').list('rowElements', people[0])
 // -> [<li data-cid="...">John</li>]
 {% endhighlight %}
 
@@ -220,7 +263,7 @@ var people = new can.Observe.List([{
 ]);
 {% endhighlight %}
 
-The Grid can be initialized like this:
+The grid can be initialized like this:
 
 {% highlight javascript %}
 $('#grid').grid({
@@ -242,10 +285,10 @@ to its initial state:
 
 ### columns `$(element).grid('columns', [columns])`
 
-Column definitions can be provided as a `can.Observe.List` or an array of objects. Each object
+Column definitions are provided as a `can.Observe.List` or an array of objects. Each object
 must at least contain:
 
-- `header` - The header content.
+- `header` - The table column header HTML content.
 - `content` - The content to display for this column. This can either be an attribute name
 or a callback in the form of `function(observe, index)` that returns the content or a
 [can.compute](#) for the current column with computed properties.
