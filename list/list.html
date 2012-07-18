@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>can.ui.List demo</title>
+</head>
+<body>
+
+<script type="text/ejs" id="rowEJS">
+  <li data-cid="<%= this._cid %>">
+    <%= this.attr('name') %>
+  </li>
+</script>
+
+<ul id="list">
+
+</ul>
+
+<button>Click me</button>
+
+<script type="text/javascript" src="../../steal/steal.js"></script>
+<script type="text/javascript">
+  steal('canui/list', 'can/view/ejs').then(function() {
+    var people = new can.Observe.List([
+      {
+        name : 'John I',
+        age : 10
+      }, {
+        name : 'John II',
+        age : 18
+      }
+    ]);
+
+    var dfd = can.Deferred();
+
+    $('#list').list({
+      view : 'rowEJS',
+      empty : '<li>Nothing here...</li>',
+      loading : '<li>Loading...</li>',
+      list : dfd
+    });
+
+    $('button').click(function() {
+      dfd.resolve([]);
+    });
+  });
+</script>
+</body>
+</html>
