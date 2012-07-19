@@ -104,7 +104,7 @@ steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 				options = {parent: options };
 			}
 			// Set the parent
-			options.parent || (options.parent = $(this).parent());
+			options.parent || (options.parent = window);
 			options.parent = $(options.parent)
 
 			// setup stuff on every element
