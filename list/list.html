@@ -30,17 +30,16 @@
       }
     ]);
 
-    var dfd = can.Deferred();
-
+    var cmp = can.compute(people);
     $('#list').list({
       view : 'rowEJS',
       empty : '<li>Nothing here...</li>',
       loading : '<li>Loading...</li>',
-      list : dfd
+      list : cmp
     });
 
     $('button').click(function() {
-      dfd.resolve([]);
+      cmp([]);
     });
   });
 </script>

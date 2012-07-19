@@ -13,12 +13,20 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 
 		update : function(options) {
 			can.Control.prototype.update.call(this, options);
-			this._update(this.options.list);
+			var list = this.options.list;
+			if(list && list.isComputed) {
+				// TODO doesn't trigger
+				this.on(list, 'change', can.proxy(function(ev, newVal) {
+					this._update(newVal);
+				}, this));
+				list = list();
+			}
+			this._update(list);
 		},
 
 		/**
 		 * Updates the data list and sets this.options.data. Converts Arrays
-		 * and waits for can.Deferreds.
+		 * and waits for Deferreds.
 		 *
 		 * @param {can.Deferred|can.Observe.List|Array} data The data to set
 		 * @private
@@ -26,7 +34,7 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 		_update : function(data) {
 			data = data || [];
 			if(can.isDeferred(data)) {
-				this.element.html(this.options.loading);
+				this.element.html(this.options.loadingContent);
 				data.done(can.proxy(this._update, this));
 			} else {
 				var cidMap = {};
@@ -41,6 +49,13 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 			}
 		},
 
+		/**
+		 * Returns a can.$ wrapped list of rendered rows for the given observes.
+		 *
+		 * @param {Array|can.Observe.List} observes The observables to render
+		 * @return {can.$} A can.$ wrapped list of rendered rows
+		 * @private
+		 */
 		_rows : function(observes) {
 			observes = can.makeArray(observes);
 			var rows = $.map(observes, can.proxy(function(observe) {
@@ -49,12 +64,16 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 			return can.$(rows);
 		},
 
+		/**
+		 * Renders the row element list. If the rows are empty or there
+		 * are no rows, the content set in the `empty` option will be rendered.
+		 *
+		 * @param rows
+		 * @private
+		 */
 		_render : function(rows) {
-			if(!rows || rows.length === 0) {
-				this.element.html(this.options.empty);
-			} else {
-				this.element.html(rows);
-			}
+			var content = !rows || rows.length === 0 ? this.options.emptyContent : rows;
+			this.element.html(content);
 		},
 
 		'{data} length' : function(list, ev, length) {
@@ -70,7 +89,15 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 		},
 
 		'{data} add' : function(list, ev, observes) {
-			this.element.append(this._rows(observes));
+			var rowElements = this.rowElements(),
+				newRows = this._rows(observes);
+			if(rowElements.length) {
+				// We either append after the last data row
+				rowElements.last().after(newRows);
+			} else {
+				// Or prepend it to the element
+				this.element.prepend(newRows);
+			}
 		},
 
 		/**
@@ -84,12 +111,11 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 				return this.element.find('[' + this.options.attribute + ']');
 			}
 
-			var element = this.element,
-				elements = [],
+			var elements = [],
 				observes = can.isArray(arg) ? arg : can.makeArray(arguments);
 
 			can.each(observes, can.proxy(function(current) {
-				var row = element.find('[' + this.options.attribute + '="' + current[this.options.cid] + '"]')[0];
+				var row = this.element.find('[' + this.options.attribute + '="' + current[this.options.cid] + '"]')[0];
 				elements.push(row || null);
 			}, this));
 
@@ -102,7 +128,7 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 		 * @param {Collection} rows An array or DOM element collection
 		 * @return {can.Observe.List|can.Observe}
 		 */
-		items : function(rows) {
+		list : function(rows) {
 			if(!rows) {
 				return this.options.list || new can.Observe.List();
 			}
@@ -120,7 +146,7 @@ steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(funct
 				}
 			});
 
-			return rows.length == 1 ? result.pop() : result;
+			return result;
 		}
 	});
 });

@@ -204,9 +204,14 @@ steal('can/control',
 		 *
 		 * Returns all actual rows (excluding any spacers).
 		 *
+		 * @param {Collection} [replaceRows] If passed, all rows will be replaced with the given rows.
 		 * @return {can.$) The content elements of the table body without any spacers.
 		 */
-		rows : function() {
+		rows : function(replaceRows) {
+			if(replaceRows) {
+				this.rows().remove();
+				this.$.tbody.prepend(replaceRows);
+			}
 			return this.$.tbody.children(":not([data-spacer])");
 		},
 
@@ -296,7 +301,7 @@ steal('can/control',
 		},
 
 		destroy : function () {
-			var controls = can.data(this.element,"controls");
+			var controls = can.data(this.$.table,"controls");
 			controls.splice(can.inArray(this, controls),1);
 			delete this.$;
 			can.Control.prototype.destroy.call(this);
