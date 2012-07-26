@@ -1,4 +1,4 @@
-steal('jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
+steal('jquery', 'jquery/dom/dimensions', 'jquery/event/resize').then(function( $ ) {
 	//evil things we should ignore
 	var matches = /script|td/,
 

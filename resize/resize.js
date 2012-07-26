@@ -1,11 +1,10 @@
 steal('jquery',
-	'can/construct/proxy',
 	'can/control',
+	'can/construct/proxy',
 	'jquery/event/drag',
 	'jquery/dom/dimensions',
 	'canui/fills',
-	'can/control/plugin')
-.then(function () {
+	'can/control/plugin', function($, Control) {
 	$.support.correctOverflow = false;
 
 	$(function () {
@@ -159,7 +158,7 @@ steal('jquery',
 	 *
 	 * @return {can.ui.Resize}
 	 */
-	can.Control('can.ui.Resize', {
+	Control('can.ui.Resize', {
 		pluginName : 'resizable',
 		defaults : {
 			aspectRatio : false,
@@ -190,7 +189,7 @@ steal('jquery',
 
 		setup : function (el, options) {
 			var diff = this._wrap($(el))[0];
-			can.Control.prototype.setup.call(this, diff, options)
+			Control.prototype.setup.call(this, diff, options)
 
 			this.original = $(el);
 			if (diff != $(el)[0]) {
@@ -369,7 +368,7 @@ steal('jquery',
 
 		destroy : function () {
 			this.element.find('.' + this.options.handleClassName).remove();
-			can.Control.prototype.destroy.apply(this, arguments);
+			Control.prototype.destroy.apply(this, arguments);
 		}
 	})
 })

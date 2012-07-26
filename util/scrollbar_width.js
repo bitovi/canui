@@ -40,4 +40,5 @@ steal('jquery').then(function ($) {
 		 */
 		return cached;
 	}
+	return window.can.ui.scrollbarWidth;
 });

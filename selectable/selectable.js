@@ -1,8 +1,7 @@
 steal('can/control',
 	'can/construct/proxy',
 	'can/control/plugin',
-	'jquery/event/key')
-     .then(function(){
+	'jquery/event/key', function(Control){
 
 //we have to clear out activate
 $.event.special.activate = {
@@ -105,7 +104,7 @@ $.event.special.activate = {
  *       outsideDeactivate: false
  *     })
  */
-can.Control('can.ui.Selectable',{
+Control('can.ui.Selectable',{
 	pluginName : 'selectable',
     defaults : {
         // what can be selected

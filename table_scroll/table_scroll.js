@@ -1,9 +1,8 @@
-steal('can/control',
+steal('jquery', 'can/control', 'can/util/jquery', 
+	'canui/util/scrollbar_width.js',
 	'can/control/plugin',
 	'canui/fills',
-	'canui/util/scrollbar_width.js',
-	'jquery/event/resize')
-.then(function ($) {
+	'jquery/event/resize', function ($, Control, can, scrollbarWidth) {
 
 	// helpers
 	var setWidths = function (cells, firstWidths) {
@@ -12,7 +11,7 @@ steal('can/control',
 				cells.eq(i).outerWidth(firstWidths[i]);
 			}
 		},
-		TableFill = can.Control({
+		TableFill = Control({
 			setup : function (el, options) {
 				//remove the header and put in another table
 				el = $(el);
@@ -20,13 +19,13 @@ steal('can/control',
 					this.$ = {
 						table : el
 					}
-					can.Control.prototype.setup.call(this, this.$.table.wrap("<div></div>").parent(),
+					Control.prototype.setup.call(this, this.$.table.wrap("<div></div>").parent(),
 						options)
 				} else {
 					this.$ = {
 						table : el.find('table:first')
 					}
-					can.Control.prototype.setup.call(this, el, options);
+					Control.prototype.setup.call(this, el, options);
 				}
 
 			},
@@ -50,7 +49,7 @@ steal('can/control',
 				table.css("width", "");
 				// is it scrolling vertically
 				if (el.offsetHeight < el.scrollHeight) {
-					table.outerWidth(this.element.width() - can.ui.scrollbarWidth())
+					table.outerWidth(this.element.width() - scrollbarWidth())
 				} else {
 					table.outerWidth(this.element.width())
 				}
@@ -58,7 +57,7 @@ steal('can/control',
 			}
 		});
 
-	can.Control("can.ui.TableScroll", {
+	Control("can.ui.TableScroll", {
 		defaults : {
 			fill : true
 		},
@@ -80,7 +79,7 @@ steal('can/control',
 			// as a buffer for the scroll bar
 			this.$.body = this.$.scrollBody.parent();
 
-			can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
+			Control.prototype.setup.call(this, this.$.body.parent()[0], options);
 			// We have to add the control to the original table element as well
 			(arr = can.data(this.$.table,"controls")) || can.data(this.$.table,"controls",arr = []);
 			arr.push(this);
@@ -276,7 +275,7 @@ steal('can/control',
 					return $(this).outerWidth()
 				}),
 
-				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth() : 0,
+				padding = this.$.table.height() >= body.height() ? scrollbarWidth() : 0,
 				tableWidth = this.$.table.width();
 
 			if (tableWidth) {
@@ -304,7 +303,7 @@ steal('can/control',
 			var controls = can.data(this.$.table,"controls");
 			controls.splice(can.inArray(this, controls),1);
 			delete this.$;
-			can.Control.prototype.destroy.call(this);
+			Control.prototype.destroy.call(this);
 		}
 	})
 })
