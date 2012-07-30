@@ -154,7 +154,7 @@ steal('jquery', 'can/util', 'can/construct/proxy', 'can/control',
 	 *
 	 * @return {can.ui.Resize}
 	 */
-	Control('can.ui.Resize', {
+	can.Control('can.ui.Resize', {
 		pluginName : 'resizable',
 		defaults : {
 			aspectRatio : false,
@@ -185,7 +185,7 @@ steal('jquery', 'can/util', 'can/construct/proxy', 'can/control',
 
 		setup : function (el, options) {
 			var diff = this._wrap($(el))[0];
-			Control.prototype.setup.call(this, diff, options)
+			can.Control.prototype.setup.call(this, diff, options)
 
 			this.original = $(el);
 			if (diff != $(el)[0]) {
@@ -364,7 +364,7 @@ steal('jquery', 'can/util', 'can/construct/proxy', 'can/control',
 
 		destroy : function () {
 			this.element.find('.' + this.options.handleClassName).remove();
-			Control.prototype.destroy.apply(this, arguments);
+			can.Control.prototype.destroy.apply(this, arguments);
 		}
 	})
 })
