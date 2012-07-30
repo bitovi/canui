@@ -1,9 +1,8 @@
-steal('can/control',
+steal('jquery', 'can/util', 'can/control',
 	'can/control/plugin',
 	'canui/fills',
 	'canui/util/scrollbar_width.js',
-	'jquery/event/resize')
-.then(function ($) {
+	'jquery/event/resize', function ($, can) {
 
 	// helpers
 	var setWidths = function (cells, firstWidths) {

@@ -1,4 +1,5 @@
-steal('can/control', 'can/control/plugin', 'can/view', 'can/observe').then(function() {
+steal('jquery', 'can/control', 'can/control/plugin', 'can/view', 'can/observe',
+function($) {
 	can.Control('can.ui.List', {
 		pluginName : 'list',
 		defaults : {

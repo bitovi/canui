@@ -1,12 +1,11 @@
-steal('funcunit/qunit', 'canui/list', 'can/view/ejs').then(function(){
-	
+steal('jquery', 'funcunit/qunit', 'canui/list', function($) {
 	module("can.ui.List");
 
 	test("Initialize empty", function () {
 		var emptyHtml = '<li>Nothing here...</li>',
 			container = $('<ul>').appendTo('#qunit-test-area').list({
 				view : '//canui/list/test.ejs',
-				empty : emptyHtml
+				emptyContent : emptyHtml
 			});
 
 		equal(container.html(), emptyHtml, 'Set to empty text');

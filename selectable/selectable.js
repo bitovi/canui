@@ -1,8 +1,5 @@
-steal('can/control',
-	'can/construct/proxy',
-	'can/control/plugin',
-	'jquery/event/key')
-     .then(function(){
+steal('jquery', 'can/util', 'can/control', 'can/construct/proxy', 'can/control/plugin', 'jquery/event/key',
+	function($, can) {
 
 //we have to clear out activate
 $.event.special.activate = {

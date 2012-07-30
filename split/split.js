@@ -1,10 +1,6 @@
-steal('can/control',
-	'can/control/plugin',
-	'jquery/event/drag/limit', 
-	'jquery/dom/dimensions', 
-	'jquery/event/key', 
-	'jquery/event/resize',
-function( $ ) {
+steal('jquery', 'can/util', 'can/control', 'can/control/plugin',
+	'jquery/event/drag/limit', 'jquery/dom/dimensions',  'jquery/event/key',
+	'jquery/event/resize', function($, can) {
 
 	/**
 	 * @class can.ui.Split
