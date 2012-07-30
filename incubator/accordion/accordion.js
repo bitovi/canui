@@ -1,8 +1,9 @@
 steal('can/control',
 	  'can/construct/proxy',
+	  'can/control/plugin',
 	  'canui/selectable',
 	  'jquery/dom/dimensions',
-	  function(){
+	  function(Control){
 		
 /**
  * @class can.ui.Accordion
@@ -11,7 +12,8 @@ steal('can/control',
  * 
  * Provides basic accordion vertical accordion functionality.
  */
-can.Control("can.ui.Accordion",{
+Control("can.ui.Accordion",{
+	pluginName: 'accordion',
 	
 	defaults: {
 		/**
