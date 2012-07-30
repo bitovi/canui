@@ -102,7 +102,7 @@ $.event.special.activate = {
  *       outsideDeactivate: false
  *     })
  */
-Control('can.ui.Selectable',{
+can.Control('can.ui.Selectable',{
 	pluginName : 'selectable',
     defaults : {
         // what can be selected
