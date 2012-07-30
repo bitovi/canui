@@ -1,8 +1,8 @@
-steal('jquery', 'can/util', 'can/control',
+steal('jquery', 'can/control',
 	'can/control/plugin',
 	'canui/fills',
 	'canui/util/scrollbar_width.js',
-	'jquery/event/resize', function ($, can) {
+	'jquery/event/resize', function ($) {
 
 	// helpers
 	var setWidths = function (cells, firstWidths) {
@@ -11,7 +11,7 @@ steal('jquery', 'can/util', 'can/control',
 				cells.eq(i).outerWidth(firstWidths[i]);
 			}
 		},
-		TableFill = Control({
+		TableFill = can.Control({
 			setup : function (el, options) {
 				//remove the header and put in another table
 				el = $(el);
@@ -19,13 +19,13 @@ steal('jquery', 'can/util', 'can/control',
 					this.$ = {
 						table : el
 					}
-					Control.prototype.setup.call(this, this.$.table.wrap("<div></div>").parent(),
+					can.Control.prototype.setup.call(this, this.$.table.wrap("<div></div>").parent(),
 						options)
 				} else {
 					this.$ = {
 						table : el.find('table:first')
 					}
-					Control.prototype.setup.call(this, el, options);
+					can.Control.prototype.setup.call(this, el, options);
 				}
 
 			},
@@ -49,7 +49,7 @@ steal('jquery', 'can/util', 'can/control',
 				table.css("width", "");
 				// is it scrolling vertically
 				if (el.offsetHeight < el.scrollHeight) {
-					table.outerWidth(this.element.width() - scrollbarWidth())
+					table.outerWidth(this.element.width() - can.ui.scrollbarWidth())
 				} else {
 					table.outerWidth(this.element.width())
 				}
@@ -57,7 +57,7 @@ steal('jquery', 'can/util', 'can/control',
 			}
 		});
 
-	Control("can.ui.TableScroll", {
+	can.Control("can.ui.TableScroll", {
 		defaults : {
 			fill : true
 		},
@@ -79,7 +79,7 @@ steal('jquery', 'can/util', 'can/control',
 			// as a buffer for the scroll bar
 			this.$.body = this.$.scrollBody.parent();
 
-			Control.prototype.setup.call(this, this.$.body.parent()[0], options);
+			can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
 			// We have to add the control to the original table element as well
 			(arr = can.data(this.$.table,"controls")) || can.data(this.$.table,"controls",arr = []);
 			arr.push(this);
@@ -146,9 +146,7 @@ steal('jquery', 'can/util', 'can/control',
 				this._addSpacer('thead');
 			}
 
-			if(resize) {
-				this.resize();
-			}
+			this.resize();
 		},
 
 		_wrapWithTable : function (i, tag) {
@@ -275,7 +273,7 @@ steal('jquery', 'can/util', 'can/control',
 					return $(this).outerWidth()
 				}),
 
-				padding = this.$.table.height() >= body.height() ? scrollbarWidth() : 0,
+				padding = this.$.table.height() >= body.height() ? can.ui.scrollbarWidth() : 0,
 				tableWidth = this.$.table.width();
 
 			if (tableWidth) {
@@ -303,7 +301,7 @@ steal('jquery', 'can/util', 'can/control',
 			var controls = can.data(this.$.table,"controls");
 			controls.splice(can.inArray(this, controls),1);
 			delete this.$;
-			Control.prototype.destroy.call(this);
+			can.Control.prototype.destroy.call(this);
 		}
 	})
 })
