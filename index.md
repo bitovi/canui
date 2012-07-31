@@ -13,8 +13,6 @@ to create your own UI widgets the way you want them.
 
 {% include builder.html %}
 
-## Configuring CanUI
-
 ## Fills `$(element).fills([container])`
 
 [Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it fills up the remaining space of
@@ -46,8 +44,8 @@ element adjusts its size correctly to fill out the remaining space:
 
 ### resize `$(element).resize()`
 
-Fills listens to the [resize](http://jquerypp.com/#resize) event to recalculate the fill element dimensions.
-Therefore, `resize` has to be triggered whenever the container dimensions are changed programatically:
+Fills listens to the [resize event](http://jquerypp.com/#resize) to recalculate the fill element dimensions.
+Whenever the container dimensions are changed programmatically `resize` has to be triggered:
 
 {% highlight javascript %}
 $('#fill').fills('#container');
@@ -194,7 +192,8 @@ $('#grid').resize();
 
 [List](http://donejs.com/docs.html#!canui.list) displays the contents of a `can.Observe.List`. It is faster than
 live binding to an observable list because it only updates the affected rows instead of re-rendering the entire
-list. It is also possible to provide different list sources like a `can.Deferred` or a `can.compute`.
+list. It is also possible to provide different list sources like a `can.Deferred` or a `can.compute` and set the
+content to display when the list is empty or a deferred is being resolved.
 Initialize it with the following options:
 
 - `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the list data to render.
@@ -228,12 +227,12 @@ content of `loadingContent` while the Deferred is being resolved. This makes it 
 
 {% highlight javascript %}
 var Person = can.Model({
-    findAll : 'GET /people',
-    findOne : 'GET /people/{id}',
-    create  : 'POST /people',
-    update  : 'PUT /people/{id}',
-    destroy : 'DELETE /people/{id}'
-  }, {});
+  findAll : 'GET /people',
+  findOne : 'GET /people/{id}',
+  create  : 'POST /people',
+  update  : 'PUT /people/{id}',
+  destroy : 'DELETE /people/{id}'
+}, {});
 
 $('#list').list({
   loadingContent : '<li>Please wait...</li>',
@@ -243,7 +242,8 @@ $('#list').list({
 });
 {% endhighlight %}
 
-The last option is to pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`.
+You can also pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`. If it is a function ,
+it will be converted to a `can.compute`.
 Combined with `can.Observe`, this can make paginating Model requests very easy:
 
 {% highlight javascript %}
@@ -265,13 +265,14 @@ $('#list').list({
 });
 
 // This will load items 20 to 30 from the server
+// and render it into the list
 paginator.attr('offset', 20);
 {% endhighlight %}
 
-### update `$(element).list(options)`
+### update `$(element).list([options])`
 
-Once created on an element, any other call to `$(element).list(options)` will force rerendering the list
-with the updated options.
+Once created on an element, any other call to `$(element).list([options])` will force rerendering the list
+using the updated options.
 
 ### list `$(element).list('list', [rows])`
 
@@ -296,16 +297,17 @@ $('#list').list('rowElements', people[0])
 
 ## Grid `$(element).grid(options)`
 
-[Grid](http://donejs.com/docs.html#!canui.grid) extends [List](#list) to display a list of data in a table
-based on column definitions.
+[Grid](http://donejs.com/docs.html#!canui.grid) extends the CanUI [List](#list) to display a list of data in a table
+using a set of column definitions.
 
 Possible options:
 
 - `emptyContent` - The content to display when there are no items
 - `loadingContent` - The content to display while a deferred is being resolved
+- `footerContent` - The content of the table footer
 - `list` - The item provider described in more detail in the [list](#grid-list) section
 - `columns` - The columns to display, see the [columns](#grid-column) section
-- `scrollable` - If this grid should become scrollable using [TableScroll](#tablescroll)
+- `scrollable` (default: `false`) - If this grid should be scrollable using [TableScroll](#tablescroll)
 
 With a markup like this:
 
