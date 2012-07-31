@@ -1,9 +1,8 @@
-steal('jquery', 'canui/list', 'can/view/ejs', function($) {
+steal('jquery', 'canui/list', 'can/view/ejs', 'canui/table_scroll', function($) {
 	var proto = can.ui.List.prototype;
 	can.ui.List('can.ui.Grid', {
 		pluginName : 'grid',
 		defaults : {
-			header : '//canui/grid/views/head.ejs',
 			view : function(observe) {
 				// TODO this isn't nice yet
 				var row = [], self = this;
@@ -16,6 +15,7 @@ steal('jquery', 'canui/list', 'can/view/ejs', function($) {
 				});
 				return can.view('//canui/grid/views/row.ejs', { row : row, cid : observe._cid });
 			},
+			header : '//canui/grid/views/head.ejs',
 			emptyContent : function() {
 				return '<tr><td colspan="'
 					+ this.options.columns.length
@@ -43,6 +43,25 @@ steal('jquery', 'canui/list', 'can/view/ejs', function($) {
 			this.$.table.prepend(can.view(this.options.header, this.options.columns));
 			this.$.header = this.$.table.find('thead');
 			proto.init.apply(this, arguments);
+		},
+
+		' rendered' : function() {
+			if(this.options.scrollable) {
+				this.$.table.tableScroll();
+			}
+		},
+
+		elements : function() {
+			return this.$;
+		},
+
+		tableScroll : function() {
+			var control = this.$.table.control(can.ui.TableScroll);
+			if(!this.options.scrollable || !control) {
+				return null;
+			}
+			this.$.tableScroll = control.elements();
+			return control;
 		},
 
 		destroy : function() {

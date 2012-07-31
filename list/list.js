@@ -15,6 +15,9 @@ function($) {
 		update : function(options) {
 			can.Control.prototype.update.call(this, options);
 			var list = this.options.list;
+			if(can.isFunction(list)) {
+				list = can.compute(list);
+			}
 			if(list && list.isComputed) {
 				// TODO doesn't trigger
 				this.on(list, 'change', can.proxy(function(ev, newVal) {
@@ -35,7 +38,7 @@ function($) {
 		_update : function(data) {
 			data = data || [];
 			if(can.isDeferred(data)) {
-				this.element.html(this.loadingContent());
+				this.element.html(this._fnOption('loadingContent'));
 				data.done(can.proxy(this._update, this));
 			} else {
 				var cidMap = {};
@@ -76,21 +79,14 @@ function($) {
 		 * @private
 		 */
 		_render : function(rows) {
-			var content = !rows || rows.length === 0 ? this.emptyContent() : rows;
+			var content = !rows || rows.length === 0 ? this._fnOption('emptyContent') : rows;
 			this.element.html(content);
+			this.element.trigger('rendered', this.list(), this);
 		},
 
 		_fnOption : function(name, args) {
 			var val = this.options[name];
 			return can.isFunction(val) ? val.apply(this, args || []) : val;
-		},
-
-		emptyContent : function() {
-			return this._fnOption('emptyContent');
-		},
-
-		loadingContent : function() {
-			return this._fnOption('loadingContent');
 		},
 
 		'{data} length' : function(list, ev, length) {

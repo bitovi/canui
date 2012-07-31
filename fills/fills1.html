@@ -155,14 +155,14 @@
 
 
 <script type='text/javascript'
-        src='../../../steal/steal.js'>
+        src='../../steal/steal.js'>
 </script>
 <script type='text/javascript'>
 	logg = function (text) {
 		$("#clear").after("<pre>" + text + "</pre>")
 	}
 
-	steal('jquery/dom/fills').then(function () {
+	steal('canui/fills').then(function () {
 		$("#fill").click(function () {
 			$(function () {
 				$(".grid").fills();

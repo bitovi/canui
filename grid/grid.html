@@ -2,11 +2,28 @@
 <html>
 <head>
   <title>CanUI Grid</title>
+  <style type="text/css">
+    section {
+      width: 50%;
+      margin: 0 auto;
+      border: 1px solid #EFEFEF;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    td, th {
+      padding: 5px;
+      border: 1px solid #505050;
+    }
+  </style>
 </head>
 <body style="padding-top: 30px;">
 
 <div class="container">
-  <section>
+  <section style="height: 200px;">
     <table id="grid" class="table table-bordered"></table>
   </section>
 </div>
@@ -14,23 +31,35 @@
 
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
-  steal('jquery', 'canui/grid', 'can/model', 'canui/style', 'canui/table_scroll', function ($) {
-    $('#grid').grid({
-      columns : [{
-        header : 'Test',
-        content : 'name'
-      }, {
-        header : 'Age',
-        content : 'age'
-      }],
-      list : [{
-        name : 'Test 1',
-        age : 24
-      }, {
-        name : 'Test 2',
-        age : 26
-      }]
-    });
+  steal('jquery', 'canui/grid', 'can/model', 'can/util/fixture', 'steal/less',
+    function ($) {
+      steal('canui/table_scroll/table_scroll.less', function() {
+        var Model = can.Model({
+          findAll : 'GET /models'
+        }, {});
+
+        var store = can.fixture.make(40, function(i) {
+          return {
+            id : i,
+            name : 'John ' + i,
+            age : i + 20
+          }
+        });
+
+        can.fixture('GET /models', store.findAll);
+
+        $('#grid').grid({
+          columns : [{
+            header : 'Test',
+            content : 'name'
+          }, {
+            header : 'Age',
+            content : 'age'
+          }],
+          scrollable : true,
+          list : Model.findAll()
+        });
+      });
 
 //
 //    // Setup
