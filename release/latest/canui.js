@@ -3,7 +3,46 @@ define = function(id, deps, value) {
 module[id] = value();
 };
  define.amd = { jQuery: true };
-/*!
+
+module['can/util/can.js'] = (function(){
+	window.can = {
+		isDeferred : function( obj ) {
+			var isFunction = this.isFunction;
+			// Returns `true` if something looks like a deferred.
+			return obj && isFunction(obj.then) && isFunction(obj.pipe)
+		}
+	};
+	return window.can;
+})();
+module['can/util/preamble.js'] = (function() {
+// # CanJS v#{VERSION}
+// (c) 2012 Bitovi  
+// MIT license  
+// [http://canjs.us/](http://canjs.us/)
+})();
+module['can/util/array/each.js'] = (function (can) {
+	can.each = function (elements, callback, context) {
+		var i = 0,
+		    key;
+		if (elements) {
+			if (typeof elements.length == 'number' && elements.pop) {
+				elements.attr && elements.attr('length');
+				for (var len = elements.length; i < len; i++) {
+					if (callback.call(context || elements[i], elements[i], i, elements) === false) {
+						break;
+					}
+				}
+			} else {
+				for (key in elements) {
+					if (callback.call(context || elements[i], elements[key], key, elements) === false) {
+						break;
+					}
+				}
+			}
+		}
+		return elements;
+	}
+})(module["can/util/can.js"]);/*!
  * jQuery JavaScript Library v1.7.1
  * http://jquery.com/
  *
@@ -9269,6 +9308,2095 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 
 })( window );
+module['can/util/jquery/jquery.js'] = (function($, can) {
+	// jquery.js
+	// ---------
+	// _jQuery node list._
+	$.extend( can, jQuery, {
+		trigger: function( obj, event, args ) {
+			obj.trigger ?
+				obj.trigger( event, args ) :
+				$.event.trigger( event, args, obj, true );
+		},
+		addEvent: function(ev, cb){
+			$([this]).bind(ev, cb);
+			return this;
+		},
+		removeEvent: function(ev, cb){
+			$([this]).unbind(ev, cb);
+			return this;
+		},
+		// jquery caches fragments, we always needs a new one
+		buildFragment : function(result, element){
+			var ret = $.buildFragment([result],[element]);
+			return ret.cacheable ? $.clone(ret.fragment) : ret.fragment;
+		},
+		$: jQuery,
+		each: can.each
+	});
+
+	// Wrap binding functions.
+	$.each(['bind','unbind','undelegate','delegate'],function(i,func){
+		can[func] = function(){
+			var t = this[func] ? this : $([this]);
+			t[func].apply(t, arguments);
+			return this;
+		};
+	});
+
+	// Wrap modifier functions.
+	$.each(["append","filter","addClass","remove","data","get"], function(i,name){
+		can[name] = function(wrapped){
+			return wrapped[name].apply(wrapped, can.makeArray(arguments).slice(1));
+		};
+	});
+
+	// Memory safe destruction.
+	var oldClean = $.cleanData;
+
+	$.cleanData = function( elems ) {
+		$.each( elems, function( i, elem ) {
+			can.trigger(elem,"destroyed",[],false);
+		});
+		oldClean(elems);
+	};
+
+	return can;
+})(module["jquery"], module["can/util/can.js"], module["jquery"], module["can/util/preamble.js"], module["can/util/array/each.js"]);
+module['can/util/string/string.js'] = (function(can) {
+	// ##string.js
+	// _Miscellaneous string utility functions._  
+	
+	// Several of the methods in this plugin use code adapated from Prototype
+	// Prototype JavaScript framework, version 1.6.0.1.
+	// © 2005-2007 Sam Stephenson
+	var undHash     = /_|-/,
+		colons      = /\=\=/,
+		words       = /([A-Z]+)([A-Z][a-z])/g,
+		lowUp       = /([a-z\d])([A-Z])/g,
+		dash        = /([a-z\d])([A-Z])/g,
+		replacer    = /\{([^\}]+)\}/g,
+		quote       = /"/g,
+		singleQuote = /'/g,
+
+		// Returns the `prop` property from `obj`.
+		// If `add` is true and `prop` doesn't exist in `obj`, create it as an 
+		// empty object.
+		getNext = function( obj, prop, add ) {
+			return prop in obj ?
+				obj[ prop ] : 
+				( add && ( obj[ prop ] = {} ));
+		},
+
+		// Returns `true` if the object can have properties (no `null`s).
+		isContainer = function( current ) {
+			return (/^f|^o/).test( typeof current );
+		};
+
+		can.extend(can, {
+			// Escapes strings for HTML.
+			/**
+			 * @function can.esc
+			 * @parent can.util
+			 *
+			 * `can.esc(string)` escapes a string for insertion into html.
+			 * 
+			 *     can.esc( "<foo>&<bar>" ) //-> "&lt;foo&lt;&amp;&lt;bar&lt;"
+			 */
+			esc : function( content ) {
+				return ( "" + content )
+					.replace(/&/g, '&amp;')
+					.replace(/</g, '&lt;')
+					.replace(/>/g, '&gt;')
+					.replace(quote, '&#34;')
+					.replace(singleQuote, "&#39;");
+			},
+			
+			/**
+			 * @function can.getObject
+			 * @parent can.util
+			 * Gets an object from a string.  It can also modify objects on the
+			 * 'object path' by removing or adding properties.
+			 * 
+			 *     Foo = {Bar: {Zar: {"Ted"}}}
+			 *     can.getObject("Foo.Bar.Zar") //-> "Ted"
+			 * 
+			 * @param {String} name the name of the object to look for
+			 * @param {Array} [roots] an array of root objects to look for the 
+			 *   name.  If roots is not provided, the window is used.
+			 * @param {Boolean} [add] true to add missing objects to 
+			 *  the path. false to remove found properties. undefined to 
+			 *  not modify the root object
+			 * @return {Object} The object.
+			 */
+			getObject : function( name, roots, add ) {
+			
+				// The parts of the name we are looking up  
+				// `['App','Models','Recipe']`
+				var parts = name ? name.split('.') : [],
+				    length =  parts.length,
+				    current,
+				    r = 0,
+				    ret, i;
+
+				// Make sure roots is an `array`.
+				roots = can.isArray(roots) ? roots : [roots || window];
+				
+				if ( ! length ) {
+					return roots[0];
+				}
+
+				// For each root, mark it as current.
+				while ( current = roots[r++] ) {
+
+					// Walk current to the 2nd to last object or until there 
+					// is not a container.
+					for (i =0; i < length - 1 && isContainer( current ); i++ ) {
+						current = getNext( current, parts[i], add );
+					}
+
+					// If we can get a property from the 2nd to last object...
+					if( isContainer(current) ) {
+						
+						// Get (and possibly set) the property.
+						ret = getNext(current, parts[i], add); 
+						
+						// If there is a value, we exit.
+						if ( ret !== undefined ) {
+							// If `add` is `false`, delete the property
+							if ( add === false ) {
+								delete current[parts[i]];
+							}
+							return ret;
+							
+						}
+					}
+				}
+			},
+			// Capitalizes a string.
+			/**
+			 * @function can.capitalize
+			 * @parent can.util
+			 * `can.capitalize(string)` capitalizes the first letter of the string passed.
+			 *
+			 *		can.capitalize('candy is fun!'); //-> Returns: 'Candy is fun!'
+			 *
+			 * @param {String} s the string.
+			 * @return {String} a string with the first character capitalized.
+			 */
+			capitalize: function( s, cache ) {
+				// Used to make newId.
+				return s.charAt(0).toUpperCase() + s.slice(1);
+			},
+			
+			// Underscores a string.
+			/**
+			 * @function can.underscore
+			 * @parent can.util
+			 * 
+			 * Underscores a string.
+			 * 
+			 *     can.underscore("OneTwo") //-> "one_two"
+			 * 
+			 * @param {String} s
+			 * @return {String} the underscored string
+			 */
+			underscore: function( s ) {
+				return s
+					.replace(colons, '/')
+					.replace(words, '$1_$2')
+					.replace(lowUp, '$1_$2')
+					.replace(dash, '_')
+					.toLowerCase();
+			},
+			// Micro-templating.
+			/**
+			 * @function can.sub
+			 * @parent can.util
+			 * 
+			 * Returns a string with {param} replaced values from data.
+			 * 
+			 *     can.sub("foo {bar}",{bar: "far"})
+			 *     //-> "foo far"
+			 *     
+			 * @param {String} s The string to replace
+			 * @param {Object} data The data to be used to look for properties.  If it's an array, multiple
+			 * objects can be used.
+			 * @param {Boolean} [remove] if a match is found, remove the property from the object
+			 */
+			sub: function( str, data, remove ) {
+
+				var obs = [];
+
+				obs.push( str.replace( replacer, function( whole, inside ) {
+
+					// Convert inside to type.
+					var ob = can.getObject( inside, data, remove === undefined? remove : !remove );
+					
+					// If a container, push into objs (which will return objects found).
+					if ( isContainer( ob ) ) {
+						obs.push( ob );
+						return "";
+					} else {
+						return "" + ob;
+					}
+				}));
+				
+				return obs.length <= 1 ? obs[0] : obs;
+			},
+
+			// These regex's are used throughout the rest of can, so let's make
+			// them available.
+			replacer : replacer,
+			undHash : undHash
+		});
+	return can;
+})(module["can/util/jquery/jquery.js"]);
+module['can/construct/construct.js'] = (function(can) {
+
+	// ## construct.js
+	// `can.Construct`  
+	// _This is a modified version of
+	// [John Resig's class](http://ejohn.org/blog/simple-javascript-inheritance/).  
+	// It provides class level inheritance and callbacks._
+	
+	// A private flag used to initialize a new class instance without
+	// initializing it's bindings.
+	var initializing = 0;
+
+	/** 
+	 * @add can.Construct 
+	 */
+	can.Construct = function() {
+		if (arguments.length) {
+			return can.Construct.extend.apply(can.Construct, arguments);
+		}
+	};
+
+	/**
+	 * @static
+	 */
+	can.extend(can.Construct, {
+		/**
+		 * @function newInstance
+		 * Creates a new instance of the constructor function.  This method is useful for creating new instances
+		 * with arbitrary parameters.  Typically you want to simply use the __new__ operator instead.
+		 * 
+		 * ## Example
+		 * 
+		 * The following creates a `Person` Construct and then creates a new instance of person, but
+		 * by using `apply` on newInstance to pass arbitrary parameters.
+		 * 
+		 *     var Person = can.Construct({
+		 *       init : function(first, middle, last) {
+		 *         this.first = first;
+		 *         this.middle = middle;
+		 *         this.last = last;
+		 *       }
+		 *     });
+		 * 
+		 *     var args = ["Justin","Barry","Meyer"],
+		 *         justin = new Person.newInstance.apply(null, args);
+		 * 
+		 * @param {Object} [args] arguments that get passed to [can.Construct::setup] and [can.Construct::init]. Note
+		 * that if [can.Construct::setup] returns an array, those arguments will be passed to [can.Construct::init]
+		 * instead.
+		 * @return {class} instance of the class
+		 */
+		newInstance: function() {
+			// Get a raw instance object (`init` is not called).
+			var inst = this.instance(),
+				arg = arguments,
+				args;
+				
+			// Call `setup` if there is a `setup`
+			if ( inst.setup ) {
+				args = inst.setup.apply(inst, arguments);
+			}
+
+			// Call `init` if there is an `init`  
+			// If `setup` returned `args`, use those as the arguments
+			if ( inst.init ) {
+				inst.init.apply(inst, args || arguments);
+			}
+
+			return inst;
+		},
+		// Overwrites an object with methods. Used in the `super` plugin.
+		// `newProps` - New properties to add.  
+		// `oldProps` - Where the old properties might be (used with `super`).  
+		// `addTo` - What we are adding to.
+		_inherit: function( newProps, oldProps, addTo ) {
+			can.extend(addTo || newProps, newProps || {})
+		},
+		// used for overwriting a single property.
+		// this should be used for patching other objects
+		// the super plugin overwrites this
+		_overwrite : function(what, oldProps, propName, val){
+			what[propName] = val;
+		},
+		// Set `defaults` as the merger of the parent `defaults` and this 
+		// object's `defaults`. If you overwrite this method, make sure to
+		// include option merging logic.
+		/**
+		 * Setup is called immediately after a constructor function is created and 
+		 * set to inherit from its base constructor.  It is called with a base constructor and
+		 * the params used to extend the base constructor. It is useful for setting up additional inheritance work.
+		 * 
+		 * ## Example
+		 * 
+		 * The following creates a `Base` class that when extended, adds a reference to the base
+		 * class.
+		 * 
+		 * 
+		 *     Base = can.Construct({
+		 *       setup : function(base, fullName, staticProps, protoProps){
+		 * 	       this.base = base;
+		 *         // call base functionality
+		 *         can.Construct.setup.apply(this, arguments)
+		 *       }
+		 *     },{});
+		 * 
+		 *     Base.base //-> can.Construct
+		 *     
+		 *     Inherting = Base({});
+		 * 
+		 *     Inheriting.base //-> Base
+		 * 
+		 * ## Base Functionality
+		 * 
+		 * Setup deeply extends the static `defaults` property of the base constructor with 
+		 * properties of the inheriting constructor.  For example:
+		 * 
+		 *     MyBase = can.Construct({
+		 *       defaults : {
+		 *         foo: 'bar'
+		 *       }
+		 *     },{})
+		 * 
+		 *     Inheriting = MyBase({
+		 *       defaults : {
+		 *         newProp : 'newVal'
+		 *       }
+		 *     },{}
+		 *     
+		 *     Inheriting.defaults // -> {foo: 'bar', 'newProp': 'newVal'}
+		 * 
+		 * @param {Object} base the base constructor that is being inherited from
+		 * @param {String} [fullName] the name of the new constructor
+		 * @param {Object} [staticProps] the static properties of the new constructor
+		 * @param {Object} [protoProps] the prototype properties of the new constructor
+		 */
+		setup: function( base, fullName ) {
+			this.defaults = can.extend(true,{}, base.defaults, this.defaults);
+		},
+		// Create's a new `class` instance without initializing by setting the
+		// `initializing` flag.
+		instance: function() {
+
+			// Prevents running `init`.
+			initializing = 1;
+
+			var inst = new this();
+
+			// Allow running `init`.
+			initializing = 0;
+
+			return inst;
+		},
+		// Extends classes.
+		/**
+		 * @hide
+		 * Extends a class with new static and prototype functions.  There are a variety of ways
+		 * to use extend:
+		 * 
+		 *     // with className, static and prototype functions
+		 *     can.Construct('Task',{ STATIC },{ PROTOTYPE })
+		 *     // with just classname and prototype functions
+		 *     can.Construct('Task',{ PROTOTYPE })
+		 *     // with just a className
+		 *     can.Construct('Task')
+		 * 
+		 * You no longer have to use <code>.extend</code>.  Instead, you can pass those options directly to
+		 * can.Construct (and any inheriting classes):
+		 * 
+		 *     // with className, static and prototype functions
+		 *     can.Construct('Task',{ STATIC },{ PROTOTYPE })
+		 *     // with just classname and prototype functions
+		 *     can.Construct('Task',{ PROTOTYPE })
+		 *     // with just a className
+		 *     can.Construct('Task')
+		 * 
+		 * @param {String} [fullName]  the classes name (used for classes w/ introspection)
+		 * @param {Object} [klass]  the new classes static/class functions
+		 * @param {Object} [proto]  the new classes prototype functions
+		 * 
+		 * @return {can.Construct} returns the new class
+		 */
+		extend: function( fullName, klass, proto ) {
+			// Figure out what was passed and normalize it.
+			if ( typeof fullName != 'string' ) {
+				proto = klass;
+				klass = fullName;
+				fullName = null;
+			}
+
+			if ( ! proto ) {
+				proto = klass;
+				klass = null;
+			}
+			proto = proto || {};
+
+			var _super_class = this,
+				_super = this.prototype,
+				name, shortName, namespace, prototype;
+
+			// Instantiate a base class (but only create the instance,
+			// don't run the init constructor).
+			prototype = this.instance();
+			
+			// Copy the properties over onto the new prototype.
+			can.Construct._inherit(proto, _super, prototype);
+
+			// The dummy class constructor.
+			function Constructor() {
+				// All construction is actually done in the init method.
+				if ( ! initializing ) {
+					return this.constructor !== Constructor && arguments.length ?
+						// We are being called without `new` or we are extending.
+						arguments.callee.extend.apply(arguments.callee, arguments) :
+						// We are being called with `new`.
+						this.constructor.newInstance.apply(this.constructor, arguments);
+				}
+			}
+
+			// Copy old stuff onto class (can probably be merged w/ inherit)
+			for ( name in _super_class ) {
+				if ( _super_class.hasOwnProperty(name) ) {
+					Constructor[name] = _super_class[name];
+				}
+			}
+
+			// Copy new static properties on class.
+			can.Construct._inherit(klass, _super_class, Constructor);
+
+			// Setup namespaces.
+			if ( fullName ) {
+
+				var parts = fullName.split('.'),
+					shortName = parts.pop(),
+					current = can.getObject(parts.join('.'), window, true),
+					namespace = current,
+					_fullName = can.underscore(fullName.replace(/\./g, "_")),
+					_shortName = can.underscore(shortName);
+
+				
+				
+				current[shortName] = Constructor;
+			}
+
+			// Set things that shouldn't be overwritten.
+			can.extend(Constructor, {
+				constructor: Constructor,
+				prototype: prototype,
+				/**
+				 * @attribute namespace 
+				 * The namespace keyword is used to declare a scope. This enables you to organize
+				 * code and provides a way to create globally unique types.
+				 * 
+				 *     can.Construct("MyOrg.MyConstructor",{},{})
+				 *     MyOrg.MyConstructor.namespace //-> MyOrg
+				 * 
+				 */
+				namespace: namespace,
+				/**
+				 * @attribute shortName
+				 * If you pass a name when creating a Construct, the `shortName` property will be set to the
+				 * actual name without the namespace:
+				 * 
+				 *     can.Construct("MyOrg.MyConstructor",{},{})
+				 *     MyOrg.MyConstructor.shortName //-> 'MyConstructor'
+				 *     MyOrg.MyConstructor.fullName //->  'MyOrg.MyConstructor'
+				 * 
+				 */
+				shortName: shortName,
+				_shortName : _shortName,
+				/**
+				 * @attribute fullName 
+				 * If you pass a name when creating a Construct, the `fullName` property will be set to
+				 * the actual name including the full namespace:
+				 * 
+				 *     can.Construct("MyOrg.MyConstructor",{},{})
+				 *     MyOrg.MyConstructor.shortName //-> 'MyConstructor'
+				 *     MyOrg.MyConstructor.fullName //->  'MyOrg.MyConstructor'
+				 * 
+				 */
+				fullName: fullName,
+				_fullName: _fullName
+			});
+
+			// Make sure our prototype looks nice.
+			Constructor.prototype.constructor = Constructor;
+
+			
+			// Call the class `setup` and `init`
+			var t = [_super_class].concat(can.makeArray(arguments)),
+				args = Constructor.setup.apply(Constructor, t );
+			
+			if ( Constructor.init ) {
+				Constructor.init.apply(Constructor, args || t );
+			}
+
+			/**
+			 * @prototype
+			 */
+			return Constructor;
+			/** 
+			 * @function setup
+			 * 
+			 * If a prototype `setup` method is provided, it is called when a new 
+			 * instance is created.  It is passed the same arguments that
+			 * were passed to the Constructor constructor 
+			 * function (`new Constructor( arguments ... )`).  If `setup` returns an
+			 * array, those arguments are passed to [can.Construct::init] instead
+			 * of the original arguments.
+			 * 
+			 * Typically, you should only provide [can.Construct::init] methods to 
+			 * handle initilization code. Use `setup` for:
+			 * 
+			 *   - initialization code that you want to run before inheriting constructor's 
+			 *     init method is called.
+			 *   - initialization code that should run without inheriting constructors having to 
+			 *     call base methods (ex: `MyBase.prototype.init.call(this, arg1)`).
+			 *   - passing modified/normalized arguments to `init`.
+			 * 
+			 * ## Examples
+			 * 
+			 * The following is similar to code in [can.Control]'s setup method that
+			 * converts the first argument to a jQuery collection and extends the 
+			 * second argument with the constructor's [can.Construct.defaults defaults]:
+			 * 
+			 *     can.Construct("can.Control",{
+			 *       setup: function( htmlElement, rawOptions ) {
+			 *         // set this.element
+			 *         this.element = $(htmlElement);
+			 * 
+			 *         // set this.options
+			 *         this.options = can.extend( {}, 
+			 * 	                               this.constructor.defaults, 
+			 * 	                               rawOptions );
+			 * 
+			 *         // pass the wrapped element and extended options
+			 *         return [this.element, this.options] 
+			 *       }
+			 *     })
+			 * 
+			 * ## Base Functionality
+			 * 
+			 * Setup is not defined on can.Construct itself, so calling super in inherting classes
+			 * will break.  Don't do the following:
+			 * 
+			 *     Thing = can.Construct({
+			 *       setup : function(){
+			 *         this._super(); // breaks!
+			 *       }
+			 *     })
+			 * 
+			 * @return {Array|undefined} If an array is return, [can.Construct.prototype.init] is 
+			 * called with those arguments; otherwise, the original arguments are used.
+			 */
+			//  
+			/** 
+			 * @function init
+			 * 
+			 * If a prototype `init` method is provided, it gets called after [can.Construct::setup] when a new instance
+			 * is created. The `init` method is where your constructor code should go. Typically,
+			 * you will find it saving the arguments passed to the constructor function for later use. 
+			 * 
+			 * ## Examples
+			 * 
+			 * The following creates a Person constructor with a first and last name property:
+			 * 
+			 *     var Person = can.Construct({
+			 *       init : function(first, last){
+			 *         this.first = first;
+			 *         this.last = last;
+			 *       }
+			 *     })
+			 * 
+			 *     var justin = new Person("Justin","Meyer");
+			 *     justin.first //-> "Justin"
+			 *     justin.last  //-> "Meyer"
+			 * 
+			 * The following extends person to create a Programmer constructor
+			 * 
+			 *     var Programmer = Person({
+			 *       init : function(first, last, lang){
+			 *         // call base functionality
+			 *         Person.prototype.init.call(this, first, last);
+			 * 
+			 *         // save the lang
+			 *         this.lang = lang
+			 *       },
+			 *       greet : function(){
+			 *         return "I am " + this.first + " " + this.last + ". " +
+			 *                "I write " + this.lang + ".";
+			 *       }
+			 *     })
+			 * 
+			 *     var brian = new Programmer("Brian","Moschel","ECMAScript")
+			 *     brian.greet() //-> "I am Brian Moschel.\
+			 *                   //    I write ECMAScript."
+			 * 
+			 * ## Notes
+			 * 
+			 * [can.Construct::setup] is able to modify the arguments passed to init.
+			 * 
+			 * It doesn't matter what init returns because the `new` keyword always
+			 * returns the new object.
+			 */
+			//  
+			/**
+			 * @attribute constructor
+			 * 
+			 * A reference to the constructor function that created the instance. It allows you to access
+			 * the constructor function's static properties from an instance.
+			 * 
+			 * ## Example
+			 * 
+			 * Incrementing a static counter, that counts how many instances have been created:
+			 * 
+			 *     Counter = can.Construct({
+			 * 	     count : 0
+			 *     },{
+			 *       init : function(){
+			 *         this.constructor.count++;
+			 *       }
+			 *     })
+			 * 
+			 *     new Counter();
+			 *     Counter.count //-> 1; 
+			 * 
+			 */
+		}
+
+	});
+	return can.Construct;
+})(module["can/util/string/string.js"]);
+module['can/control/control.js'] = (function( can ) {
+	// ## control.js
+	// `can.Control`  
+	// _Controller_
+	
+	// Binds an element, returns a function that unbinds.
+	var bind = function( el, ev, callback ) {
+
+		can.bind.call( el, ev, callback )
+
+		return function() {
+			can.unbind.call(el, ev, callback);
+		};
+	},
+		isFunction = can.isFunction,
+		extend = can.extend,
+		each = can.each,
+		slice = [].slice,
+		paramReplacer = /\{([^\}]+)\}/g,
+		special = can.getObject("$.event.special") || {},
+
+		// Binds an element, returns a function that unbinds.
+		delegate = function( el, selector, ev, callback ) {
+			can.delegate.call(el, selector, ev, callback)
+			return function() {
+				can.undelegate.call(el, selector, ev, callback);
+			};
+		},
+		
+		// Calls bind or unbind depending if there is a selector.
+		binder = function( el, ev, callback, selector ) {
+			return selector ?
+				delegate( el, can.trim( selector ), ev, callback ) : 
+				bind( el, ev, callback );
+		},
+		
+		basicProcessor;
+	
+	/**
+	 * @add can.Control
+	 */
+	var Control = can.Control = can.Construct(
+	/** 
+	 * @Static
+	 */
+	{
+		// Setup pre-processes which methods are event listeners.
+		/**
+		 * @hide
+		 * 
+		 * Setup pre-process which methods are event listeners.
+		 * 
+		 */
+		setup: function() {
+
+			// Allow contollers to inherit "defaults" from super-classes as it 
+			// done in `can.Construct`
+			can.Construct.setup.apply( this, arguments );
+
+			// If you didn't provide a name, or are `control`, don't do anything.
+			if ( can.Control ) {
+
+				// Cache the underscored names.
+				var control = this,
+					funcName;
+
+				// Calculate and cache actions.
+				control.actions = {};
+				for ( funcName in control.prototype ) {
+					if ( control._isAction(funcName) ) {
+						control.actions[funcName] = control._action(funcName);
+					}
+				}
+			}
+		},
+
+		// Moves `this` to the first argument, wraps it with `jQuery` if it's an element
+		_shifter : function( context, name ) {
+
+			var method = typeof name == "string" ? context[name] : name;
+
+			if ( ! isFunction( method )) {
+				method = context[ method ];
+			}
+			
+			return function() {
+				context.called = name;
+    			return method.apply(context, [this.nodeName ? can.$(this) : this].concat( slice.call(arguments, 0)));
+			};
+		},
+
+		// Return `true` if is an action.
+		/**
+		 * @hide
+		 * @param {String} methodName a prototype function
+		 * @return {Boolean} truthy if an action or not
+		 */
+		_isAction: function( methodName ) {
+			
+			var val = this.prototype[methodName],
+				type = typeof val;
+			// if not the constructor
+			return (methodName !== 'constructor') &&
+				// and is a function or links to a function
+				( type == "function" || (type == "string" &&  isFunction(this.prototype[val] ) ) ) &&
+				// and is in special, a processor, or has a funny character
+			    !! ( special[methodName] || processors[methodName] || /[^\w]/.test(methodName) );
+		},
+		// Takes a method name and the options passed to a control
+		// and tries to return the data necessary to pass to a processor
+		// (something that binds things).
+		/**
+		 * @hide
+		 * Takes a method name and the options passed to a control
+		 * and tries to return the data necessary to pass to a processor
+		 * (something that binds things).
+		 * 
+		 * For performance reasons, this called twice.  First, it is called when 
+		 * the Control class is created.  If the methodName is templated
+		 * like: "{window} foo", it returns null.  If it is not templated
+		 * it returns event binding data.
+		 * 
+		 * The resulting data is added to this.actions.
+		 * 
+		 * When a control instance is created, _action is called again, but only
+		 * on templated actions.  
+		 * 
+		 * @param {Object} methodName the method that will be bound
+		 * @param {Object} [options] first param merged with class default options
+		 * @return {Object} null or the processor and pre-split parts.  
+		 * The processor is what does the binding/subscribing.
+		 */
+		_action: function( methodName, options ) {
+			
+			// If we don't have options (a `control` instance), we'll run this 
+			// later.  
+      		paramReplacer.lastIndex = 0;
+			if ( options || ! paramReplacer.test( methodName )) {
+				// If we have options, run sub to replace templates `{}` with a
+				// value from the options or the window
+				var convertedName = options ? can.sub(methodName, [options, window]) : methodName,
+					
+					// If a `{}` resolves to an object, `convertedName` will be
+					// an array
+					arr = can.isArray(convertedName),
+					
+					// Get the parts of the function  
+					// `[convertedName, delegatePart, eventPart]`  
+					// `/^(?:(.*?)\s)?([\w\.\:>]+)$/` - Breaker `RegExp`.
+					parts = (arr ? convertedName[1] : convertedName).match(/^(?:(.*?)\s)?([\w\.\:>]+)$/);
+
+					var event = parts[2],
+					processor = processors[event] || basicProcessor;
+				return {
+					processor: processor,
+					parts: parts,
+					delegate : arr ? convertedName[0] : undefined
+				};
+			}
+		},
+		// An object of `{eventName : function}` pairs that Control uses to 
+		// hook up events auto-magically.
+		/**
+		 * @attribute processors
+		 * An object of `{eventName : function}` pairs that Control uses to hook up events
+		 * auto-magically.  A processor function looks like:
+		 * 
+		 *     can.Control.processors.
+		 *       myprocessor = function( el, event, selector, cb, control ) {
+		 *          //el - the control's element
+		 *          //event - the event (myprocessor)
+		 *          //selector - the left of the selector
+		 *          //cb - the function to call
+		 *          //control - the binding control
+		 *       };
+		 * 
+		 * This would bind anything like: "foo~3242 myprocessor".
+		 * 
+		 * The processor must return a function that when called, 
+		 * unbinds the event handler.
+		 * 
+		 * Control already has processors for the following events:
+		 * 
+		 *   - change 
+		 *   - click 
+		 *   - contextmenu 
+		 *   - dblclick 
+		 *   - focusin
+		 *   - focusout
+		 *   - keydown 
+		 *   - keyup 
+		 *   - keypress 
+		 *   - mousedown 
+		 *   - mouseenter
+		 *   - mouseleave
+		 *   - mousemove 
+		 *   - mouseout 
+		 *   - mouseover 
+		 *   - mouseup 
+		 *   - reset 
+		 *   - resize 
+		 *   - scroll 
+		 *   - select 
+		 *   - submit  
+		 * 
+		 * Listen to events on the document or window 
+		 * with templated event handlers:
+		 * 
+		 *     Sized = can.Control({
+		 *       "{window} resize": function(){
+		 *         this.element.width( this.element.parent().width() / 2 );
+		 *       }
+		 *     });
+		 *     
+		 *     new Sized( $( '#foo' ) );
+		 */
+		processors: {},
+		// A object of name-value pairs that act as default values for a 
+		// control instance
+		/**
+		 * @attribute defaults
+		 * A object of name-value pairs that act as default values for a control's 
+		 * [can.Control::options this.options].
+		 * 
+		 *     Message = can.Control({
+		 *       defaults: {
+		 *         message: "Hello World"
+		 *       }
+		 *     }, {
+		 *       init: function(){
+		 *         this.element.text( this.options.message );
+		 *       }
+		 *     });
+		 *     
+		 *     new Message( "#el1" ); //writes "Hello World"
+		 *     new Message( "#el12", { message: "hi" } ); //writes hi
+		 *     
+		 * In [can.Control::setup] the options passed to the control
+		 * are merged with defaults.  This is not a deep merge.
+		 */
+		defaults: {}
+	},
+	/** 
+	 * @Prototype
+	 */
+	{
+		// Sets `this.element`, saves the control in `data, binds event
+		// handlers.
+		/**
+		 * Setup is where most of control's magic happens.  It does the following:
+		 * 
+		 * ### Sets this.element
+		 * 
+		 * The first parameter passed to new Control( el, options ) is expected to be 
+		 * an element.  This gets converted to a Wrapped NodeList element and set as
+		 * [can.Control.prototype.element this.element].
+		 * 
+		 * ### Adds the control's name to the element's className.
+		 * 
+		 * Control adds it's plugin name to the element's className for easier 
+		 * debugging.  For example, if your Control is named "Foo.Bar", it adds
+		 * "foo_bar" to the className.
+		 * 
+		 * ### Saves the control in $.data
+		 * 
+		 * A reference to the control instance is saved in $.data.  You can find 
+		 * instances of "Foo.Bar" like: 
+		 * 
+		 *     $( '#el' ).data( 'controls' )[ 'foo_bar' ]
+		 *
+		 * ### Merges Options
+		 * Merges the default options with optional user-supplied ones.
+		 * Additionally, default values are exposed in the static [can.Control.static.defaults defaults] 
+		 * so that users can change them.
+		 * 
+		 * ### Binds event handlers
+		 * 
+		 * Setup does the event binding described in [can.control.listening Listening To Events].
+		 * 
+		 * @param {HTMLElement} element the element this instance operates on.
+		 * @param {Object} [options] option values for the control.  These get added to
+		 * this.options and merged with [can.Control.static.defaults defaults].
+		 * @return {Array} return an array if you wan to change what init is called with. By
+		 * default it is called with the element and options passed to the control.
+		 */
+		setup: function( element, options ) {
+
+			var cls = this.constructor,
+				pluginname = cls.pluginName || cls._fullName,
+				arr;
+
+			// Want the raw element here.
+			this.element = can.$(element)
+
+			if ( pluginname && pluginname !== 'can_control') {
+				// Set element and `className` on element.
+				this.element.addClass(pluginname);
+			}
+			
+			(arr = can.data(this.element,"controls")) || can.data(this.element,"controls",arr = []);
+			arr.push(this);
+			
+			// Option merging.
+			/**
+			 * @attribute options
+			 * 
+			 * Options are used to configure an control.  They are
+			 * the 2nd argument
+			 * passed to a control (or the first argument passed to the 
+			 * [can.Control.plugin control's jQuery plugin]).
+			 * 
+			 * For example:
+			 * 
+			 *     can.Control('Hello')
+			 *     
+			 *     var h1 = new Hello( $( '#content1' ), { message: 'World' } );
+			 *     equal( h1.options.message , "World" );
+			 *     
+			 *     var h2 = $( '#content2' ).hello({ message: 'There' })
+			 *                              .control();
+			 *     equal( h2.options.message , "There" );
+			 * 
+			 * Options are merged with [can.Control.static.defaults defaults] in
+			 * [can.Control.prototype.setup setup].
+			 * 
+			 * For example:
+			 * 
+			 *     Tabs = can.Control({
+			 *        defaults: {
+			 *          activeClass: "ui-active-state"
+			 *        }
+			 *     }, {
+			 *        init: function(){
+			 *          this.element.addClass( this.options.activeClass );
+			 *        }
+			 *     });
+			 *     
+			 *     new Tabs( $( "#tabs1" ) ); // adds 'ui-active-state'
+			 *     new Tabs( $( "#tabs2" ), { activeClass : 'active' } ); // adds 'active'
+			 *     
+			 * Options are typically updated by calling 
+			 * [can.Control.prototype.update update];
+			 *
+			 */
+			this.options = extend({}, cls.defaults, options);
+
+			// Bind all event handlers.
+			this.on();
+
+			// Get's passed into `init`.
+			/**
+			 * @attribute element
+			 * 
+			 * The control instance's HTMLElement (or window) wrapped by the 
+			 * util library for ease of use. It is set by the first
+			 * parameter to `new can.Construct( element, options )` 
+			 * in [can.Control::setup].  Control listens on `this.element`
+			 * for events.
+			 * 
+			 * ### Quick Example
+			 * 
+			 * The following `HelloWorld` control sets the control`s text to "Hello World":
+			 * 
+			 *     HelloWorld = can.Control({
+			 *       init: function(){
+			 * 	       this.element.text( 'Hello World' );
+			 *       }
+			 *     });
+			 *     
+			 *     // create the controller on the element
+			 *     new HelloWorld( document.getElementById( '#helloworld' ) );
+			 * 
+			 * ## Wrapped NodeList
+			 * 
+			 * `this.element` is a wrapped NodeList of one HTMLELement (or window).  This
+			 * is for convience in libraries like jQuery where all methods operate only on a
+			 * NodeList.  To get the raw HTMLElement, write:
+			 * 
+			 *     this.element[0] //-> HTMLElement
+			 * 
+			 * The following details the NodeList used by each library with 
+			 * an example of updating it's text:
+			 * 
+			 * __jQuery__ `jQuery( HTMLElement )`
+			 * 
+			 *     this.element.text("Hello World")
+			 * 
+			 * __Zepto__ `Zepto( HTMLElement )`
+			 * 
+			 *     this.element.text("Hello World")
+			 * 
+			 * __Dojo__ `new dojo.NodeList( HTMLElement )`
+			 * 
+			 *     // TODO
+			 * 
+			 * __Mootools__ `$$( HTMLElement )`
+			 * 
+			 *    this.element.empty().appendText("Hello World")
+			 * 
+			 * __YUI__ 
+			 * 
+			 *    // TODO
+			 * 
+			 * 
+			 * ## Changing `this.element`
+			 * 
+			 * Sometimes you don't want what's passed to `new can.Control`
+			 * to be this.element.  You can change this by overwriting
+			 * setup or by unbinding, setting this.element, and rebinding.
+			 * 
+			 * ### Overwriting Setup
+			 * 
+			 * The following Combobox overwrites setup to wrap a
+			 * select element with a div.  That div is used 
+			 * as `this.element`. Notice how `destroy` sets back the
+			 * original element.
+			 * 
+			 *     Combobox = can.Control({
+			 *       setup: function( el, options ) {
+			 *          this.oldElement = $( el );
+			 *          var newEl = $( '<div/>' );
+			 *          this.oldElement.wrap( newEl );
+			 *          can.Controll.prototype.setup.call( this, newEl, options );
+			 *       },
+			 *       init: function() {
+			 *          this.element //-> the div
+			 *       },
+			 *       ".option click": function() {
+			 *         // event handler bound on the div
+			 *       },
+			 *       destroy: function() {
+			 *          var div = this.element; //save reference
+			 *          can.Control.prototype.destroy.call( this );
+			 *          div.replaceWith( this.oldElement );
+			 *       }
+			 *     });
+			 * 
+			 * ### unbining, setting, and rebinding.
+			 * 
+			 * You could also change this.element by calling
+			 * [can.Control::off], setting this.element, and 
+			 * then calling [can.Control::on] like:
+			 * 
+			 *     move: function( newElement ) {
+			 *        this.off();
+			 *        this.element = $( newElement );
+			 *        this.on();
+			 *     }
+			 */
+			return [this.element, this.options];
+		},
+		/**
+		 * `this.on( [element, selector, eventName, handler] )` is used to rebind 
+		 * all event handlers when [can.Control::options this.options] has changed.  It
+		 * can also be used to bind or delegate from other elements or objects.
+		 * 
+		 * ## Rebinding
+		 * 
+		 * By using templated event handlers, a control can listen to objects outside
+		 * `this.element`.  This is extremely common in MVC programming.  For example,
+		 * the following control might listen to a task model's `completed` property and
+		 * toggle a strike className like:
+		 * 
+		 *     TaskStriker = can.Control({
+		 *       "{task} completed": function(){
+		 * 	       this.update();
+		 *       },
+		 *       update: function(){
+		 *         if ( this.options.task.completed ) {
+		 * 	         this.element.addClass( 'strike' );
+		 * 	       } else {
+		 *           this.element.removeClass( 'strike' );
+		 *         }
+		 *       }
+		 *     });
+		 * 
+		 *     var taskstriker = new TaskStriker({ 
+		 *       task: new Task({ completed: 'true' }) 
+		 *     });
+		 * 
+		 * To update the taskstriker's task, add a task method that updates
+		 * this.options and calls rebind like:
+		 * 
+		 *     TaskStriker = can.Control({
+		 *       "{task} completed": function(){
+		 * 	       this.update();
+		 *       },
+		 *       update: function() {
+		 *         if ( this.options.task.completed ) {
+		 * 	         this.element.addClass( 'strike' );
+		 * 	       } else {
+		 *           this.element.removeClass( 'strike' );
+		 *         }
+		 *       },
+		 *       task: function( newTask ) {
+		 *         this.options.task = newTask;
+		 *         this.on();
+		 *         this.update();
+		 *       }
+		 *     });
+		 * 
+		 *     var taskstriker = new TaskStriker({ 
+		 *       task: new Task({ completed: true }) 
+		 *     });
+		 *     taskstriker.task( new TaskStriker({ 
+		 *       task: new Task({ completed: false }) 
+		 *     }));
+		 * 
+		 * ## Adding new events
+		 * 
+		 * If events need to be bound to outside of the control and templated event handlers
+		 * are not sufficent, you can call this.on to bind or delegate programatically:
+		 * 
+		 *     init: function() {
+		 *        // calls somethingClicked( el, ev )
+		 *        this.on( 'click', 'somethingClicked' ); 
+		 *     
+		 *        // calls function when the window is clicked
+		 *        this.on( window, 'click', function( ev ) {
+		 *          //do something
+		 *        });
+		 *     },
+		 *     somethingClicked: function( el, ev ) {
+		 *       
+		 *     }
+		 * 
+		 * @param {HTMLElement|jQuery.fn|Object} [el=this.element]
+		 * The element to be bound.  If an eventName is provided,
+		 * the control's element is used instead.
+		 * @param {String} [selector] A css selector for event delegation.
+		 * @param {String} [eventName] The event to listen for.
+		 * @param {Function|String} [func] A callback function or the String name of a control function.  If a control
+		 * function name is given, the control function is called back with the bound element and event as the first
+		 * and second parameter.  Otherwise the function is called back like a normal bind.
+		 * @return {Integer} The id of the binding in this._bindings
+		 */
+		on: function( el, selector, eventName, func ) {
+			if ( ! el ) {
+
+				// Adds bindings.
+				this.off();
+
+				// Go through the cached list of actions and use the processor 
+				// to bind
+				var cls = this.constructor,
+					bindings = this._bindings,
+					actions = cls.actions,
+					element = this.element,
+					destroyCB = can.Control._shifter(this,"destroy"),
+					funcName, ready;
+					
+				for ( funcName in actions ) {
+					if ( actions.hasOwnProperty( funcName )) {
+						ready = actions[funcName] || cls._action(funcName, this.options);
+						bindings.push(
+							ready.processor(ready.delegate || element, 
+							                ready.parts[2], 
+											ready.parts[1], 
+											funcName, 
+											this));
+					}
+				}
+	
+	
+				// Setup to be destroyed...  
+				// don't bind because we don't want to remove it.
+				can.bind.call(element,"destroyed", destroyCB);
+				bindings.push(function( el ) {
+					can.unbind.call(el,"destroyed", destroyCB);
+				});
+				return bindings.length;
+			}
+
+			if ( typeof el == 'string' ) {
+				func = eventName;
+				eventName = selector;
+				selector = el;
+				el = this.element;
+			}
+
+			if(func === undefined) {
+				func = eventName;
+				eventName = selector;
+				selector = null;
+			}
+
+			if ( typeof func == 'string' ) {
+				func = can.Control._shifter(this,func);
+			}
+
+			this._bindings.push( binder( el, eventName, func, selector ));
+
+			return this._bindings.length;
+		},
+		// Unbinds all event handlers on the controller.
+		/**
+		 * @hide
+		 * Unbinds all event handlers on the controller. You should never
+		 * be calling this unless in use with [can.Control::on].
+		 */
+		off : function(){
+			var el = this.element[0]
+			each(this._bindings || [], function( value ) {
+				value(el);
+			});
+			// Adds bindings.
+			this._bindings = [];
+		},
+		// Prepares a `control` for garbage collection
+		/**
+		 * @function destroy
+		 * `destroy` prepares a control for garbage collection and is a place to
+		 * reset any changes the control has made.  
+		 * 
+		 * ## Allowing Garbage Collection
+		 * 
+		 * Destroy is called whenever a control's element is removed from the page using 
+		 * the library's standard HTML modifier methods.  This means that you
+		 * don't have to call destroy yourself and it 
+		 * will be called automatically when appropriate.  
+		 * 
+		 * The following `Clicker` widget listens on the window for clicks and updates
+		 * its element's innerHTML.  If we remove the element, the window's event handler
+		 * is removed auto-magically:
+		 *  
+		 * 
+		 *      Clickr = can.Control({
+		 *       "{window} click": function() {
+		 * 	       this.element.html( this.count ? 
+		 * 	                          this.count++ : this.count = 0 );
+		 *       }  
+		 *     });
+		 *     
+		 *     // create a clicker on an element
+		 *     new Clicker( "#clickme" );
+		 * 
+		 *     // remove the element
+		 *     $( '#clickme' ).remove();
+		 * 
+		 * 
+		 * The methods you can use that will destroy controls automatically by library:
+		 * 
+		 * __jQuery and Zepto__
+		 * 
+		 *   - $.fn.remove
+		 *   - $.fn.html
+		 *   - $.fn.replaceWith
+		 *   - $.fn.empty
+		 * 
+		 * __Dojo__
+		 * 
+		 *   - dojo.destroy
+		 *   - dojo.empty
+		 *   - dojo.place (with the replace option)
+		 * 
+		 * __Mootools__
+		 * 
+		 *   - Element.prototype.destroy
+		 * 
+		 * __YUI__
+		 * 
+		 *   - TODO!
+		 * 
+		 * 
+		 * ## Teardown in Destroy
+		 * 
+		 * Sometimes, you want to reset a controlled element back to its
+		 * original state when the control is destroyed.  Overwriting destroy
+		 * lets you write teardown code of this manner.  __When overwriting
+		 * destroy, make sure you call Control's base functionality__.
+		 * 
+		 * The following example changes an element's text when the control is
+		 * created and sets it back when the control is removed:
+		 * 
+		 *     Changer = can.Control({
+		 *       init: function() {
+		 *         this.oldText = this.element.text();
+		 *         this.element.text( "Changed!!!" );
+		 *       },
+		 *       destroy: function() {
+		 *         this.element.text( this.oldText );
+		 *         can.Control.prototype.destroy.call( this );
+		 *       }
+		 *     });
+		 *     
+		 *     // create a changer which changes #myel's text
+		 *     var changer = new Changer( '#myel' );
+		 * 
+		 *     // destroy changer which will reset it
+		 *     changer.destroy();
+		 * 
+		 * ## Base Functionality
+		 * 
+		 * Control prepares the control for garbage collection by:
+		 * 
+		 *   - unbinding all event handlers
+		 *   - clearing references to this.element and this.options
+		 *   - clearing the element's reference to the control
+		 *   - removing it's [can.Control.pluginName] from the element's className
+		 * 
+		 */
+		destroy: function() {
+			var Class = this.constructor,
+				pluginName = Class.pluginName || Class._fullName,
+				controls;
+			
+			// Unbind bindings.
+			this.off();
+			
+			if(pluginName && pluginName !== 'can_control'){
+				// Remove the `className`.
+				this.element.removeClass(pluginName);
+			}
+			
+			// Remove from `data`.
+			controls = can.data(this.element,"controls");
+			controls.splice(can.inArray(this, controls),1);
+			
+			can.trigger( this, "destroyed"); // In case we want to know if the `control` is removed.
+			
+			this.element = null;
+		}
+	});
+
+	var processors = can.Control.processors,
+	// Processors do the binding.
+	// They return a function that unbinds when called.  
+	//
+	// The basic processor that binds events.
+	basicProcessor = function( el, event, selector, methodName, control ) {
+		return binder( el, event, can.Control._shifter(control, methodName), selector);
+	};
+
+
+
+
+	// Set common events to be processed as a `basicProcessor`
+	each(["change", "click", "contextmenu", "dblclick", "keydown", "keyup", 
+		 "keypress", "mousedown", "mousemove", "mouseout", "mouseover", 
+		 "mouseup", "reset", "resize", "scroll", "select", "submit", "focusin",
+		 "focusout", "mouseenter", "mouseleave"], function( v ) {
+		processors[v] = basicProcessor;
+	});
+
+	return Control;
+})(module["can/util/jquery/jquery.js"], module["can/construct/construct.js"]);
+module['can/control/plugin/plugin.js'] = (function($, can) {
+//used to determine if a control instance is one of controllers
+//controllers can be strings or classes
+var i, 
+	isAControllerOf = function( instance, controllers ) {
+		for ( i = 0; i < controllers.length; i++ ) {
+			if ( typeof controllers[i] == 'string' ? instance.constructor._shortName == controllers[i] : instance instanceof controllers[i] ) {
+				return true;
+			}
+		}
+		return false;
+	},
+	data = function(el, data){
+		return $el.data('controls');
+	},
+	makeArray = can.makeArray,
+	old = can.Control.setup;
+
+/*
+ * static
+ */
+can.Control.setup = function() {
+	// if you didn't provide a name, or are control, don't do anything
+	if ( this !== can.Control ) {
+
+		/**
+		 * @attribute can.Control.plugin.static.pluginName
+		 * @parent can.Control.plugin
+		 *
+		 * Setting the static `pluginName` property allows you to override the default name
+		 * with your own.
+		 *
+		 *		var Filler = can.Control({
+		 *		  pluginName: 'fillWith'
+		 *		},{});
+		 * 
+		 *		$("#foo").fillWith();
+		 *
+		 * If you don't provide a `pluginName`, the control falls back to the
+		 * [can.Construct.fullName fullName] attribute:
+		 *
+		 *		can.Control('Ui.Layout.FillWith', {}, {});
+		 *		$("#foo").ui_layout_fill_with();
+		 *
+		 */
+		var pluginName = this.pluginName || this._fullName;
+			
+		// create jQuery plugin
+		if(pluginName !== 'can_control'){
+			this.plugin(pluginName);
+		}
+			
+		old.apply(this, arguments);
+	}
+};
+
+/*
+ * prototype
+ */
+$.fn.extend({
+
+	/**
+	 * @function jQuery.fn.controls
+	 * @parent can.Control.plugin
+	 * 
+	 * When the widget is initialized, the plugin control creates an array 
+	 * of control instance(s) with the DOM element it was initialized on using 
+	 * [can.data] method.
+	 *
+	 * The `controls` method allows you to get the control instance(s) for any element.  
+	 *
+	 *		//- Inits the widgets
+	 *		$('.widgets:eq(0)').my_box();
+	 *		$('.widgets:eq(1)').my_clock();
+	 *
+	 *		<div class="widgets my_box" />
+	 *		<div class="widgets my_clock" />
+	 *
+	 *		$('.widgets').controls() //-> [ MyBox, MyClock ]
+	 *
+	 * Additionally, you can invoke it passing the name of a control
+	 * to fetch a specific instance(s).
+	 *
+	 *		//- Inits the widgets
+	 *		$('.widgets:eq(0)').my_box();
+	 *		$('.widgets:eq(1)').my_clock();
+	 *
+	 *		<div class="widgets my_box" />
+	 *		<div class="widgets my_clock" />
+	 *
+	 *		$('.widgets').controls('MyBox') //-> [ MyBox ]
+	 *
+	 * @param {Object} control (optional) if exists the control instance(s) with that constructor function or type will be returned.
+	 * @return {Array} an array of control instance(s).
+	 */
+	controls: function() {
+		var controllerNames = makeArray(arguments),
+			instances = [],
+			controls, c, cname;
+		//check if arguments
+		this.each(function() {
+
+			controls = can.$(this).data("controls");
+			if(!controls){
+				return;
+			}
+			for(var i=0; i<controls.length; i++){
+				c = controls[i];
+				if (!controllerNames.length || isAControllerOf(c, controllerNames) ) {
+					instances.push(c);
+				}
+			}
+		});
+		return instances;
+	},
+	
+	/**
+	 * @function jQuery.fn.control
+	 * @parent can.Control.plugin
+	 * 
+	 * The `control` does the same as [jQuery.fn.controls controls] execept it only 
+	 * returns the first instance found.
+	 *
+	 *		//- Init MyBox widget
+	 *		$('.widgets').my_box();
+	 *
+	 *		<div class="widgets my_box" />
+	 *
+	 *		$('.widgets').controls() //-> MyBox
+	 *
+	 * @param {Object} control (optional) if exists the first control instance with that constructor function or type will be returned.
+	 * @return {can.Control} the first control.
+	 */
+	control: function( control ) {
+		return this.controls.apply(this, arguments)[0];
+	}
+});
+
+can.Control.plugin = function(pluginname){
+	var control = this;
+
+	if (!$.fn[pluginname]) {
+		$.fn[pluginname] = function(options){
+		
+			var args = makeArray(arguments),   //if the arg is a method on this control
+			isMethod = typeof options == "string" && $.isFunction(control.prototype[options]), meth = args[0],
+			returns;
+			this.each(function(){
+				//check if created
+				var plugin = can.$(this).control(control);
+				
+				if (plugin) {
+					if (isMethod) {
+						// call a method on the control with the remaining args
+						returns = plugin[meth].apply(plugin, args.slice(1));
+					}
+					else {
+						// call the plugin's update method
+						plugin.update.apply(plugin, args);
+					}
+				}
+				else {
+					//create a new control instance
+					control.newInstance.apply(control, [this].concat(args));
+				}
+			});
+			return returns !== undefined ? returns : this;
+		};
+	}
+}
+
+/**
+ * @function can.Control.prototype.update
+ * @parent can.Control.plugin
+ * 
+ * Update extends [can.Control.prototype.options options] 
+ * with the `options` argument and rebinds all events.  It 
+ * re-configures the control.
+ * 
+ * For example, the following control wraps a recipe form. When the form
+ * is submitted, it creates the recipe on the server.  When the recipe
+ * is `created`, it resets the form with a new instance.
+ * 
+ *		var Creator = can.Control({
+ *		  "{recipe} created" : function(){
+ *		    this.update({recipe : new Recipe()});
+ *		    this.element[0].reset();
+ *		    this.element.find("[type=submit]").val("Create Recipe")
+ *		  },
+ *		  "submit" : function(el, ev){
+ *		    ev.preventDefault();
+ *		    var recipe = this.options.recipe;
+ *			recipe.attrs( this.element.formParams() );
+ *			this.element.find("[type=submit]").val("Saving...")
+ *			recipe.save();
+ *		  }
+ *		});
+ *
+ *		$('#createRecipes').creator({ recipe : new Recipe() })
+ * 
+ * *Update* is called if a control's plugin helper is called with the plugin options on an element
+ * that already has a control instance of the same type. If you want to implement your
+ * own update method make sure to call the old one either using the [can.Construct.super super] plugin or
+ * by calling `can.Control.prototype.update.apply(this, arguments);`.
+ * For example, you can change the content of the control element every time the options change:
+ * 
+ *		var Plugin = can.Control({
+ *		    pluginName: 'myPlugin'
+ *		  }, {
+ *		    init : function(el, options) {
+ *			  this.updateCount = 0;
+ *			  this.update({
+ *			    text : 'Initialized'
+ *			  });
+ *			},
+ *			update : function(options) {
+ *			  // Call the can.Control update first.
+ *			  // Use this._super when using can/construct/super
+ *			  can.Control.prototype.update.call(this, options);
+ *			  this.element.html(this.options.text + ' ' +
+ *			    (++this.updateCount) + ' times');
+ *			}
+ *		});
+ *
+ *		$('#control').myPlugin();
+ *		$('#control').html();
+ *		// Initialized. Updated 1 times
+ *
+ *		$('#control').myPlugin({ text : 'Calling update. Updated' });
+ *		$('#control').html();
+ *		// Calling update. Updated 2 times
+ *
+ * @demo can/control/plugin/demo-update.html
+ * 
+ * @param {Object} options A list of options to merge with 
+ * [can.Control.prototype.options this.options].  Often this method
+ * is called by the [can.Control.plugin jQuery helper function].
+ */
+can.Control.prototype.update = function( options ) {
+		can.extend(this.options, options);
+		this.on();
+};
+
+})(module["jquery"], module["can/util/jquery/jquery.js"], module["can/control/control.js"]);
+module['jquery/dom/styles/styles.js'] = (function( $ ) {
+	var getComputedStyle = document.defaultView && document.defaultView.getComputedStyle,
+		// The following variables are used to convert camelcased attribute names
+		// into dashed names, e.g. borderWidth to border-width
+		rupper = /([A-Z])/g,
+		rdashAlpha = /-([a-z])/ig,
+		fcamelCase = function( all, letter ) {
+			return letter.toUpperCase();
+		},
+		// Returns the computed style for an elementn
+		getStyle = function( elem ) {
+			if ( getComputedStyle ) {
+				return getComputedStyle(elem, null);
+			}
+			else if ( elem.currentStyle ) {
+				return elem.currentStyle;
+			}
+		},
+		// Checks for float px and numeric values
+		rfloat = /float/i,
+		rnumpx = /^-?\d+(?:px)?$/i,
+		rnum = /^-?\d/;
+
+	// Returns a list of styles for a given element
+	$.styles = function( el, styles ) {
+		if (!el ) {
+			return null;
+		}
+		var  currentS = getStyle(el),
+			oldName, val, style = el.style,
+			results = {},
+			i = 0,
+			left, rsLeft, camelCase, name;
+
+		// Go through each style
+		for (; i < styles.length; i++ ) {
+			name = styles[i];
+			oldName = name.replace(rdashAlpha, fcamelCase);
+
+			if ( rfloat.test(name) ) {
+				name = jQuery.support.cssFloat ? "float" : "styleFloat";
+				oldName = "cssFloat";
+			}
+
+			// If we have getComputedStyle available
+			if ( getComputedStyle ) {
+				// convert camelcased property names to dashed name
+				name = name.replace(rupper, "-$1").toLowerCase();
+				// use getPropertyValue of the current style object
+				val = currentS.getPropertyValue(name);
+				// default opacity is 1
+				if ( name === "opacity" && val === "" ) {
+					val = "1";
+				}
+				results[oldName] = val;
+			} else {
+				// Without getComputedStyles
+				camelCase = name.replace(rdashAlpha, fcamelCase);
+				results[oldName] = currentS[name] || currentS[camelCase];
+
+				// convert to px
+				if (!rnumpx.test(results[oldName]) && rnum.test(results[oldName]) ) {
+					// Remember the original values
+					left = style.left;
+					rsLeft = el.runtimeStyle.left;
+
+					// Put in the new values to get a computed value out
+					el.runtimeStyle.left = el.currentStyle.left;
+					style.left = camelCase === "fontSize" ? "1em" : (results[oldName] || 0);
+					results[oldName] = style.pixelLeft + "px";
+
+					// Revert the changed values
+					style.left = left;
+					el.runtimeStyle.left = rsLeft;
+				}
+
+			}
+		}
+
+		return results;
+	};
+
+	/**
+	 * @function jQuery.fn.styles
+	 * @parent jQuery.styles
+	 * @plugin jQuery.styles
+	 *
+	 * Returns a set of computed styles. Pass the names of the styles you want to
+	 * retrieve as arguments:
+	 *
+	 *      $("div").styles('float','display')
+	 *      // -> { cssFloat: "left", display: "block" }
+	 *
+	 * @param {String} style pass the names of the styles to retrieve as the argument list
+	 * @return {Object} an object of `style` : `value` pairs
+	 */
+	$.fn.styles = function() {
+		// Pass the arguments as an array to $.styles
+		return $.styles(this[0], $.makeArray(arguments));
+	};
+
+	return $;
+})(module["jquery"]);
+module['jquery/dom/dimensions/dimensions.js'] = (function($) {
+
+var
+	//margin is inside border
+	weird = /button|select/i,
+	getBoxes = {},
+    checks = {
+        width: ["Left", "Right"],
+        height: ['Top', 'Bottom'],
+        oldOuterHeight: $.fn.outerHeight,
+        oldOuterWidth: $.fn.outerWidth,
+        oldInnerWidth: $.fn.innerWidth,
+        oldInnerHeight: $.fn.innerHeight
+    };
+
+$.each({ 
+
+/**
+ * @function jQuery.fn.outerWidth
+ * @parent jQuery.dimensions
+ *
+ * `jQuery.fn.outerWidth([value], [includeMargins])` lets you set
+ * the outer width of an object where:
+ *
+ *      outerWidth = width + padding + border + (margin)
+ *
+ * And can be used like:
+ *
+ *      $("#foo").outerWidth(100); //sets outer width
+ *      $("#foo").outerWidth(100, true); // uses margins
+ *      $("#foo").outerWidth(); //returns outer width
+ *      $("#foo").outerWidth(true); //returns outer width + margins
+ *
+ * When setting the outerWidth, it adjusts the width of the element.
+ * If *includeMargin* is set to `true` margins will also be included.
+ * It is also possible to animate the outer width:
+ * 
+ *      $('#foo').animate({ outerWidth: 200 });
+ *
+ * @param {Number} [width] The width to set
+ * @param {Boolean} [includeMargin=false] Makes setting the outerWidth adjust
+ * for margins.
+ * @return {jQuery|Number} Returns the outer width or the jQuery wrapped elements
+ * if you are setting the outer width.
+ */
+width: 
+/**
+ * @function jQuery.fn.innerWidth
+ * @parent jQuery.dimensions
+ *
+ * `jQuery.fn.innerWidth([value])` lets you set the inner width of an element where
+ * 
+ *      innerWidth = width + padding
+ *      
+ * Use it like:
+ *
+ *      $("#foo").innerWidth(100); //sets inner width
+ *      $("#foo").outerWidth(); // returns inner width
+ *      
+ * Or in an animation like:
+ * 
+ *      $('#foo').animate({ innerWidth : 200 });
+ *
+ * Setting inner width adjusts the width of the element.
+ *
+ * @param {Number} [width] The inner width to set
+ * @return {jQuery|Number} Returns the inner width or the jQuery wrapped elements
+ * if you are setting the inner width.
+ */
+"Width", 
+/**
+ * @function jQuery.fn.outerHeight
+ * @parent jQuery.dimensions
+ *
+ * `jQuery.fn.outerHeight([value], [includeMargins])` lets
+ * you set the outer height of an object where:
+ *
+ *      outerHeight = height + padding + border + (margin)
+ *
+ * And can be used like:
+ *
+ *      $("#foo").outerHeight(100); //sets outer height
+ *      $("#foo").outerHeight(100, true); // uses margins
+ *      $("#foo").outerHeight(); //returns outer height
+ *      $("#foo").outerHeight(true); //returns outer height + margins
+ *
+ * When setting the outerHeight, it adjusts the height of the element.
+ * If *includeMargin* is set to `true` margins will also be included.
+ * It is also possible to animate the outer heihgt:
+ *
+ *      $('#foo').animate({ outerHeight : 200 });
+ *
+ * @param {Number} [height] The height to set
+ * @param {Boolean} [includeMargin=false] Makes setting the outerHeight adjust
+ * for margins.
+ * @return {jQuery|Number} Returns the outer height or the jQuery wrapped elements
+ * if you are setting the outer height.
+ */
+height: 
+/**
+ * @function jQuery.fn.innerHeight
+ * @parent jQuery.dimensions
+ *
+ * `jQuery.fn.innerHeight([value])` lets you set the inner height of an element where
+ *
+ *      innerHeight = height + padding
+ *
+ * Use it like:
+ *
+ *      $("#foo").innerHeight(100); //sets inner height
+ *      $("#foo").outerHeight(); // returns inner height
+ *
+ * Or in an animation like:
+ *
+ *      $('#foo').animate({ innerHeight : 200 });
+ *
+ * Setting inner height adjusts the height of the element.
+ *
+ * @param {Number} [height] The inner height to set
+ * @return {jQuery|Number} Returns the inner height or the jQuery wrapped elements
+ * if you are setting the inner height.
+ */
+// for each 'height' and 'width'
+"Height" }, function(lower, Upper) {
+
+    //used to get the padding and border for an element in a given direction
+    getBoxes[lower] = function(el, boxes) {
+        var val = 0;
+        if (!weird.test(el.nodeName)) {
+            //make what to check for ....
+            var myChecks = [];
+            $.each(checks[lower], function() {
+                var direction = this;
+                $.each(boxes, function(name, val) {
+                    if (val)
+                        myChecks.push(name + direction+ (name == 'border' ? "Width" : "") );
+                })
+            })
+            $.each($.styles(el, myChecks), function(name, value) {
+                val += (parseFloat(value) || 0);
+            })
+        }
+        return val;
+    }
+
+    //getter / setter
+    $.fn["outer" + Upper] = function(v, margin) {
+        var first = this[0];
+		if (typeof v == 'number') {
+			// Setting the value
+            first && this[lower](v - getBoxes[lower](first, {padding: true, border: true, margin: margin}))
+            return this;
+        } else {
+			// Return the old value
+            return first ? checks["oldOuter" + Upper].call(this, v) : null;
+        }
+    }
+    $.fn["inner" + Upper] = function(v) {
+        var first = this[0];
+		if (typeof v == 'number') {
+			// Setting the value
+            first&& this[lower](v - getBoxes[lower](first, { padding: true }))
+            return this;
+        } else {
+			// Return the old value
+            return first ? checks["oldInner" + Upper].call(this, v) : null;
+        }
+    }
+    //provides animations
+	var animate = function(boxes){
+		// Return the animation function
+		return function(fx){
+			if (fx.state == 0) {
+	            fx.start = $(fx.elem)[lower]();
+	            fx.end = fx.end - getBoxes[lower](fx.elem,boxes);
+	        }
+	        fx.elem.style[lower] = (fx.pos * (fx.end - fx.start) + fx.start) + "px"
+		}
+	}
+    $.fx.step["outer" + Upper] = animate({padding: true, border: true})
+	$.fx.step["outer" + Upper+"Margin"] =  animate({padding: true, border: true, margin: true})
+	$.fx.step["inner" + Upper] = animate({padding: true})
+
+})
+
+return $;
+})(module["jquery"], module["jquery/dom/styles/styles.js"]);
+module['jquery/event/reverse/reverse.js'] = (function( $ ) {
+	$.event.reverse = function(name, attributes) {
+		var bound = $(),
+			count = 0;
+
+		$.event.special[name] = {
+			setup: function() {
+				// add and sort the resizers array
+				// don't add window because it can't be compared easily
+				if ( this !== window ) {
+					bound.push(this);
+					$.unique(bound);
+				}
+				// returns false if the window
+				return this !== window;
+			},
+			teardown: function() {
+				// we shouldn't have to sort
+				bound = bound.not(this);
+				// returns false if the window
+				return this !== window;
+			},
+			add: function( handleObj ) {
+				var origHandler = handleObj.handler;
+				handleObj.origHandler = origHandler;
+
+				handleObj.handler = function( ev, data ) {
+					var isWindow = this === window;
+					if(attributes && attributes.handler) {
+						var result = attributes.handler.apply(this, arguments);
+						if(result === true) {
+							return;
+						}
+					}
+
+					// if this is the first handler for this event ...
+					if ( count === 0 ) {
+						// prevent others from doing what we are about to do
+						count++;
+						var where = data === false ? ev.target : this
+
+						// trigger all this element's handlers
+						$.event.handle.call(where, ev);
+						if ( ev.isPropagationStopped() ) {
+							count--;
+							return;
+						}
+
+						// get all other elements within this element that listen to move
+						// and trigger their resize events
+						var index = bound.index(this),
+							length = bound.length,
+							child, sub;
+
+						// if index == -1 it's the window
+						while (++index < length && (child = bound[index]) && (isWindow || $.contains(where, child)) ) {
+
+							// call the event
+							$.event.handle.call(child, ev);
+
+							if ( ev.isPropagationStopped() ) {
+								// move index until the item is not in the current child
+								while (++index < length && (sub = bound[index]) ) {
+									if (!$.contains(child, sub) ) {
+										// set index back one
+										index--;
+										break
+									}
+								}
+							}
+						}
+
+						// prevent others from responding
+						ev.stopImmediatePropagation();
+						count--;
+					} else {
+						handleObj.origHandler.call(this, ev, data);
+					}
+				}
+			}
+		};
+
+		// automatically bind on these
+		$([document, window]).bind(name, function() {});
+
+		return $.event.special[name];
+	}
+
+	return $;
+})(module["jquery"]);
+module['jquery/event/resize/resize.js'] = (function( $ ) {
+	var
+		// bind on the window window resizes to happen
+		win = $(window),
+		windowWidth = 0,
+		windowHeight = 0,
+		timer;
+
+	$(function() {
+		windowWidth = win.width();
+		windowHeight = win.height();
+	});
+
+	$.event.reverse('resize', {
+		handler : function(ev, data) {
+			var isWindow = this === window;
+
+			// if we are the window and a real resize has happened
+			// then we check if the dimensions actually changed
+			// if they did, we will wait a brief timeout and
+			// trigger resize on the window
+			// this is for IE, to prevent window resize 'infinate' loop issues
+			if ( isWindow && ev.originalEvent ) {
+				var width = win.width(),
+					height = win.height();
+
+
+				if ((width != windowWidth || height != windowHeight)) {
+					//update the new dimensions
+					windowWidth = width;
+					windowHeight = height;
+					clearTimeout(timer)
+					timer = setTimeout(function() {
+						win.trigger("resize");
+					}, 1);
+
+				}
+				return true;
+			}
+		}
+	});
+
+	return $;
+})(module["jquery"], module["jquery/event/reverse/reverse.js"]);
 module['canui/fills/fills.js'] = (function( $ ) {
 	//evil things we should ignore
 	var matches = /script|td/,
@@ -9857,6 +11985,216 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 		}
 	})
 })(module["jquery"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["canui/fills/fills.js"], module["canui/util/scrollbar_width.js"], module["jquery/event/resize/resize.js"]);
+module['can/construct/proxy/proxy.js'] = (function(can, Construct){
+var isFunction = can.isFunction,
+	isArray = can.isArray,
+	makeArray = can.makeArray,
+
+proxy = function( funcs ) {
+
+			//args that should be curried
+			var args = makeArray(arguments),
+				self;
+
+			// get the functions to callback
+			funcs = args.shift();
+
+			// if there is only one function, make funcs into an array
+			if (!isArray(funcs) ) {
+				funcs = [funcs];
+			}
+			
+			// keep a reference to us in self
+			self = this;
+			
+			
+			return function class_cb() {
+				// add the arguments after the curried args
+				var cur = args.concat(makeArray(arguments)),
+					isString, 
+					length = funcs.length,
+					f = 0,
+					func;
+				
+				// go through each function to call back
+				for (; f < length; f++ ) {
+					func = funcs[f];
+					if (!func ) {
+						continue;
+					}
+					
+					// set called with the name of the function on self (this is how this.view works)
+					isString = typeof func == "string";
+					
+					// call the function
+					cur = (isString ? self[func] : func).apply(self, cur || []);
+					
+					// pass the result to the next function (if there is a next function)
+					if ( f < length - 1 ) {
+						cur = !isArray(cur) || cur._use_call ? [cur] : cur
+					}
+				}
+				return cur;
+			}
+		}
+	can.Construct.proxy = can.Construct.prototype.proxy = proxy;
+	return can;
+})(module["can/util/jquery/jquery.js"], module["can/construct/construct.js"]);
+module['jquery/event/key/key.js'] = (function($){
+	var keymap = {},
+		reverseKeyMap = {},
+		currentBrowser = jQuery.uaMatch(navigator.userAgent).browser;
+		
+	/**
+	 * @hide
+	 * @parent jQuery.Event.prototype.key
+	 * 
+	 * Allows you to set alternate key maps or overwrite existing key codes.
+	 * For example::
+	 * 
+	 *     $.event.key({"~" : 177});
+	 * 
+	 * @param {Object} map A map of character - keycode pairs.
+	 */
+	$.event.key = function(browser, map){
+		if(browser === undefined) {
+			return keymap;
+		}
+
+		if(map === undefined) {
+			map = browser;
+			browser = currentBrowser;
+		}
+
+		// extend the keymap
+		if(!keymap[browser]) {
+			keymap[browser] = {};
+		}
+		$.extend(keymap[browser], map);
+		// and also update the reverse keymap
+		if(!reverseKeyMap[browser]) {
+			reverseKeyMap[browser] = {};
+		}
+		for(var name in map){
+			reverseKeyMap[browser][map[name]] = name;
+		}
+	};
+	
+	$.event.key({
+		// backspace
+		'\b':'8',
+		
+		// tab
+		'\t':'9',
+		
+		// enter
+		'\r':'13',
+		
+		// special
+		'shift':'16','ctrl':'17','alt':'18',
+		
+		// others
+		'pause-break':'19',
+		'caps':'20',
+		'escape':'27',
+		'num-lock':'144',
+		'scroll-lock':'145',
+		'print' : '44',
+		
+		// navigation
+		'page-up':'33','page-down':'34','end':'35','home':'36',
+		'left':'37','up':'38','right':'39','down':'40','insert':'45','delete':'46',
+		
+		// normal characters
+		' ':'32',
+		'0':'48','1':'49','2':'50','3':'51','4':'52','5':'53','6':'54','7':'55','8':'56','9':'57',
+		'a':'65','b':'66','c':'67','d':'68','e':'69','f':'70','g':'71','h':'72','i':'73','j':'74','k':'75','l':'76','m':'77',
+		'n':'78','o':'79','p':'80','q':'81','r':'82','s':'83','t':'84','u':'85','v':'86','w':'87','x':'88','y':'89','z':'90',
+		// normal-characters, numpad
+		'num0':'96','num1':'97','num2':'98','num3':'99','num4':'100','num5':'101','num6':'102','num7':'103','num8':'104','num9':'105',
+		'*':'106','+':'107','-':'109','.':'110',
+		// normal-characters, others
+		'/':'111',
+		';':'186',
+		'=':'187',
+		',':'188',
+		'-':'189',
+		'.':'190',
+		'/':'191',
+		'`':'192',
+		'[':'219',
+		'\\':'220',
+		']':'221',
+		"'":'222',
+		
+		// ignore these, you shouldn't use them
+		'left window key':'91','right window key':'92','select key':'93',
+		
+		
+		'f1':'112','f2':'113','f3':'114','f4':'115','f5':'116','f6':'117',
+		'f7':'118','f8':'119','f9':'120','f10':'121','f11':'122','f12':'123'
+	});
+	
+	/**
+	 * @parent jQuery.event.key
+	 * @plugin jquery/event/key
+	 * @function jQuery.Event.prototype.keyName
+	 *
+	 * Returns a string representation of the key pressed:
+	 *
+	 *      $("input").on('keypress', function(ev){
+	 *          if(ev.keyName() == 'ctrl') {
+	 *              $(this).addClass('highlight');
+	 *          }
+	 *      });
+	 *
+	 * The key names mapped by default can be found in the [jQuery.event.key jQuery.event.key overview].
+	 *
+	 * @return {String} The string representation of of the key pressed.
+	 */
+	jQuery.Event.prototype.keyName  = function(){
+		var event = this,
+			test = /\w/,
+			// It can be either keyCode or charCode.
+			// Look both cases up in the reverse key map and converted to a string
+			key_Key =  reverseKeyMap[currentBrowser][(event.keyCode || event.which)+""],
+			char_Key =  String.fromCharCode(event.keyCode || event.which),
+			key_Char =  event.charCode && reverseKeyMap[currentBrowser][event.charCode+""],
+			char_Char = event.charCode && String.fromCharCode(event.charCode);
+		
+		if( char_Char && test.test(char_Char) ) {
+			// string representation of event.charCode
+			return char_Char.toLowerCase()
+		}
+		if( key_Char && test.test(key_Char) ) {
+			// reverseKeyMap representation of event.charCode
+			return char_Char.toLowerCase()
+		}
+		if( char_Key && test.test(char_Key) ) {
+			// string representation of event.keyCode
+			return char_Key.toLowerCase()
+		}
+		if( key_Key && test.test(key_Key) ) {
+			// reverseKeyMap representation of event.keyCode
+			return key_Key.toLowerCase()
+		}
+
+		if (event.type == 'keypress'){
+			// keypress doesn't capture everything
+			return event.keyCode ? String.fromCharCode(event.keyCode) : String.fromCharCode(event.which)
+		}
+
+		if (!event.keyCode && event.which) {
+			// event.which
+			return String.fromCharCode(event.which)
+		}
+
+		// default
+		return reverseKeyMap[currentBrowser][event.keyCode+""]
+	}
+	
+return $;
+})(module["jquery"]);
 module['canui/selectable/selectable.js'] = (function($, can) {
 
 //we have to clear out activate
@@ -10326,6 +12664,1198 @@ can.Control('can.ui.Selectable',{
 });
 
 })(module["jquery"], module["can/util/jquery/jquery.js"], module["can/control/control.js"], module["can/construct/proxy/proxy.js"], module["can/control/plugin/plugin.js"], module["jquery/event/key/key.js"]);
+module['jquery/lang/vector/vector.js'] = (function($){
+	var getSetZero = function(v){ return v !== undefined ? (this.array[0] = v) : this.array[0] },
+		getSetOne = function(v){ return v !== undefined ? (this.array[1] = v) : this.array[1]};
+
+/**
+ * @class jQuery.Vector
+ * @parent jquerypp
+ *
+ * `jQuery.Vector` represents a multi dimensional vector with shorthand methods for
+ * working with two dimensions.
+ *
+ * It is mainly used in [jQuery.event.drag drag] & [jQuery.event.drop drop] events.
+ *
+ * @constructor creates a new vector instance from the arguments.  Example:
+ *
+ *      new jQuery.Vector(1,2)
+ */
+	$.Vector = function(arr) {
+		var array = $.isArray(arr) ? arr : $.makeArray(arguments);
+		this.update(array);
+	};
+	$.Vector.prototype =
+	/* @Prototype*/
+	{
+		/**
+		 * Applys the function to every item in the vector and returns a new vector.
+		 *
+		 * @param {Function} f The function to apply
+		 * @return {jQuery.Vector} A new $.Vector instance
+		 */
+		app: function( f ) {
+			var i, newArr = [];
+
+			for ( i = 0; i < this.array.length; i++ ) {
+				newArr.push(f(this.array[i], i));
+			}
+			return new $.Vector(newArr);
+		},
+		/**
+		 * Adds two vectors together and returns a new instance. Example:
+		 *
+		 *      new $.Vector(1,2).plus(2,3) //-> (3, 5)
+		 *      new $.Vector(3,5).plus(new Vector(4,5)) //-> (7, 10)
+		 *
+		 * @return {$.Vector}
+		 */
+		plus: function() {
+			var i, args = arguments[0] instanceof $.Vector ? arguments[0].array : $.makeArray(arguments),
+				arr = this.array.slice(0),
+				vec = new $.Vector();
+			for ( i = 0; i < args.length; i++ ) {
+				arr[i] = (arr[i] ? arr[i] : 0) + args[i];
+			}
+			return vec.update(arr);
+		},
+		/**
+		 * Subtract one vector from another and returns a new instance. Example:
+		 *
+		 *      new $.Vector(4, 5).minus(2, 1) //-> (2, 4)
+		 *
+		 * @return {jQuery.Vector}
+		 */
+		minus: function() {
+			var i, args = arguments[0] instanceof $.Vector ? arguments[0].array : $.makeArray(arguments),
+				arr = this.array.slice(0),
+				vec = new $.Vector();
+			for ( i = 0; i < args.length; i++ ) {
+				arr[i] = (arr[i] ? arr[i] : 0) - args[i];
+			}
+			return vec.update(arr);
+		},
+		/**
+		 * Returns the current vector if it is equal to the vector passed in.
+		 *
+		 * `null` if otherwise.
+		 *
+		 * @return {jQuery.Vector}
+		 */
+		equals: function() {
+			var i, args = arguments[0] instanceof $.Vector ? arguments[0].array : $.makeArray(arguments),
+				arr = this.array.slice(0),
+				vec = new $.Vector();
+			for ( i = 0; i < args.length; i++ ) {
+				if ( arr[i] != args[i] ) {
+					return null;
+				}
+			}
+			return vec.update(arr);
+		},
+		/**
+		 * Returns the first value of the vector.
+		 * You can also access the same value through the following aliases the
+		 * [jQuery.Vector.prototype.left vector.left()] and [jQuery.Vector.prototype.left vector.width()]
+		 * aliases.
+		 *
+		 * For example:
+		 *
+		 *      var v = new $.Vector(2, 5);
+		 *      v.x() //-> 2
+		 *      v.left() //-> 2
+		 *      v.width() //-> 2
+		 *
+		 * @return {Number} The first value of the vector
+		 */
+		x: getSetZero,
+		/**
+		 * @hide
+		 * Alias for [jQuery.Vector.prototype.x].
+		 *
+		 * @return {Number}
+		 */
+		left: getSetZero,
+		/**
+		 * @hide
+		 * Alias for [jQuery.Vector.prototype.x].
+		 *
+		 * @return {Number}
+		 */
+		width: getSetZero,
+		/**
+		 * Returns the second value of the vector.
+		 * You can also access the same value through the [jQuery.Vector.prototype.top vector.top()]
+		 * and [jQuery.Vector.prototype.height vector.height()] aliases.
+		 *
+		 * For example:
+		 *
+		 *      var v = new $.Vector(2, 5);
+		 *      v.y() //-> 5
+		 *      v.top() //-> 5
+		 *      v.height() //-> 5
+		 *
+		 * @return {Number} The first value of the vector
+		 */
+		y: getSetOne,
+		/**
+		 * @hide
+		 * Alias for [jQuery.Vector.prototype.y].
+		 *
+		 * @return {Number}
+		 */
+		top: getSetOne,
+		/**
+		 * @hide
+		 * Alias for [jQuery.Vector.prototype.y].
+		 *
+		 * @return {Number}
+		 */
+		height: getSetOne,
+		/**
+		 * Returns a string representation of the vector in the form of (x,y,...)
+		 *
+		 *      var v = new $.Vector(4, 6, 1, 3);
+		 *      v.toString() //-> (4, 6, 1, 3)
+		 *
+		 * @return {String}
+		 */
+		toString: function() {
+			return "(" + this.array.join(', ') + ")";
+		},
+		/**
+		 * Replaces the vectors contents
+		 *
+		 *      var v = new $.Vector(2, 3);
+		 *
+		 * @param {Object} array
+		 */
+		update: function( array ) {
+			var i;
+			if ( this.array ) {
+				for ( i = 0; i < this.array.length; i++ ) {
+					delete this.array[i];
+				}
+			}
+			this.array = array;
+			for ( i = 0; i < array.length; i++ ) {
+				this[i] = this.array[i];
+			}
+			return this;
+		}
+	};
+
+	$.Event.prototype.vector = function() {
+		var
+			// Get the first touch element for touch events
+			touches = "ontouchend" in document && this.originalEvent.touches.length ? this.originalEvent.touches[0] : this;
+		if ( this.originalEvent.synthetic ) {
+			var doc = document.documentElement,
+				body = document.body;
+			return new $.Vector(touches.clientX + (doc && doc.scrollLeft || body && body.scrollLeft || 0) - (doc.clientLeft || 0),
+				touches.clientY + (doc && doc.scrollTop || body && body.scrollTop || 0) - (doc.clientTop || 0));
+		} else {
+			return new $.Vector(touches.pageX, touches.pageY);
+		}
+	};
+
+	$.fn.offsetv = function() {
+		if ( this[0] == window ) {
+			return new $.Vector(window.pageXOffset ? window.pageXOffset : document.documentElement.scrollLeft, window.pageYOffset ? window.pageYOffset : document.documentElement.scrollTop);
+		} else {
+			var offset = this.offset();
+			return new $.Vector(offset.left, offset.top);
+		}
+	};
+
+	$.fn.dimensionsv = function( which ) {
+		if ( this[0] == window || !which ) {
+			return new $.Vector(this.width(), this.height());
+		}
+		else {
+			return new $.Vector(this[which + "Width"](), this[which + "Height"]());
+		}
+	};
+})(module["jquery"]);
+module['jquery/event/livehack/livehack.js'] = (function($) {
+
+	var event = jQuery.event,
+
+		//helper that finds handlers by type and calls back a function, this is basically handle
+		// events - the events object
+		// types - an array of event types to look for
+		// callback(type, handlerFunc, selector) - a callback
+		// selector - an optional selector to filter with, if there, matches by selector
+		//     if null, matches anything, otherwise, matches with no selector
+		findHelper = function( events, types, callback, selector ) {
+			var t, type, typeHandlers, all, h, handle, 
+				namespaces, namespace,
+				match;
+			for ( t = 0; t < types.length; t++ ) {
+				type = types[t];
+				all = type.indexOf(".") < 0;
+				if (!all ) {
+					namespaces = type.split(".");
+					type = namespaces.shift();
+					namespace = new RegExp("(^|\\.)" + namespaces.slice(0).sort().join("\\.(?:.*\\.)?") + "(\\.|$)");
+				}
+				typeHandlers = (events[type] || []).slice(0);
+
+				for ( h = 0; h < typeHandlers.length; h++ ) {
+					handle = typeHandlers[h];
+					
+					match = (all || namespace.test(handle.namespace));
+					
+					if(match){
+						if(selector){
+							if (handle.selector === selector  ) {
+								callback(type, handle.origHandler || handle.handler);
+							}
+						} else if (selector === null){
+							callback(type, handle.origHandler || handle.handler, handle.selector);
+						}
+						else if (!handle.selector ) {
+							callback(type, handle.origHandler || handle.handler);
+							
+						} 
+					}
+					
+					
+				}
+			}
+		};
+
+	/**
+	 * Finds event handlers of a given type on an element.
+	 * @param {HTMLElement} el
+	 * @param {Array} types an array of event names
+	 * @param {String} [selector] optional selector
+	 * @return {Array} an array of event handlers
+	 */
+	event.find = function( el, types, selector ) {
+		var events = ( $._data(el) || {} ).events,
+			handlers = [],
+			t, liver, live;
+
+		if (!events ) {
+			return handlers;
+		}
+		findHelper(events, types, function( type, handler ) {
+			handlers.push(handler);
+		}, selector);
+		return handlers;
+	};
+	/**
+	 * Finds all events.  Group by selector.
+	 * @param {HTMLElement} el the element
+	 * @param {Array} types event types
+	 */
+	event.findBySelector = function( el, types ) {
+		var events = $._data(el).events,
+			selectors = {},
+			//adds a handler for a given selector and event
+			add = function( selector, event, handler ) {
+				var select = selectors[selector] || (selectors[selector] = {}),
+					events = select[event] || (select[event] = []);
+				events.push(handler);
+			};
+
+		if (!events ) {
+			return selectors;
+		}
+		//first check live:
+		/*$.each(events.live || [], function( i, live ) {
+			if ( $.inArray(live.origType, types) !== -1 ) {
+				add(live.selector, live.origType, live.origHandler || live.handler);
+			}
+		});*/
+		//then check straight binds
+		findHelper(events, types, function( type, handler, selector ) {
+			add(selector || "", type, handler);
+		}, null);
+
+		return selectors;
+	};
+	event.supportTouch = "ontouchend" in document;
+	
+	$.fn.respondsTo = function( events ) {
+		if (!this.length ) {
+			return false;
+		} else {
+			//add default ?
+			return event.find(this[0], $.isArray(events) ? events : [events]).length > 0;
+		}
+	};
+	$.fn.triggerHandled = function( event, data ) {
+		event = (typeof event == "string" ? $.Event(event) : event);
+		this.trigger(event, data);
+		return event.handled;
+	};
+	/**
+	 * Only attaches one event handler for all types ...
+	 * @param {Array} types llist of types that will delegate here
+	 * @param {Object} startingEvent the first event to start listening to
+	 * @param {Object} onFirst a function to call 
+	 */
+	event.setupHelper = function( types, startingEvent, onFirst ) {
+		if (!onFirst ) {
+			onFirst = startingEvent;
+			startingEvent = null;
+		}
+		var add = function( handleObj ) {
+
+			var bySelector, selector = handleObj.selector || "";
+			if ( selector ) {
+				bySelector = event.find(this, types, selector);
+				if (!bySelector.length ) {
+					$(this).delegate(selector, startingEvent, onFirst);
+				}
+			}
+			else {
+				//var bySelector = event.find(this, types, selector);
+				if (!event.find(this, types, selector).length ) {
+					event.add(this, startingEvent, onFirst, {
+						selector: selector,
+						delegate: this
+					});
+				}
+
+			}
+
+		},
+			remove = function( handleObj ) {
+				var bySelector, selector = handleObj.selector || "";
+				if ( selector ) {
+					bySelector = event.find(this, types, selector);
+					if (!bySelector.length ) {
+						$(this).undelegate(selector, startingEvent, onFirst);
+					}
+				}
+				else {
+					if (!event.find(this, types, selector).length ) {
+						event.remove(this, startingEvent, onFirst, {
+							selector: selector,
+							delegate: this
+						});
+					}
+				}
+			};
+		$.each(types, function() {
+			event.special[this] = {
+				add: add,
+				remove: remove,
+				setup: function() {},
+				teardown: function() {}
+			};
+		});
+	};
+
+	return $;
+})(module["jquery"]);
+module['jquery/event/drag/drag.js'] = (function( $ ) {
+
+	if(!$.event.special.move) {
+		$.event.reverse('move');
+	}
+
+	//modify live
+	//steal the live handler ....
+	var bind = function( object, method ) {
+			var args = Array.prototype.slice.call(arguments, 2);
+			return function() {
+				var args2 = [this].concat(args, $.makeArray(arguments));
+				return method.apply(object, args2);
+			};
+		},
+		event = $.event,
+		// function to clear the window selection if there is one
+		clearSelection = window.getSelection ? function(){
+			window.getSelection().removeAllRanges()
+		} : function(){},
+
+		supportTouch = "ontouchend" in document,
+		// Use touch events or map it to mouse events
+		startEvent = supportTouch ? "touchstart" : "mousedown",
+		stopEvent = supportTouch ? "touchend" : "mouseup",
+		moveEvent = supportTouch ? "touchmove" : "mousemove",
+		// On touchmove events the default (scrolling) event has to be prevented
+		preventTouchScroll = function(ev) {
+			ev.preventDefault();
+		};
+
+	/**
+	 * @class jQuery.Drag
+	 * @parent jQuery.event.drag
+	 * @plugin jquery/event/drag
+	 * @download  http://jmvcsite.heroku.com/pluginify?plugins[]=jquery/event/drag/drag.js
+	 * @test jquery/event/drag/qunit.html
+	 *
+	 * The `$.Drag` constructor is never called directly but an instance of `$.Drag` is passed as the second argument
+	 * to the `dragdown`, `draginit`, `dragmove`, `dragend`, `dragover` and `dragout` event handlers:
+	 *
+	 *      $('#dragger').on('draginit', function(el, drag) {
+	 *          // drag -> $.Drag
+	 *      });
+	 */
+	$.Drag = function() {};
+
+	/**
+	 * @Static
+	 */
+	$.extend($.Drag, {
+		lowerName: "drag",
+		current: null,
+		distance: 0,
+		/**
+		 * Called when someone mouses down on a draggable object.
+		 * Gathers all callback functions and creates a new Draggable.
+		 * @hide
+		 */
+		mousedown: function( ev, element ) {
+			var isLeftButton = ev.button === 0 || ev.button == 1,
+				doEvent = isLeftButton || supportTouch;
+
+			if (!doEvent || this.current ) {
+				return;
+			}
+
+			//create Drag
+			var drag = new $.Drag(),
+				delegate = ev.delegateTarget || element,
+				selector = ev.handleObj.selector,
+				self = this;
+			this.current = drag;
+
+			drag.setup({
+				element: element,
+				delegate: ev.delegateTarget || element,
+				selector: ev.handleObj.selector,
+				moved: false,
+				_distance: this.distance,
+				callbacks: {
+					dragdown: event.find(delegate, ["dragdown"], selector),
+					draginit: event.find(delegate, ["draginit"], selector),
+					dragover: event.find(delegate, ["dragover"], selector),
+					dragmove: event.find(delegate, ["dragmove"], selector),
+					dragout: event.find(delegate, ["dragout"], selector),
+					dragend: event.find(delegate, ["dragend"], selector)
+				},
+				destroyed: function() {
+					self.current = null;
+				}
+			}, ev);
+		}
+	});
+
+	/**
+	 * @Prototype
+	 */
+	$.extend($.Drag.prototype, {
+		setup: function( options, ev ) {
+			$.extend(this, options);
+
+			this.element = $(this.element);
+			this.event = ev;
+			this.moved = false;
+			this.allowOtherDrags = false;
+			var mousemove = bind(this, this.mousemove),
+				mouseup = bind(this, this.mouseup);
+			this._mousemove = mousemove;
+			this._mouseup = mouseup;
+			this._distance = options.distance ? options.distance : 0;
+
+			//where the mouse is located
+			this.mouseStartPosition = ev.vector();
+
+			$(document).bind(moveEvent, mousemove);
+			$(document).bind(stopEvent, mouseup);
+			if(supportTouch) {
+				// On touch devices we want to disable scrolling
+				$(document).bind(moveEvent, preventTouchScroll);
+			}
+
+			if (!this.callEvents('down', this.element, ev) ) {
+			    this.noSelection(this.delegate);
+				//this is for firefox
+				clearSelection();
+			}
+		},
+		/**
+		 * @attribute element
+		 * A reference to the element that is being dragged. For example:
+		 *
+		 *      $('.draggable').on('draginit', function(ev, drag) {
+		 *          drag.element.html('I am the drag element');
+		 *      });
+		 */
+
+		/**
+		 * Unbinds listeners and allows other drags ...
+		 * @hide
+		 */
+		destroy: function() {
+			// Unbind the mouse handlers attached for dragging
+			$(document).unbind(moveEvent, this._mousemove);
+			$(document).unbind(stopEvent, this._mouseup);
+			if(supportTouch) {
+				// Enable scrolling again for touch devices when the drag is done
+				$(document).unbind(moveEvent, preventTouchScroll);
+			}
+
+			if (!this.moved ) {
+				this.event = this.element = null;
+			}
+
+			if(!supportTouch) {
+                this.selection(this.delegate);
+			}
+			this.destroyed();
+		},
+		mousemove: function( docEl, ev ) {
+			if (!this.moved ) {
+				var dist = Math.sqrt( Math.pow( ev.pageX - this.event.pageX, 2 ) + Math.pow( ev.pageY - this.event.pageY, 2 ));
+				// Don't initialize the drag if it hasn't been moved the minimum distance
+				if(dist < this._distance){
+					return false;
+				}
+				// Otherwise call init and indicate that the drag has moved
+				this.init(this.element, ev);
+				this.moved = true;
+			}
+
+			this.element.trigger('move', this);
+			var pointer = ev.vector();
+			if ( this._start_position && this._start_position.equals(pointer) ) {
+				return;
+			}
+			this.draw(pointer, ev);
+		},
+		
+		mouseup: function( docEl, event ) {
+			//if there is a current, we should call its dragstop
+			if ( this.moved ) {
+				this.end(event);
+			}
+			this.destroy();
+		},
+
+        /**
+         * The `drag.noSelection(element)` method turns off text selection during a drag event.
+         * This method is called by default unless a event is listening to the 'dragdown' event.
+         *
+         * ## Example
+         *
+         *      $('div.drag').bind('dragdown', function(elm,event,drag){
+         *          drag.noSelection();
+         *      });
+         *      
+         * @param [elm] an element to prevent selection on.  Defaults to the dragable element.
+         */
+		noSelection: function(elm) {
+            elm = elm || this.delegate
+			document.documentElement.onselectstart = function() {
+                // Disables selection
+				return false;
+			};
+			document.documentElement.unselectable = "on";
+			this.selectionDisabled = (this.selectionDisabled ? this.selectionDisabled.add(elm) : $(elm));
+			this.selectionDisabled.css('-moz-user-select', '-moz-none');
+		},
+
+        /**
+         * @hide
+         * `drag.selection()` method turns on text selection that was previously turned off during the drag event.
+         * This method is always called.
+         * 
+         * ## Example
+         *
+         *     $('div.drag').bind('dragdown', function(elm,event,drag){
+         *       drag.selection();
+         *     });
+         */
+		selection: function() {
+            if(this.selectionDisabled) {
+                document.documentElement.onselectstart = function() {};
+                document.documentElement.unselectable = "off";
+                this.selectionDisabled.css('-moz-user-select', '');
+            }
+		},
+
+		init: function( element, event ) {
+			element = $(element);
+			//the element that has been clicked on
+			var startElement = (this.movingElement = (this.element = $(element)));
+			//if a mousemove has come after the click
+			//if the drag has been cancelled
+			this._cancelled = false;
+			this.event = event;
+			
+			/**
+			 * @attribute mouseElementPosition
+			 * The position of start of the cursor on the element
+			 */
+			this.mouseElementPosition = this.mouseStartPosition.minus(this.element.offsetv()); //where the mouse is on the Element
+			this.callEvents('init', element, event);
+
+			// Check what they have set and respond accordingly if they canceled
+			if ( this._cancelled === true ) {
+				return;
+			}
+			// if they set something else as the element
+			this.startPosition = startElement != this.movingElement ? this.movingElement.offsetv() : this.currentDelta();
+
+			this.makePositioned(this.movingElement);
+			// Adjust the drag elements z-index to a high value
+			this.oldZIndex = this.movingElement.css('zIndex');
+			this.movingElement.css('zIndex', 1000);
+			if (!this._only && this.constructor.responder ) {
+				// calls $.Drop.prototype.compile if there is a drop element
+				this.constructor.responder.compile(event, this);
+			}
+		},
+		makePositioned: function( that ) {
+			var style, pos = that.css('position');
+
+			// Position properly, set top and left to 0px for Opera
+			if (!pos || pos == 'static' ) {
+				style = {
+					position: 'relative'
+				};
+
+				if ( window.opera ) {
+					style.top = '0px';
+					style.left = '0px';
+				}
+				that.css(style);
+			}
+		},
+		callEvents: function( type, element, event, drop ) {
+			var i, cbs = this.callbacks[this.constructor.lowerName + type];
+			for ( i = 0; i < cbs.length; i++ ) {
+				cbs[i].call(element, event, this, drop);
+			}
+			return cbs.length;
+		},
+		/**
+		 * Returns the position of the movingElement by taking its top and left.
+		 * @hide
+		 * @return {$.Vector}
+		 */
+		currentDelta: function() {
+			return new $.Vector(parseInt(this.movingElement.css('left'), 10) || 0, parseInt(this.movingElement.css('top'), 10) || 0);
+		},
+		//draws the position of the dragmove object
+		draw: function( pointer, event ) {
+			// only drag if we haven't been cancelled;
+			if ( this._cancelled ) {
+				return;
+			}
+			clearSelection();
+			/**
+			 * @attribute location
+			 * `drag.location` is a [jQuery.Vector] specifying where the element should be in the page.  This
+			 * takes into account the start position of the cursor on the element.
+			 * 
+			 * If the drag is going to be moved to an unacceptable location, you can call preventDefault in
+			 * dragmove to prevent it from being moved there.
+			 * 
+			 *     $('.mover').bind("dragmove", function(ev, drag){
+			 *       if(drag.location.top() < 100){
+			 *         ev.preventDefault()
+			 *       }
+			 *     });
+			 *     
+			 * You can also set the location to where it should be on the page.
+			 * 
+			 */
+				// the offset between the mouse pointer and the representative that the user asked for
+			this.location = pointer.minus(this.mouseElementPosition);
+
+			// call move events
+			this.move(event);
+			if ( this._cancelled ) {
+				return;
+			}
+			if (!event.isDefaultPrevented() ) {
+				this.position(this.location);
+			}
+
+			// fill in
+			if (!this._only && this.constructor.responder ) {
+				this.constructor.responder.show(pointer, this, event);
+			}
+		},
+		/**
+		 * `drag.position( newOffsetVector )` sets the position of the movingElement.  This is overwritten by
+		 * the [$.Drag::scrolls], [$.Drag::limit] and [$.Drag::step] plugins 
+		 * to make sure the moving element scrolls some element
+		 * or stays within some boundary.  This function is exposed and documented so you could do the same.
+		 * 
+		 * The following approximates how step does it:
+		 * 
+		 *     var oldPosition = $.Drag.prototype.position;
+		 *     $.Drag.prototype.position = function( offsetPositionv ) {
+		 *       if(this._step){
+		 *         // change offsetPositionv to be on the step value
+		 *       }
+		 *       
+		 *       oldPosition.call(this, offsetPosition)
+		 *     }
+		 * 
+		 * @param {jQuery.Vector} newOffsetv the new [$.Drag::location] of the element.
+		 */
+		position: function( newOffsetv ) { //should draw it on the page
+			var style, dragged_element_css_offset = this.currentDelta(),
+				//  the drag element's current left + top css attributes
+				// the vector between the movingElement's page and css positions
+				// this can be thought of as the original offset
+				dragged_element_position_vector =   this.movingElement.offsetv().minus(dragged_element_css_offset);
+			this.required_css_position = newOffsetv.minus(dragged_element_position_vector);
+
+			this.offsetv = newOffsetv;
+			style = this.movingElement[0].style;
+			if (!this._cancelled && !this._horizontal ) {
+				style.top = this.required_css_position.top() + "px";
+			}
+			if (!this._cancelled && !this._vertical ) {
+				style.left = this.required_css_position.left() + "px";
+			}
+		},
+		move: function( event ) {
+			this.callEvents('move', this.element, event);
+		},
+		over: function( event, drop ) {
+			this.callEvents('over', this.element, event, drop);
+		},
+		out: function( event, drop ) {
+			this.callEvents('out', this.element, event, drop);
+		},
+		/**
+		 * Called on drag up
+		 * @hide
+		 * @param {Event} event a mouseup event signalling drag/drop has completed
+		 */
+		end: function( event ) {
+			// If canceled do nothing
+			if ( this._cancelled ) {
+				return;
+			}
+			// notify the responder - usually a $.Drop instance
+			if (!this._only && this.constructor.responder ) {
+				this.constructor.responder.end(event, this);
+			}
+
+			this.callEvents('end', this.element, event);
+
+			if ( this._revert ) {
+				var self = this;
+				// animate moving back to original position
+				this.movingElement.animate({
+					top: this.startPosition.top() + "px",
+					left: this.startPosition.left() + "px"
+				}, function() {
+					self.cleanup.apply(self, arguments);
+				});
+			}
+			else {
+				this.cleanup();
+			}
+			this.event = null;
+		},
+		/**
+		 * Cleans up drag element after drag drop.
+		 * @hide
+		 */
+		cleanup: function() {
+			this.movingElement.css({
+				zIndex: this.oldZIndex
+			});
+			if ( this.movingElement[0] !== this.element[0] && 
+				!this.movingElement.has(this.element[0]).length && 
+				!this.element.has(this.movingElement[0]).length ) {
+				this.movingElement.css({
+					display: 'none'
+				});
+			}
+			if ( this._removeMovingElement ) {
+				// Remove the element when using drag.ghost()
+				this.movingElement.remove();
+			}
+
+			this.movingElement = this.element = this.event = null;
+		},
+		/**
+		 * `drag.cancel()` stops a drag motion from from running.  This also stops any other events from firing, meaning
+		 * that "dragend" will not be called.
+		 * 
+		 *     $("#todos").on(".handle", "draginit", function( ev, drag ) {
+		 *       if(drag.movingElement.hasClass("evil")){
+		 *         drag.cancel();	
+		 *       }
+		 *     })
+		 * 
+		 */
+		cancel: function() {
+			this._cancelled = true;
+			if (!this._only && this.constructor.responder ) {
+				// clear the drops
+				this.constructor.responder.clear(this.event.vector(), this, this.event);
+			}
+			this.destroy();
+
+		},
+		/**
+		 * `drag.ghost( [parent] )` clones the element and uses it as the 
+		 * moving element, leaving the original dragged element in place.  The `parent` option can
+		 * be used to specify where the ghost element should be temporarily added into the 
+		 * DOM.  This method should be called in "draginit".
+		 * 
+		 *     $("#todos").on(".handle", "draginit", function( ev, drag ) {
+		 *       drag.ghost();
+		 *     })
+		 * 
+		 * @param {HTMLElement} [parent] the parent element of the newly created ghost element. If not provided the 
+		 * ghost element is added after the moving element.
+		 * @return {jQuery.fn} the ghost element to do whatever you want with it.
+		 */
+		ghost: function( parent ) {
+			// create a ghost by cloning the source element and attach the clone to the dom after the source element
+			var ghost = this.movingElement.clone().css('position', 'absolute');
+			if( parent ) {
+				$(parent).append(ghost);
+			} else {
+				$(this.movingElement).after(ghost)
+			}
+			ghost.width(this.movingElement.width()).height(this.movingElement.height());
+			// put the ghost in the right location ...
+			ghost.offset(this.movingElement.offset())
+			
+			// store the original element and make the ghost the dragged element
+			this.movingElement = ghost;
+			this.noSelection(ghost)
+			this._removeMovingElement = true;
+			return ghost;
+		},
+		/**
+		 * `drag.representative( element, [offsetX], [offsetY])` tells the drag motion to use
+		 * a different element than the one that began the drag motion. 
+		 * 
+		 * For example, instead of
+		 * dragging an drag-icon of a todo element, you want to move some other representation of
+		 * the todo element (or elements).  To do this you might:
+		 * 
+		 *     $("#todos").on(".handle", "draginit", function( ev, drag ) {
+		 *       // create what we'll drag
+		 *       var rep = $('<div/>').text("todos")
+		 *         .appendTo(document.body)
+		 *       // indicate we want our mouse on the top-right of it
+		 *       drag.representative(rep, rep.width(), 0);
+		 *     })
+		 * 
+		 * @param {HTMLElement} element the element you want to actually drag.  This should be 
+		 * already in the DOM.
+		 * @param {Number} offsetX the x position where you want your mouse on the representative element (defaults to 0)
+		 * @param {Number} offsetY the y position where you want your mouse on the representative element (defaults to 0)
+		 * @return {drag} returns the drag object for chaining.
+		 */
+		representative: function( element, offsetX, offsetY ) {
+			this._offsetX = offsetX || 0;
+			this._offsetY = offsetY || 0;
+
+			var p = this.mouseStartPosition;
+			// Just set the representative as the drag element
+			this.movingElement = $(element);
+			this.movingElement.css({
+				top: (p.y() - this._offsetY) + "px",
+				left: (p.x() - this._offsetX) + "px",
+				display: 'block',
+				position: 'absolute'
+			}).show();
+			this.noSelection(this.movingElement)
+			this.mouseElementPosition = new $.Vector(this._offsetX, this._offsetY);
+			return this;
+		},
+		/**
+		 * `drag.revert([val])` makes the [$.Drag::representative representative] element revert back to it
+		 * original position after the drag motion has completed.  The revert is done with an animation.
+		 * 
+		 *     $("#todos").on(".handle","dragend",function( ev, drag ) {
+		 *       drag.revert();
+		 *     })
+		 * 
+		 * @param {Boolean} [val] optional, set to false if you don't want to revert.
+		 * @return {drag} the drag object for chaining
+		 */
+		revert: function( val ) {
+			this._revert = val === undefined ? true : val;
+			return this;
+		},
+		/**
+		 * `drag.vertical()` isolates the drag to vertical movement.  For example:
+		 * 
+		 *     $("#images").on(".thumbnail","draginit", function(ev, drag){
+		 *       drag.vertical();
+		 *     });
+		 * 
+		 * Call `vertical()` in "draginit" or "dragdown".
+		 * 
+		 * @return {drag} the drag object for chaining.
+		 */
+		vertical: function() {
+			this._vertical = true;
+			return this;
+		},
+		/**
+		 * `drag.horizontal()` isolates the drag to horizontal movement.  For example:
+		 * 
+		 *     $("#images").on(".thumbnail","draginit", function(ev, drag){
+		 *       drag.horizontal();
+		 *     });
+		 * 
+		 * Call `horizontal()` in "draginit" or "dragdown".
+		 * 
+		 * @return {drag} the drag object for chaining.
+		 */
+		horizontal: function() {
+			this._horizontal = true;
+			return this;
+		},
+		/**
+		 * `drag.only([only])` indicates if you __only__ want a drag motion and the drag should
+		 * not notify drops.  The default value is `false`.  Call it with no arguments or pass it true
+		 * to prevent drop events.
+		 * 
+		 *     $("#images").on(".thumbnail","dragdown", function(ev, drag){
+		 * 	     drag.only();
+		 *     });
+		 * 
+		 * @param {Boolean} [only] true if you want to prevent drops, false if otherwise.
+		 * @return {Boolean} the current value of only.
+		 */
+		only: function( only ) {
+			return (this._only = (only === undefined ? true : only));
+		},
+		
+		/**
+		 * `distance([val])` sets or reads the distance the mouse must move before a drag motion is started.  This should be set in
+		 * "dragdown" and delays "draginit" being called until the distance is covered.  The distance
+		 * is measured in pixels.  The default distance is 0 pixels meaning the drag motion starts on the first
+		 * mousemove after a mousedown.
+		 * 
+		 * Set this to make drag motion a little "stickier" to start.
+		 * 
+		 *     $("#images").on(".thumbnail","dragdown", function(ev, drag){
+		 *       drag.distance(10);
+		 *     });
+		 * 
+		 * @param {Number} [val] The number of pixels the mouse must move before "draginit" is called.
+		 * @return {drag|Number} returns the drag instance for chaining if the drag value is being set or the
+		 * distance value if the distance is being read.
+		 */
+		distance: function(val){
+			if(val !== undefined){
+				this._distance = val;
+				return this;
+			}else{
+				return this._distance
+			}
+		}
+	});
+	/**
+	 * @add jQuery.event.special
+	 */
+	event.setupHelper([
+	/**
+	 * @attribute dragdown
+	 * @parent jQuery.event.drag
+	 * 
+	 * `dragdown` is called when a drag movement has started on a mousedown.
+	 * The event handler gets an instance of [jQuery.Drag] passed as the second
+	 * parameter.  Listening to `dragdown` allows you to customize 
+	 * the behavior of a drag motion, especially when `draginit` should be called.
+	 * 
+	 *     $(".handles").delegate("dragdown", function(ev, drag){
+	 *       // call draginit only when the mouse has moved 20 px
+	 *       drag.distance(20);
+	 *     })
+	 * 
+	 * Typically, when a drag motion is started, `event.preventDefault` is automatically
+	 * called, preventing text selection.  However, if you listen to 
+	 * `dragdown`, this default behavior is not called. You are responsible for calling it
+	 * if you want it (you probably do).
+	 *
+	 * ### Why might you not want to call `preventDefault`?
+	 *
+	 * You might want it if you want to allow text selection on element
+	 * within the drag element.  Typically these are input elements.
+	 *
+	 *     $(".handles").delegate("dragdown", function(ev, drag){
+	 *       if(ev.target.nodeName === "input"){
+	 *         drag.cancel();
+	 *       } else {
+	 *         ev.preventDefault();
+	 *       }
+	 *     })
+	 */
+	'dragdown',
+	/**
+	 * @attribute draginit
+	 * @parent jQuery.event.drag
+	 *
+	 * `draginit` is triggered when the drag motion starts. Use it to customize the drag behavior
+	 * using the [jQuery.Drag] instance passed as the second parameter:
+	 *
+	 *     $(".draggable").on('draginit', function(ev, drag) {
+	 *       // Only allow vertical drags
+	 *       drag.vertical();
+	 *       // Create a draggable copy of the element
+	 *       drag.ghost();
+	 *     });
+	 */
+	'draginit',
+	/**
+	 * @attribute dragover
+	 * @parent jQuery.event.drag
+	 *
+	 * `dragover` is triggered when a drag is over a [jQuery.event.drop drop element].
+	 * The event handler gets an instance of [jQuery.Drag] passed as the second
+	 * parameter and an instance of [jQuery.Drop] passed as the third argument:
+	 *
+	 *      $('.draggable').on('dragover', function(ev, drag, drop) {
+	 *          // Add the drop-here class indicating that the drag
+	 *          // can be dropped here
+	 *          drag.element.addClass('drop-here');
+	 *      });
+	 */
+	'dragover',
+	/**
+	 * @attribute dragmove
+	 * @parent jQuery.event.drag
+	 *
+	 * `dragmove` is triggered when the drag element moves (similar to a mousemove).
+	 * The event handler gets an instance of [jQuery.Drag] passed as the second
+	 * parameter.
+	 * Use [jQuery.Drag::location] to determine the current position
+	 * as a [jQuery.Vector vector].
+	 *
+	 * For example, `dragmove` can be used to create a draggable element to resize
+	 * a container:
+	 *
+	 *      $('.resizer').on('dragmove', function(ev, drag) {
+	 *          $('#container').width(drag.location.x())
+	 *              .height(drag.location.y());
+	 *      });
+	 */
+	'dragmove',
+	/**
+	 * @attribute dragout
+	 * @parent jQuery.event.drag
+	 *
+	 * `dragout` is called when the drag leaves a drop point.
+	 * The event handler gets an instance of [jQuery.Drag] passed as the second
+	 * parameter.
+	 *
+	 *      $('.draggable').on('dragout', function(ev, drag) {
+	 *      	 // Remove the drop-here class
+	 *      	 // (e.g. crossing the drag element out indicating that it
+	 *      	 // can't be dropped here
+	 *          drag.element.removeClass('drop-here');
+	 *      });
+	 */
+	'dragout',
+	/**
+	 * @attribute dragend
+	 * @parent jQuery.event.drag
+	 *
+	 * `dragend` is called when the drag motion is done.
+	 * The event handler gets an instance of [jQuery.Drag] passed as the second
+	 * parameter.
+	 *
+	 *     $('.draggable').on('dragend', function(ev, drag)
+	 *       // Clean up when the drag motion is done
+	 *     });
+	 */
+	'dragend'], startEvent, function( e ) {
+		$.Drag.mousedown.call($.Drag, e, this);
+	});
+
+	return $;
+})(module["jquery"], module["jquery/lang/vector/vector.js"], module["jquery/event/livehack/livehack.js"], module["jquery/event/reverse/reverse.js"]);
+module['jquery/event/drag/limit/limit.js'] = (function( $ ) {
+
+
+	$.Drag.prototype
+	/**
+	 * @function limit
+	 * @plugin jquery/event/drag/limit
+	 * @download  http://jmvcsite.heroku.com/pluginify?plugins[]=jquery/event/event/drag/limit/limit.js
+	 * `drag.limit(container, [center])` limits a drag to a containing element.
+	 * 
+	 *     $("#todos").on(".todo","draginit", function( ev, drag ) {
+	 *       drag.limit($("#todos").parent())
+	 *     })
+	 * 
+	 * @param {jQuery} container the jQuery-wrapped container element you do not want the drag element to escape.
+	 * @param {String} [center] can set the limit to the center of the object.  Can be 
+	 *   'x', 'y' or 'both'.  By default it will keep the outer edges of the moving element within the
+	 * container element.  If you provide x, it will keep the horizontal center of the moving element
+	 * within the container element.  If you provide y, it will keep the vertical center of the moving
+	 * element within the container element.  If you provide both, it will keep the center of the 
+	 * moving element within the containing element.
+	 * @return {drag} returns the drag for chaining.
+	 */
+	.limit = function( container, center ) {
+		//on draws ... make sure this happens
+		var styles = container.styles('borderTopWidth', 'paddingTop', 'borderLeftWidth', 'paddingLeft'),
+			paddingBorder = new $.Vector(
+			parseInt(styles.borderLeftWidth, 10) + parseInt(styles.paddingLeft, 10) || 0, parseInt(styles.borderTopWidth, 10) + parseInt(styles.paddingTop, 10) || 0);
+
+		this._limit = {
+			offset: container.offsetv().plus(paddingBorder),
+			size: container.dimensionsv(),
+			center : center === true ? 'both' : center
+		};
+		return this;
+	};
+
+	var oldPosition = $.Drag.prototype.position;
+	$.Drag.prototype.position = function( offsetPositionv ) {
+		//adjust required_css_position accordingly
+		if ( this._limit ) {
+			var limit = this._limit,
+				center = limit.center && limit.center.toLowerCase(),
+				movingSize = this.movingElement.dimensionsv('outer'),
+				halfHeight = center && center != 'x' ? movingSize.height() / 2 : 0,
+				halfWidth = center && center != 'y' ? movingSize.width() / 2 : 0,
+				lot = limit.offset.top(),
+				lof = limit.offset.left(),
+				height = limit.size.height(),
+				width = limit.size.width();
+
+			//check if we are out of bounds ...
+			//above
+			if ( offsetPositionv.top()+halfHeight < lot ) {
+				offsetPositionv.top(lot - halfHeight);
+			}
+			//below
+			if ( offsetPositionv.top() + movingSize.height() - halfHeight > lot + height ) {
+				offsetPositionv.top(lot + height - movingSize.height() + halfHeight);
+			}
+			//left
+			if ( offsetPositionv.left()+halfWidth < lof ) {
+				offsetPositionv.left(lof - halfWidth);
+			}
+			//right
+			if ( offsetPositionv.left() + movingSize.width() -halfWidth > lof + width ) {
+				offsetPositionv.left(lof + width - movingSize.left()+halfWidth);
+			}
+		}
+
+		oldPosition.call(this, offsetPositionv);
+	};
+
+	return $;
+})(module["jquery"], module["jquery/event/drag/drag.js"], module["jquery/dom/styles/styles.js"]);
 module['canui/split/split.js'] = (function($, can) {
 
 	/**
