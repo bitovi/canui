@@ -8,7 +8,8 @@ steal('jquery', 'canui/list', 'can/view/ejs', function($) {
 				// TODO this isn't nice yet
 				var row = [], self = this;
 				can.each(this.options.columns, function(col) {
-					row.push(can.isFunction(col.content) ? col.content.call(self, observe, col) :
+					row.push(can.isFunction(col.content) ?
+						col.content.call(self, observe, col) :
 						can.compute(function() {
 							return observe.attr(col.content);
 						}));
