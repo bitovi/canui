@@ -2,7 +2,7 @@
   <tr>
   <% can.each(this, function(col) { %>
       <th <%= (el) -> can.data(el, 'column', col) %>>
-        <%= col.header || col.attr %>
+        <%= col.header %>
       </th>
   <% }) %>
   </tr>

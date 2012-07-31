@@ -80,6 +80,7 @@ steal('jquery', 'can/control',
 			this.$.body = this.$.scrollBody.parent();
 
 			can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
+			// this.$.container = this.$.table.parents('.' + this.constructor.pluginName);
 			// We have to add the control to the original table element as well
 			(arr = can.data(this.$.table,"controls")) || can.data(this.$.table,"controls",arr = []);
 			arr.push(this);

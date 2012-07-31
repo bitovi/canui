@@ -48,6 +48,7 @@ steal('jquery', 'canui/list', 'can/view/ejs', 'canui/table_scroll', function($) 
 		' rendered' : function() {
 			if(this.options.scrollable) {
 				this.$.table.tableScroll();
+				this.$.tableScroll = this.tableScroll().elements();
 			}
 		},
 
@@ -60,13 +61,7 @@ steal('jquery', 'canui/list', 'can/view/ejs', 'canui/table_scroll', function($) 
 			if(!this.options.scrollable || !control) {
 				return null;
 			}
-			this.$.tableScroll = control.elements();
 			return control;
-		},
-
-		destroy : function() {
-			delete this.$;
-			proto.destroy.apply(this, arguments);
 		}
 	});
 });

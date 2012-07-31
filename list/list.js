@@ -9,6 +9,10 @@ function($) {
 	}, {
 		init : function() {
 			this._cidMap = {};
+			// Stores references to DOM elements
+			this.$ = {
+				body : this.element
+			};
 			this.update();
 		},
 
@@ -160,6 +164,12 @@ function($) {
 			});
 
 			return result;
+		},
+
+		destroy : function() {
+			// Remove all DOM element references
+			delete this.$;
+			can.Control.prototype.destroy.apply(this, arguments);
 		}
 	});
 });
