@@ -1,4 +1,4 @@
-steal('jquery', 'funcunit/qunit', 'canui/list', function($) {
+steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 	module("can.ui.List");
 
 	test("Initialize empty", function () {

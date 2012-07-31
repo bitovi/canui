@@ -35,7 +35,7 @@ function($) {
 		_update : function(data) {
 			data = data || [];
 			if(can.isDeferred(data)) {
-				this.element.html(this.options.loadingContent);
+				this.element.html(this.loadingContent());
 				data.done(can.proxy(this._update, this));
 			} else {
 				var cidMap = {};
@@ -60,6 +60,9 @@ function($) {
 		_rows : function(observes) {
 			observes = can.makeArray(observes);
 			var rows = $.map(observes, can.proxy(function(observe) {
+				if(can.isFunction(this.options.view)) {
+					return this.options.view.call(this, observe);
+				}
 				return can.view(this.options.view, observe);
 			}, this));
 			return can.$(rows);
@@ -73,8 +76,21 @@ function($) {
 		 * @private
 		 */
 		_render : function(rows) {
-			var content = !rows || rows.length === 0 ? this.options.emptyContent : rows;
+			var content = !rows || rows.length === 0 ? this.emptyContent() : rows;
 			this.element.html(content);
+		},
+
+		_fnOption : function(name, args) {
+			var val = this.options[name];
+			return can.isFunction(val) ? val.apply(this, args || []) : val;
+		},
+
+		emptyContent : function() {
+			return this._fnOption('emptyContent');
+		},
+
+		loadingContent : function() {
+			return this._fnOption('loadingContent');
 		},
 
 		'{data} length' : function(list, ev, length) {

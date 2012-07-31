@@ -1,4 +1,4 @@
-steal('funcunit').then(function(){
+steal('funcunit', function(){
 	
 module("can.ui.TableScroll", {
 	setup: function(){

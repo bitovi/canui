@@ -1,4 +1,4 @@
-steal('can/construct/super',
+steal('jquery', 'can/construct/super',
 	'can/construct/proxy',
 	'can/control',
 	'jquery/event/resize',
