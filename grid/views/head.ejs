@@ -1,7 +1,9 @@
-<tr>
-<% can.each(columns, function(col) { %>
-    <th <%= (el) -> can.data(el, 'column', col) %>>
-      <%= col.header || col.attr %>
-    </th>
-<% }) %>
-</tr>
+<thead>
+  <tr>
+  <% can.each(this, function(col) { %>
+      <th <%= (el) -> can.data(el, 'column', col) %>>
+        <%= col.header || col.attr %>
+      </th>
+  <% }) %>
+  </tr>
+</thead>
