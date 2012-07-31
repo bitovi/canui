@@ -18,18 +18,20 @@ to create your own UI widgets the way you want them.
 ## Fills `$(element).fills([container])`
 
 [Fills](http://donejs.com/docs.html#!canui.fills) resizes an element so that it fills up the remaining space of
-a parent element. When parent selector or jQuery element is passed, the window will be filled.
-For example, with this HTML markup:
+a parent element. When no parent selector or jQuery element is passed, the window will be filled.
+For example, with this HTML:
 
 {% highlight html %}
 <div id="container">
-    <div id="top">Longer text that might be wraped but everything still looks right.</div>
+    <div id="top">
+      Longer text that might be wraped but everything still looks right.
+    </div>
     <div id="fill">#fill</div>
     <div id="bottom">A bottom sibling.</div>
 </div>
 {% endhighlight %}
 
-To make the `#container` element fill up the window and the `#fill` element fill the remaining space in `#container`,
+To make the `#container` element fill up the window and the `#fill` element the remaining space in `#container`,
 use this:
 
 {% highlight javascript %}
@@ -38,14 +40,14 @@ $('#fill').fills('#container');
 {% endhighlight %}
 
 Resize the container in the following example using the blue square to see how the `#fill`
-element adjusts its size correctly to fill out the container:
+element adjusts its size correctly to fill out the remaining space:
 
 <iframe style="width: 100%; height: 370px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ### resize `$(element).resize()`
 
 Fills listens to the [resize](http://jquerypp.com/#resize) event to recalculate the fill element dimensions.
-Therefore, `resize` has to be triggered when the container dimensions are changed programatically:
+Therefore, `resize` has to be triggered whenever the container dimensions are changed programatically:
 
 {% highlight javascript %}
 $('#fill').fills('#container');
@@ -54,7 +56,7 @@ $('#container').height(500).resize();
 
 ## TableScroll `$(element).tableScroll([fillParent])`
 
-[TableScroll](http://donejs.com/docs.html#!canui.) makes a tables body scrollable while keeping the tables headers and
+[TableScroll](http://donejs.com/docs.html#!canui.) makes a table body scrollable while keeping the tables headers and
 footers fixed. This is useful for making grid like widgets.
 
 To make a table scrollable call:
@@ -151,8 +153,8 @@ $('table').tableScroll();
 
 ### update `$(element).tableScroll()`
 
-After creating a tableScoll, future calls to `$(element).tableScroll()` are used to update the table’s
-layout after a header or footer column has been added, removed, or its content changed.
+After creating a tableScoll, future calls to `$(element).tableScroll()` are used to update the table
+layout after a header or footer column has been added, removed, or the content changed.
 
 {% highlight javascript %}
 $('table').tableScroll();
@@ -176,11 +178,10 @@ $('table').resize();
 
 ### rows `$(element).tableScroll('rows', [replaceRows])`
 
-`$(element).tableScroll('rows', [replaceRows])` returns a jQuery collection containing all table rows.
-
-This can be used to
-remove, insert or replace certain rows. A [resize event](#tablescroll-resize) should be triggered after any
-modification to keep content, header and footer sizes synchronized.
+`$(element).tableScroll('rows', [replaceRows])` is the recommended way of accessing and manipulating rows in a TableScroll.
+It returns a jQuery collection containing all rows or replaces all rows with a collection or new rows.
+A [resize event](#tablescroll-resize) should be triggered after any modification to keep content,
+header and footer sizes synchronized.
 
 {% highlight javascript %}
 // Remove the last row
@@ -203,6 +204,8 @@ Initialize it with the following options:
 - `cid` (default : `'_cid'`) - The unique id attribute to identify a `can.Observe`.
 - `attribute` (default : `'data-cid'`) - The rows attribute name that stores the `cid` value.
 
+### Row views
+
 A row is identified by having the `attribute` property set to the unique id of a `can.Observe`, usually in the
 form of `data-cid="<%= this._cid %>"` in an [EJS](http://canjs.us/#can_ejs) view.
 A simple row view for an ordered or unordered list can look like this:
@@ -215,20 +218,54 @@ A simple row view for an ordered or unordered list can look like this:
 </script>
 {% endhighlight %}
 
-And be used like this:
+### List data
+
+There are several ways to provide list data. Usually it will be a `can.Observe.List` instance
+that contains observable objects. When passing a normal Array, it will be converted to an observable list.
+Another option is to pass a `can.Deferred` that resolves to an observable list or array. The grid will show the
+content of `loadingContent` while the Deferred is being resolved. This makes it possible to directly pass
+`can.Model.findAll` requests:
 
 {% highlight javascript %}
-var people = new can.Observe.List([{
-  name : 'John'
-}, {
-  name : 'Dave'
-}]);
+var Person = can.Model({
+    findAll : 'GET /people',
+    findOne : 'GET /people/{id}',
+    create  : 'POST /people',
+    update  : 'PUT /people/{id}',
+    destroy : 'DELETE /people/{id}'
+  }, {});
 
-$('ul').list({
+$('#list').list({
+  loadingContent : '<li>Please wait...</li>',
+  loadingContent : '<li class="empty">Sorry, nothing found...</li>',
   view : 'rowEJS',
-  emptyContent : '<li class="empty">Nothing found</li>',
-  list : people
+  list : Person.findAll()
 });
+{% endhighlight %}
+
+The last option is to pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`.
+Combined with `can.Observe`, this can make paginating Model requests very easy:
+
+{% highlight javascript %}
+var paginator = new can.Observe({
+  offset : 0,
+  limit : 10
+});
+
+$('#list').list({
+  loadingContent : '<li>Please wait...</li>',
+  loadingContent : '<li class="empty">Sorry, nothing found...</li>',
+  view : 'rowEJS',
+  list : function() {
+    return Person.findAll({
+      offset : paginator.attr('offset'),
+      limit : paginator.attr('limit')
+    });
+  }
+});
+
+// This will load items 20 to 30 from the server
+paginator.attr('offset', 20);
 {% endhighlight %}
 
 ### update `$(element).list(options)`
@@ -259,9 +296,8 @@ $('#list').list('rowElements', people[0])
 
 ## Grid `$(element).grid(options)`
 
-[Grid](http://donejs.com/docs.html#!canui.grid) provides a table that live binds to a
-[can.Observe.List](http://donejs.com/docs.html#!can.Observe.List).
-Along with [TableScroll](#tablescroll) this can be used to create a full grid widget.
+[Grid](http://donejs.com/docs.html#!canui.grid) extends [List](#list) to display a list of data in a table
+based on column definitions.
 
 Possible options:
 
@@ -274,7 +310,7 @@ Possible options:
 With a markup like this:
 
 {% highlight html %}
-<div id="grid"></div>
+<table id="grid"></table>
 {% endhighlight %}
 
 And this `can.Observe.List`:
@@ -300,7 +336,7 @@ $('#grid').grid({
   loadingContent : 'Retrieving people list...',
   columns : [
     { header : 'First name', content : 'firstname' },
-    { header : 'Last name', content : 'latname' },
+    { header : 'Last name', content : 'lastname' },
     { header : 'Age', content : 'age' }
   ],
   list : people
@@ -374,74 +410,6 @@ $('#grid').grid('columns').attr('0.header', 'Full name');
 {% endhighlight %}
 
 ### list `$(element).grid('list', [list])`
-
-There are several ways to provide the grid with a list of data. Usually it will be a `can.Observe.List` instance
-that contains observable objects. When passing a normal Array, it will be converted to an observable list.
-Another option is to pass a `can.Deferred` that resolves to an observable list or array. The grid will show the
-content of `loadingContent` while the Deferred is being resolved.
-
-This allows to directly pass `can.Model` requests:
-
-{% highlight javascript %}
-var Person = can.Model({
-    findAll : 'GET /people',
-    findOne : 'GET /people/{id}',
-    create  : 'POST /people',
-    update  : 'PUT /people/{id}',
-    destroy : 'DELETE /people/{id}'
-  }, {});
-
-$('#grid').grid({
-  loadingContent : 'Please wait...',
-  columns : [{
-      header : 'First name',
-      attr : 'firstname'
-    }, {
-      header : 'Last name',
-      attr : 'lastname'
-    }
-  ],
-  list : Person.findAll()
-});
-{% endhighlight %}
-
-The last option is to pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`.
-As an example, this can be used to load the new data whenever a pagination observe changes:
-
-{% highlight javascript %}
-var paginator = new can.Observe({
-    offset : 0,
-    limit : 10
-  });
-$('#grid').grid({
-  columns : [{
-      header : 'First name',
-      attr : 'firstname'
-    }, {
-      header : 'Last name',
-      attr : 'lastname'
-    }
-  ],
-  list : function() {
-    return Person.findAll({
-      offset : paginator.attr('offset'),
-      limit : paginator.attr('limit')
-    });
-  }
-});
-{% endhighlight %}
-
-### items `$(element).grid('items', [rows])`
-
-`$(element).grid('items', [rows])` returns a `can.Observe.List` of all items or all items for the given row elements.
-It will return a single `can.Observe` if only one row is passed. This makes it easy to retrieve the observable
-instance for a row that has been clicked:
-
-{% highlight javascript %}
-$('#grid tr').on('click', function() {
-  var observe = $('#grid').grid('items', $(this));
-});
-{% endhighlight %}
 
 ### rows `$(element).grid('rows', [observes])`
 
