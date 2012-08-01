@@ -39,4 +39,68 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		equal($.trim(container.find('li:first').html()), 'John II', 'First li shifted');
 	});
 
+	test("Initialize with Deferred", function() {
+		var dfd = can.Deferred();
+
+		var container = $('<ul>').appendTo('#qunit-test-area').list({
+			view : '//canui/list/test.ejs',
+			loadingContent : '<li>Loading</li>',
+			list : dfd
+		});
+
+		equal(container.find('li:first').html(), 'Loading', 'Showing loading');
+		dfd.resolve([
+			{
+				name : 'Deferred I',
+				age : 10
+			}, {
+				name : 'Deferred II',
+				age : 18
+			}
+		]);
+		equal(container.find('li').length, 2, 'Two items rendered');
+		equal($.trim(container.find('li:first').html()), 'Deferred I', 'First li rendered');
+	});
+
+	test("list", function() {
+		var container = $('<ul>').appendTo('#qunit-test-area').list({
+			view : '//canui/list/test.ejs',
+			list : [
+				{
+					name : 'John I',
+					age : 10
+				}, {
+					name : 'John II',
+					age : 18
+				}
+			]
+		});
+
+		var list = container.list('list');
+		equal(list.length, 2, 'Got two items');
+		ok(list instanceof can.Observe.List, 'Converted to can.Observe.List');
+		var item = container.list('list', container.find('li:eq(1)'));
+		ok(item[0] instanceof can.Observe, 'Got can.Observe');
+		equal(item[0].name, 'John II', 'Got correct item');
+	});
+
+	test('rowElements', function() {
+		var people = new can.Observe.List([
+			{
+				name : 'John I',
+				age : 10
+			}, {
+				name : 'John II',
+				age : 18
+			}
+		]);
+
+		var container = $('<ul>').appendTo('#qunit-test-area').list({
+			view : '//canui/list/test.ejs',
+			list : people
+		});
+
+		var el = container.list('rowElements', people[0]);
+		equal(can.$.trim(el.html()), 'John I', 'Got element with correct HTML');
+	})
 })

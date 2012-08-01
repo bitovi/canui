@@ -251,8 +251,10 @@ steal('jquery', 'can/control',
 				$td.css({
 					"padding-top" : 0,
 					"padding-bottom" : 0,
+					"border-top" : 'none',
+					"border-bottom" : 'none',
 					margin : 0,
-					width : ""
+					width : ''
 				}) // If padding is removed from the cell sides, layout might break!
 				$spacer.outerWidth(width + 2).css({
 					"float" : "none",

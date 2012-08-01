@@ -150,7 +150,7 @@ function($) {
 		 */
 		list : function(rows) {
 			if(!rows) {
-				return this.options.list || new can.Observe.List();
+				return this.options.data || new can.Observe.List();
 			}
 
 			var result = new can.Observe.List(),
