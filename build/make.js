@@ -15,7 +15,8 @@ steal('steal/build/pluginify', function() {
 	steal.build.pluginify('canui/canui.js', {
 		out: out + "canui.js",
 		skipCallbacks: true,
-		exclude : excludes
+		exclude : excludes,
+		shim : { 'jquery' : 'jQuery', 'can/util' : 'can' }
 	});
 
 });
