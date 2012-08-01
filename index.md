@@ -54,7 +54,7 @@ $('#container').height(500).resize();
 
 ## TableScroll `$(element).tableScroll([fillParent])`
 
-[TableScroll](http://donejs.com/docs.html#!canui.) makes a table body scrollable while keeping the tables headers and
+[TableScroll](http://donejs.com/docs.html#!canui.) makes a table body scrollable while keeping the table headers and
 footers fixed. This is useful for making grid like widgets.
 
 To make a table scrollable call:
@@ -91,6 +91,21 @@ On a table like this:
 The following example shows a scrollable table with fixed header and footer:
 
 <iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+
+### update `$(element).tableScroll()`
+
+After creating a tableScoll, future calls to `$(element).tableScroll()` are used to update the table
+layout after a header or footer column has been added, removed, or had its content changed.
+
+{% highlight javascript %}
+$('table').tableScroll();
+// Get the header element
+var header = $('table').tableScroll('elements').header;
+// Update the first heading column
+header.find('th:first').html('NewColumnName');
+// Update the columns
+$('table').tableScroll('update');
+{% endhighlight %}
 
 ### elements `$('table').tableScroll('elements')`
 
@@ -149,21 +164,6 @@ elements.header.find('th:eq(1').html('Last');
 $('table').tableScroll();
 {% endhighlight %}
 
-### update `$(element).tableScroll()`
-
-After creating a tableScoll, future calls to `$(element).tableScroll()` are used to update the table
-layout after a header or footer column has been added, removed, or the content changed.
-
-{% highlight javascript %}
-$('table').tableScroll();
-// Get the header element
-var header = $('table').tableScroll('elements').header;
-// Update the first heading column
-header.find('th:first').html('NewColumnName');
-// Update the columns
-$('table').tableScroll('update');
-{% endhighlight %}
-
 ### resize `$(element).resize()`
 
 The `resize` event should be triggered whenever any table dimensions have changed.
@@ -176,9 +176,9 @@ $('table').resize();
 
 ### rows `$(element).tableScroll('rows', [replaceRows])`
 
-`$(element).tableScroll('rows', [replaceRows])` is the recommended way of accessing and manipulating rows in a TableScroll.
-It returns a jQuery collection containing all rows or replaces all rows with a collection or new rows.
-A [resize event](#tablescroll-resize) should be triggered after any modification to keep content,
+`$(element).tableScroll('rows', [replaceRows])` is the recommended way of accessing and manipulating rows.
+It returns a jQuery collection containing all rows or replaces all rows with a collection of new rows.
+A [resize](#tablescroll-resize) event should be triggered after any modification to keep content,
 header and footer sizes synchronized.
 
 {% highlight javascript %}
@@ -196,12 +196,15 @@ list. It is also possible to provide different list sources like a `can.Deferred
 content to display when the list is empty or a deferred is being resolved.
 Initialize it with the following options:
 
-- `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the list data to render.
+- `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the list data.
 - `view` - The view to render a single row. Gets the current `can.Observe` passed.
 - `emptyContent` - The content to show when the list is empty.
 - `loadingContent` - The content to show while a deferred is being resolved.
 - `cid` (default : `'_cid'`) - The unique id attribute to identify a `can.Observe`.
 - `attribute` (default : `'data-cid'`) - The rows attribute name that stores the `cid` value.
+
+List triggers the `rendered` event after the list has been fully rendered with the current data and the
+`changed` event when items got removed or added.
 
 ### Row views
 
@@ -236,7 +239,7 @@ var Person = can.Model({
 
 $('#list').list({
   loadingContent : '<li>Please wait...</li>',
-  loadingContent : '<li class="empty">Sorry, nothing found...</li>',
+  emptyContent : '<li class="empty">Sorry, nothing found...</li>',
   view : 'rowEJS',
   list : Person.findAll()
 });
@@ -269,48 +272,93 @@ $('#list').list({
 paginator.attr('offset', 20);
 {% endhighlight %}
 
+### Example
+
+The following example uses the List widget to display a list of simple Todos:
+
+<iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/donejs/Vmxep/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+
 ### update `$(element).list([options])`
 
 Once created on an element, any other call to `$(element).list([options])` will force rerendering the list
 using the updated options.
 
-### list `$(element).list('list', [rows])`
+{% highlight javascript %}
+// Will update the list with an empty array
+// causing it to `emptyContent`
+$('#list').list({
+  list : []
+});
+{% endhighlight %}
 
-`$(element).list('list', [rows])` returns a `can.Observe.List` of all observes or all observes for the given row elements.
-This can be used to retrieve the observable for a row that was clicked:
+### list `$(element).list('list', [newList])`
+
+`$(element).list('list', [newList])` returns a `can.Observe.List` with the currently displayed data.
+When passing `newList`, the List will be updated with that list. `$(element).list('list')` is the best way
+to work with the resolved list data, for example when a Deferred was passed initially:
 
 {% highlight javascript %}
-var data = $('#list').list('list');
-data // -> can.Observe.List
+$('#list').list({
+  loadingContent : '<li>Please wait...</li>',
+  emptyContent : '<li class="empty">Sorry, nothing found...</li>',
+  view : 'rowEJS',
+  list : Person.findAll()
+});
 
+// When the list is rendered, remove the last element
+$('#list').on('rendered', function(ev) {
+  $('#list').list('list').pop();
+});
+{% endhighlight %}
+
+### items `$(element).list('items', [rows])`
+
+`$(element).list('items', [rows])` returns a `can.Observe.List` of all observes (the same as `$(element).list('list')`)
+or all observes for the given row elements. This can be used to retrieve the observable for a row that was clicked:
+
+{% highlight javascript %}
 $('li[data-cid]').on('click', function() {
-  var observe = $('#list').list('list', this)[0];
+  var observe = $('#list').list('items', this)[0];
+});
+{% endhighlight %}
+
+Or to remove a `can.Model` from the list when clicking on a `.remove` element in a row:
+
+{% highlight javascript %}
+$('.remove').on('click', function() {
+  var row = $(this).closest('li[data-cid]'),
+      model = $('#list').list('items', row)[0];
+
+  // A destroyed model will be automatically removed
+  // from any list
+  model.destroy();
 });
 {% endhighlight %}
 
 ### rowElements `$(element).list('rowElements', [observes])`
 
-`$(element).list('rowElements', [observes])` returns a jQuery collection of all rows or all rows for the given observes:
+`$(element).list('rowElements', [observes])` returns a jQuery collection of all rows or all row elements
+representing the given observes:
 
 {% highlight javascript %}
 // Retrieves the row element for the first observe
 $('#list').list('rowElements', people[0])
-// -> [<li data-cid="...">John</li>]
+// -> [<li data-cid="...">...</li>]
 {% endhighlight %}
 
 ## Grid `$(element).grid(options)`
 
-[Grid](http://donejs.com/docs.html#!canui.grid) to display a list of data in a table. It combines [List](#list) and
+[Grid](http://donejs.com/docs.html#!canui.grid) displays a list of data in a table combining [List](#list) and
 [TableScroll](#tablescroll) into a full Grid widget.
 
 Possible options:
 
-- `emptyContent` - The content to display when there are no items
-- `loadingContent` - The content to display while a deferred is being resolved
-- `footerContent` - The content to display in the table footer
-- `list` - The item provider described in more detail in the [list](#grid-list) section
-- `columns` - The columns to display, see the [columns](#grid-column) section
-- `scrollable` (default: `false`) - If this grid should be scrollable using [TableScroll](#tablescroll)
+- `emptyContent` - The content to display when there are no items.
+- `loadingContent` - The content to display while a deferred is being resolved.
+- `footerContent` - The content to display in the table footer.
+- `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the [list data](#list-list_data).
+- `columns` - The definition of the [columns](#grid-column) to display.
+- `scrollable` (default: `false`) - If this grid should be scrollable using [TableScroll](#tablescroll).
 
 With a markup like this:
 
@@ -361,7 +409,7 @@ must at least contain:
 - `header` - The table column header HTML content.
 - `content` - The content to display for this column. This can either be an attribute name
 or a callback in the form of `function(observe, index)` that returns the content or a
-`can.compute` for the current column with computed properties.
+`can.compute` with computed properties for the current column.
 
 The following example creates a grid with a column that contains the combined first- and lastname:
 
@@ -396,7 +444,7 @@ script:
 $('#grid').grid({
   columns : [
     { header : 'First name', content : 'firstname' },
-    { header : 'Last name', content : 'latname' },
+    { header : 'Last name', content : 'lastname' },
     {
       header : 'Age',
       content : function(observe) {
@@ -411,20 +459,48 @@ $('#grid').grid({
 Columns are acessible as a `can.Observe.List`, which makes it easy to update its attributes:
 
 {% highlight javascript %}
+// Update the header text of the first column
 $('#grid').grid('columns').attr('0.header', 'Full name');
 {% endhighlight %}
 
-### list `$(element).grid('list', [list])`
+### list `$(element).grid('list', [newList])`
 
-### rows `$(element).grid('rows', [observes])`
+`$(element).grid('list', [newList])` returns a `can.Observe.List` with the data currently displayed in the grid or
+updates the current list. It does this by passing this call to the [list method](#list-list) of the List widget
+used to display the rows internally. To remove the last item from the grid simply use this:
 
-`$(element).grid('rows', [observes])` returns a jQuery collection of all rows or all rows for the given observes.
+{% highlight javascript %}
+$('#grid').grid('list').pop();
+{% endhighlight %}
+
+### items `$(element).grid('items', [rows])`
+
+`$(element).list('items', [rows])` returns a `can.Observe.List` of all observes or all observes for the
+given row elements. It works just like the [items](#list-items) method of the List widget.
+Use it, for example, to retrieve the observe instance for a row that has been clicked:
+
+{% highlight javascript %}
+$('#grid tr').on('click', function() {
+  var observe = $('#grid').grid('items', this)[0];
+});
+{% endhighlight %}
+
+### rowElements `$(element).grid('rowElements', [observes])`
+
+`$(element).grid('rowElements', [observes])` returns a jQuery collection of all rows or all row elements
+representing the given observes just like the [rowElements](#list-rowelements) method of the List widget:
+
+{% highlight javascript %}
+// Retrieves the row element for the first observe
+$('#list').grid('rowElements', people[0])
+// -> [<tr data-cid="...">...</tr>]
+{% endhighlight %}
 
 ### tableScroll `$(element).grid('tableScroll')`
 
 If the `scrollable` option is set to true, `$(element).grid('tableScroll')` will return the [TableScroll](#tablescroll)
 instance that is used to make the grid scrollable, `null` otherwise.
-This can be used to automatically load new data when scrolled to the bottom of the grid:
+This can be used, for example, to automatically load new data when the user scrolled to the bottom of the grid:
 
 {% highlight javascript %}
 var offset = 0;
@@ -449,13 +525,13 @@ var elements = $('#grid').grid('tableScroll').elements(),
 
 elements.scrollBody.on('scroll', function() {
   if($(this).scrollTop() == $(this).parent().height()) {
-    offset += 10;
     if(!deferred || deferred.isResolved()) {
+      offset += 10;
       deferred = Person.findAll({
         offset : offset,
         limit : 10
       }).done(function(people) {
-        var data = $('#grid').grid('items');
+        var data = $('#grid').grid('list');
         can.each(people, function(person) {
           data.push(people);
         });
