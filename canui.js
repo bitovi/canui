@@ -1,5 +1,4 @@
 steal(
-	'canui/accordion',
 	'canui/table_scroll',
 	'canui/fills',
 	'canui/selectable',

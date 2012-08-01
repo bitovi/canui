@@ -6,6 +6,7 @@ steal('steal/build/pluginify', function() {
 		excludes = [ 'steal/dev',
 			'can/',
 			'jquery/',
+			'jquery',
 			'steal/less' ];
 
 	steal.File(out).mkdirs();
