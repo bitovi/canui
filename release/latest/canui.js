@@ -1,5 +1,8 @@
-var module = { _orig: window.module, _define: window.define };
-var define = function(id, deps, value) {
+(function() {
+ var module = { _define : window.define };
+module['jquery'] = jQuery;
+module['can/util'] = can;
+define = function(id, deps, value) {
 	module[id] = value();
 };
 define.amd = { jQuery: true };
@@ -594,7 +597,7 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 		}
 	})
 })(module["jquery"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["canui/fills/fills.js"], module["canui/util/scrollbar_width.js"], module["jquery/event/resize/resize.js"]);
-module['canui/selectable/selectable.js'] = (function($, can) {
+module['canui/selectable/selectable.js'] = (function($) {
 
 //we have to clear out activate
 $.event.special.activate = {
@@ -1062,8 +1065,8 @@ can.Control('can.ui.Selectable',{
 	}
 });
 
-})(module["jquery"], module["can/util/jquery/jquery.js"], module["can/control/control.js"], module["can/construct/proxy/proxy.js"], module["can/control/plugin/plugin.js"], module["jquery/event/key/key.js"]);
-module['canui/split/split.js'] = (function($, can) {
+})(module["jquery"], module["can/control/control.js"], module["can/construct/proxy/proxy.js"], module["can/control/plugin/plugin.js"], module["jquery/event/key/key.js"]);
+module['canui/split/split.js'] = (function($) {
 
 	/**
 	 * @class can.ui.Split
@@ -1803,9 +1806,7 @@ module['canui/split/split.js'] = (function($, can) {
 			}
 		}
 	})
-})(module["jquery"], module["can/util/jquery/jquery.js"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["jquery/event/drag/limit/limit.js"], module["jquery/dom/dimensions/dimensions.js"], module["jquery/event/key/key.js"], module["jquery/event/resize/resize.js"]);
-window.can = module['can/util/can.js'];
+})(module["jquery"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["jquery/event/drag/limit/limit.js"], module["jquery/dom/dimensions/dimensions.js"], module["jquery/event/key/key.js"], module["jquery/event/resize/resize.js"]);
 
 window.define = module._define;
-
-window.module = module._orig;
+})();
