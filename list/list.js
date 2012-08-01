@@ -9,13 +9,14 @@ function($) {
 	}, {
 		init : function() {
 			this._cidMap = {};
-			// Stores references to DOM elements
-			this.$ = {
-				body : this.element
-			};
 			this.update();
 		},
 
+		/**
+		 * Updates the options and re-renders the list.
+		 *
+		 * @param {Object} [options] The updated options
+		 */
 		update : function(options) {
 			can.Control.prototype.update.call(this, options);
 			var list = this.options.list;
@@ -85,7 +86,7 @@ function($) {
 		_render : function(rows) {
 			var content = !rows || rows.length === 0 ? this._fnOption('emptyContent') : rows;
 			this.element.html(content);
-			this.element.trigger('rendered', this.list(), this);
+			this.element.trigger('rendered');
 		},
 
 		_fnOption : function(name, args) {
@@ -102,6 +103,7 @@ function($) {
 		'{data} remove' : function(list, ev, observes) {
 			if(list.length) { // We can't get rowElements from an empty list
 				this.rowElements(observes).remove();
+				this.element.trigger('changed');
 			}
 		},
 
@@ -115,6 +117,7 @@ function($) {
 				// Or prepend it to the element
 				this.element.prepend(newRows);
 			}
+			this.element.trigger('changed');
 		},
 
 		/**
@@ -168,7 +171,7 @@ function($) {
 
 		destroy : function() {
 			// Remove all DOM element references
-			delete this.$;
+			delete this.el;
 			can.Control.prototype.destroy.apply(this, arguments);
 		}
 	});

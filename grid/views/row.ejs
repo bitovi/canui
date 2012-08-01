@@ -1,5 +1,5 @@
 <tr data-cid="<%= cid %>">
-<% can.each(row, function(current) { %>
+<% can.each(this, function(current) { %>
   <% if(current.isComputed) { %>
     <td><%== current() %></td>
   <% } else { %>

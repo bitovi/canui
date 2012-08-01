@@ -1,10 +1,19 @@
-steal('jquery', 'canui/list', 'can/view/ejs', 'canui/table_scroll', function($) {
-	var proto = can.ui.List.prototype;
-	can.ui.List('can.ui.Grid', {
+steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll', function($) {
+	var appendIf = function(el, tag) {
+		if(el.is(tag) || !tag) {
+			return el;
+		}
+		var res = el.find(tag);
+		if(res.length) {
+			return res;
+		}
+		return el.append(can.$('<' + tag + '>')).find(tag);
+	};
+
+	can.Control('can.ui.Grid', {
 		pluginName : 'grid',
 		defaults : {
 			view : function(observe) {
-				// TODO this isn't nice yet
 				var row = [], self = this;
 				can.each(this.options.columns, function(col) {
 					row.push(can.isFunction(col.content) ?
@@ -13,55 +22,97 @@ steal('jquery', 'canui/list', 'can/view/ejs', 'canui/table_scroll', function($) 
 							return observe.attr(col.content);
 						}));
 				});
-				return can.view('//canui/grid/views/row.ejs', { row : row, cid : observe._cid });
+				row.cid = observe.cid;
+				return can.view('//canui/grid/views/row.ejs', row);
 			},
-			header : '//canui/grid/views/head.ejs',
-			emptyContent : function() {
-				return '<tr><td colspan="'
-					+ this.options.columns.length
-					+ '" class="empty">No data</td></tr>'
-			},
-			loadingContent : function() {
-				return '<tr><td colspan="'
-					+ this.options.columns.length
-					+ '" class="loading">Loading...</td></tr>'
-			},
+			headerContent : '//canui/grid/views/head.ejs',
+			emptyContent : 'No data',
+			loadingContent : 'Loading...',
 			scrollable : false
 		}
 	}, {
 		setup : function(el, ops) {
-			proto.setup.apply(this, arguments);
-			this.$ = {
-				table : this.element
-			};
-			this.element = can.$('<tbody>').appendTo(this.$.table);
-			this.$.body = this.element;
-			return [this.element, ops];
+			var table = appendIf(can.$(el), 'table'),
+				options = can.extend({}, ops),
+				self = this;
+			this.el = {
+				header : appendIf(table, 'thead'),
+				body : appendIf(table, 'tbody'),
+				footer : appendIf(table, 'tfoot')
+			}
+			can.each(['emptyContent', 'loadingContent', 'footerContent'], function(name) {
+				var current = options[name] || self.constructor.defaults[name];
+				if(!can.$(current).length) {
+					options[name] = '<tr><td colspan="' + ops.columns.length
+						+ '">' + current + '</td></tr>';
+				}
+			});
+			if(!(options.columns instanceof can.Observe.List)) {
+				options.columns = new can.Observe.List(options.columns);
+			}
+			can.Control.prototype.setup.call(this, table, options);
+			return [table, options];
 		},
 
 		init : function(el, ops) {
-			this.$.table.prepend(can.view(this.options.header, this.options.columns));
-			this.$.header = this.$.table.find('thead');
-			proto.init.apply(this, arguments);
+			this.el.header.append(this._fnView('headerContent', this.options.columns));
+			this.control = {
+				list : this.el.body.control(can.ui.List)
+			}
+			// this.el.footer.append(this._fnView('footerContent', this.options.columns));
+			this.update();
+		},
+
+		update : function(options) {
+			can.Control.prototype.update.apply(this, arguments);
+			this.el.body.list(this.options);
+		},
+
+		columns : function(cols) {
+			if(!cols) {
+				return this.options.columns;
+			}
+			this.update({ columns : cols });
+		},
+
+		_fnView : function(name, arg) {
+			var val = this.options[name];
+			if(can.isFunction(val)) {
+				return val.call(this, arg);
+			}
+			return can.view(val, arg);
+		},
+
+		'{columns} change' : function() {
+			if(this.options.scrollable) {
+				this.element.tableScroll();
+			}
 		},
 
 		' rendered' : function() {
 			if(this.options.scrollable) {
-				this.$.table.tableScroll();
-				this.$.tableScroll = this.tableScroll().elements();
+				this.element.tableScroll();
+				this.control.tableScroll = this.element.control(can.ui.TableScroll);
 			}
 		},
 
-		elements : function() {
-			return this.$;
+		' changed' : function() {
+			// Trigger resize if we are scrollable
+			if(this.options.scrollable) {
+				this.element.trigger('resize');
+			}
+		},
+
+		list : function() {
+			return this.control.list.list.apply(this.control.list, arguments);
+		},
+
+		rowElements : function() {
+			return this.control.list.rowElements.apply(this.control.list, arguments);
 		},
 
 		tableScroll : function() {
-			var control = this.$.table.control(can.ui.TableScroll);
-			if(!this.options.scrollable || !control) {
-				return null;
-			}
-			return control;
+			return this.control.tableScroll;
 		}
 	});
 });

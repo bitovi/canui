@@ -192,7 +192,8 @@ steal('jquery', 'can/control',
 				header : this.$.thead,
 				footer : this.$.tfoot,
 				body : this.$.body,
-				scrollBody : this.$.scrollBody
+				scrollBody : this.$.scrollBody,
+				container : this.element
 			};
 		},
 
