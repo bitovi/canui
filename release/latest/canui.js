@@ -1,8 +1,8 @@
-var module = { _orig: window.module };
-define = function(id, deps, value) {
-module[id] = value();
+var module = { _orig: window.module, _define: window.define };
+var define = function(id, deps, value) {
+	module[id] = value();
 };
- define.amd = { jQuery: true };
+define.amd = { jQuery: true };
 
 module['can/util/can.js'] = (function(){
 	window.can = window.can || {};
@@ -11871,7 +11871,8 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 				header : this.$.thead,
 				footer : this.$.tfoot,
 				body : this.$.body,
-				scrollBody : this.$.scrollBody
+				scrollBody : this.$.scrollBody,
+				container : this.element
 			};
 		},
 
@@ -14598,4 +14599,7 @@ module['canui/split/split.js'] = (function($, can) {
 	})
 })(module["jquery"], module["can/util/jquery/jquery.js"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["jquery/event/drag/limit/limit.js"], module["jquery/dom/dimensions/dimensions.js"], module["jquery/event/key/key.js"], module["jquery/event/resize/resize.js"]);
 window.can = module['can/util/can.js'];
+
+window.define = module._define;
+
 window.module = module._orig;
