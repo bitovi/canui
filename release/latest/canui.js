@@ -5,13 +5,12 @@ module[id] = value();
  define.amd = { jQuery: true };
 
 module['can/util/can.js'] = (function(){
-	window.can = {
-		isDeferred : function( obj ) {
-			var isFunction = this.isFunction;
-			// Returns `true` if something looks like a deferred.
-			return obj && isFunction(obj.then) && isFunction(obj.pipe)
-		}
-	};
+	window.can = window.can || {};
+	window.can.isDeferred = function( obj ) {
+		var isFunction = this.isFunction;
+		// Returns `true` if something looks like a deferred.
+		return obj && isFunction(obj.then) && isFunction(obj.pipe)
+	}
 	return window.can;
 })();
 module['can/util/preamble.js'] = (function() {
@@ -11760,6 +11759,7 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 			this.$.body = this.$.scrollBody.parent();
 
 			can.Control.prototype.setup.call(this, this.$.body.parent()[0], options);
+			// this.$.container = this.$.table.parents('.' + this.constructor.pluginName);
 			// We have to add the control to the original table element as well
 			(arr = can.data(this.$.table,"controls")) || can.data(this.$.table,"controls",arr = []);
 			arr.push(this);
