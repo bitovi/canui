@@ -46,13 +46,8 @@ function($) {
 				this.element.html(this._fnOption('loadingContent'));
 				data.done(can.proxy(this._update, this));
 			} else {
-				var cidMap = {};
+				this._cidMap = {};
 				this.options.data = data instanceof can.Observe.List ? data : new can.Observe.List(data);
-				// Update the mapping from can.Observe unique id to Observe instance
-				this.options.data.forEach(function(observe) {
-					cidMap[observe._cid] = observe;
-				});
-				this._cidMap = cidMap;
 				this.on();
 				this._render(this._rows(this.options.data));
 			}
@@ -66,8 +61,11 @@ function($) {
 		 * @private
 		 */
 		_rows : function(observes) {
+			var self = this;
 			observes = can.makeArray(observes);
 			var rows = $.map(observes, can.proxy(function(observe) {
+				// Update the mapping from can.Observe unique id to Observe instance
+				self._cidMap[observe[self.options.cid]] = observe;
 				if(can.isFunction(this.options.view)) {
 					return this.options.view.call(this, observe);
 				}
@@ -102,6 +100,11 @@ function($) {
 
 		'{data} remove' : function(list, ev, observes) {
 			if(list.length) { // We can't get rowElements from an empty list
+				var self = this;
+				// Remove the CID mapping
+				can.each(observes, function(observe) {
+					delete self._cidMap[observe[self.options.cid]];
+				});
 				this.rowElements(observes).remove();
 				this.element.trigger('changed');
 			}
@@ -114,8 +117,8 @@ function($) {
 				// We either append after the last data row
 				rowElements.last().after(newRows);
 			} else {
-				// Or prepend it to the element
-				this.element.prepend(newRows);
+				// Or set it as the content
+				this.element.html(newRows);
 			}
 			this.element.trigger('changed');
 		},
@@ -167,12 +170,6 @@ function($) {
 			});
 
 			return result;
-		},
-
-		destroy : function() {
-			// Remove all DOM element references
-			delete this.el;
-			can.Control.prototype.destroy.apply(this, arguments);
 		}
 	});
 });

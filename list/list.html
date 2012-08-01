@@ -7,7 +7,7 @@
 
 <script type="text/ejs" id="rowEJS">
   <li data-cid="<%= this._cid %>">
-    <%= this.attr('name') %>
+    <%= this.attr('name') %> <a class="remove" href="javascript://">X</a>
   </li>
 </script>
 
@@ -15,31 +15,40 @@
 
 </ul>
 
-<button>Click me</button>
+<label for="name">Name</label>
+<input type="text" id="name" />
+<button class="add">Add Todo</button>
 
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
-  steal('jquery', 'can/util', 'canui/list', 'can/view/ejs').then(function($, can) {
-    var people = new can.Observe.List([
+  steal('jquery', 'canui/list', 'can/view/ejs').then(function($) {
+    var todos = new can.Observe.List([
       {
-        name : 'John I',
-        age : 10
+        name : 'Do dishes'
       }, {
-        name : 'John II',
-        age : 18
+        name : 'Learn CanUI'
       }
     ]);
 
-    var cmp = can.compute(people);
     $('#list').list({
       view : 'rowEJS',
-      empty : '<li>Nothing here...</li>',
-      loading : '<li>Loading...</li>',
-      list : cmp
+      emptyContent : '<li class="empty">Yay! Everything done</li>',
+      list : todos
     });
 
-    $('button').click(function() {
-      cmp([]);
+    $('.remove').on('click', function() {
+      var model = $('#list').list('list', $(this).closest('li'))[0];
+      todos.splice(todos.indexOf(model), 1);
+    });
+
+    $('.add').on('click', function() {
+      var name = $('#name').val();
+      if(name) {
+        todos.push(new can.Observe({
+          name : name
+        }));
+        $('#name').val('');
+      }
     });
   });
 </script>
