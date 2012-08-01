@@ -84,7 +84,7 @@ function($) {
 		_render : function(rows) {
 			var content = !rows || rows.length === 0 ? this._fnOption('emptyContent') : rows;
 			this.element.html(content);
-			this.element.trigger('rendered');
+			this.element.trigger('rendered', this);
 		},
 
 		_fnOption : function(name, args) {
@@ -106,7 +106,7 @@ function($) {
 					delete self._cidMap[observe[self.options.cid]];
 				});
 				this.rowElements(observes).remove();
-				this.element.trigger('changed');
+				this.element.trigger('changed', this);
 			}
 		},
 
@@ -120,7 +120,7 @@ function($) {
 				// Or set it as the content
 				this.element.html(newRows);
 			}
-			this.element.trigger('changed');
+			this.element.trigger('changed', this);
 		},
 
 		/**
@@ -145,15 +145,10 @@ function($) {
 			return can.$(elements);
 		},
 
-		/**
-		 * Returns all
-		 *
-		 * @param {Collection} rows An array or DOM element collection
-		 * @return {can.Observe.List|can.Observe}
-		 */
-		list : function(rows) {
+		items : function(rows)
+		{
 			if(!rows) {
-				return this.options.data || new can.Observe.List();
+				return this.list();
 			}
 
 			var result = new can.Observe.List(),
@@ -170,6 +165,21 @@ function($) {
 			});
 
 			return result;
+		},
+
+		/**
+		 * Returns all
+		 *
+		 * @param {Collection} rows An array or DOM element collection
+		 * @return {can.Observe.List|can.Observe}
+		 */
+		list : function(newlist) {
+			if(!newlist) {
+				return this.options.data || new can.Observe.List();
+			}
+			this.update({
+				list : newList
+			});
 		}
 	});
 });

@@ -97,10 +97,14 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 		},
 
 		' changed' : function() {
-			// Trigger resize if we are scrollable
+			// Trigger resize to adjust the TableScroll
 			if(this.options.scrollable) {
 				this.element.trigger('resize');
 			}
+		},
+
+		items : function() {
+			return this.control.list.items.apply(this.control.list, arguments);
 		},
 
 		list : function() {

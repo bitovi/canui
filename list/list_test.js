@@ -62,7 +62,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		equal($.trim(container.find('li:first').html()), 'Deferred I', 'First li rendered');
 	});
 
-	test("list", function() {
+	test("items", function() {
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			view : '//canui/list/test.ejs',
 			list : [
@@ -76,10 +76,10 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 			]
 		});
 
-		var list = container.list('list');
+		var list = container.list('items');
 		equal(list.length, 2, 'Got two items');
 		ok(list instanceof can.Observe.List, 'Converted to can.Observe.List');
-		var item = container.list('list', container.find('li:eq(1)'));
+		var item = container.list('items', container.find('li:eq(1)'));
 		ok(item[0] instanceof can.Observe, 'Got can.Observe');
 		equal(item[0].name, 'John II', 'Got correct item');
 	});
