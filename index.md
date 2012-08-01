@@ -242,9 +242,9 @@ $('#list').list({
 });
 {% endhighlight %}
 
-You can also pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`. If it is a function ,
-it will be converted to a `can.compute`.
-Combined with `can.Observe`, this can make paginating Model requests very easy:
+Another possibility is to pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`.
+If you pass a function, it will be converted to a `can.compute`.
+Combined with `can.Observe`, this makes paginating Model requests very easy:
 
 {% highlight javascript %}
 var paginator = new can.Observe({
@@ -265,7 +265,7 @@ $('#list').list({
 });
 
 // This will load items 20 to 30 from the server
-// and render it into the list
+// and render the result into the list
 paginator.attr('offset', 20);
 {% endhighlight %}
 
@@ -280,6 +280,9 @@ using the updated options.
 This can be used to retrieve the observable for a row that was clicked:
 
 {% highlight javascript %}
+var data = $('#list').list('list');
+data // -> can.Observe.List
+
 $('li[data-cid]').on('click', function() {
   var observe = $('#list').list('list', this)[0];
 });
@@ -297,14 +300,14 @@ $('#list').list('rowElements', people[0])
 
 ## Grid `$(element).grid(options)`
 
-[Grid](http://donejs.com/docs.html#!canui.grid) extends the CanUI [List](#list) to display a list of data in a table
-using a set of column definitions.
+[Grid](http://donejs.com/docs.html#!canui.grid) to display a list of data in a table. It combines [List](#list) and
+[TableScroll](#tablescroll) into a full Grid widget.
 
 Possible options:
 
 - `emptyContent` - The content to display when there are no items
 - `loadingContent` - The content to display while a deferred is being resolved
-- `footerContent` - The content of the table footer
+- `footerContent` - The content to display in the table footer
 - `list` - The item provider described in more detail in the [list](#grid-list) section
 - `columns` - The columns to display, see the [columns](#grid-column) section
 - `scrollable` (default: `false`) - If this grid should be scrollable using [TableScroll](#tablescroll)
@@ -358,7 +361,7 @@ must at least contain:
 - `header` - The table column header HTML content.
 - `content` - The content to display for this column. This can either be an attribute name
 or a callback in the form of `function(observe, index)` that returns the content or a
-[can.compute](#) for the current column with computed properties.
+`can.compute` for the current column with computed properties.
 
 The following example creates a grid with a column that contains the combined first- and lastname:
 
