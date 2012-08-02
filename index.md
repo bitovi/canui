@@ -248,7 +248,6 @@ $('#list').list({
 {% endhighlight %}
 
 Another possibility is to pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`.
-If you pass a function, it will be converted to a `can.compute`.
 Combined with `can.Observe`, this makes paginating Model requests very easy, for example:
 
 {% highlight javascript %}
@@ -261,15 +260,15 @@ $('#list').list({
   loadingContent : '<li>Please wait...</li>',
   loadingContent : '<li class="empty">Sorry, nothing found...</li>',
   view : 'rowEJS',
-  list : function() {
+  list : can.compute(function() {
     return Person.findAll({
       offset : paginator.attr('offset'),
       limit : paginator.attr('limit')
     });
-  }
+  })
 });
 
-// This will load items 20 to 30 from the server
+// This will load items 20 to 29 from the server
 // and render the result into the list
 paginator.attr('offset', 20);
 {% endhighlight %}
@@ -351,8 +350,8 @@ $('#list').list('rowElements', people[0])
 
 ## Grid `$(element).grid(options)`
 
-[Grid](http://donejs.com/docs.html#!canui.grid) combines [List](#list) and [TableScroll](#tablescroll)
-to display a list of data in a table.
+[Grid](http://donejs.com/docs.html#!canui.grid) combines [List](#list) and [TableScroll](#tablescroll) into a grid
+widget to display a list of data in a table.
 
 Possible options:
 
@@ -559,6 +558,8 @@ Combined values like `bottom left` are also possible.
   - `none` - Doesn't use any collision strategey.
 - __hideWhenOfInvisible__ - Hide the positionable element when the target element scrolls out of visibility range.
 
+<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/donejs/UqNs8/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+
 ### move `$(element).trigger('move')`
 
 The `move` event should be triggered whenever a positionable needs to reposition itself.
@@ -606,6 +607,8 @@ initialized with the following options:
 - __multiActivate__ (default: `true`) - If multi selection is enabled
 - __outsideDeactivate__ (default: `true`) - Deactivate everything when a click or keypress happens outside of the selectable
 - __deactivateParent__ (default: `document`) - If `outsideDeactivate` is true, the parent element to use for deactivating
+
+<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/donejs/hJdf2/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ### selectables `$(element).selectable('selectables')`
 
@@ -671,8 +674,8 @@ Deactivates all active elements and triggers the `deactivate` event.
 
 ## Resizable
 
-[Resizable](http://donejs.com/docs.html#!canui.resizable) allows to resize an element by adding draggable handles and can
-be initialized with these options:
+[Resizable](http://donejs.com/docs.html#!canui.resizable) allows to resize an element by adding draggable handles.
+It can be initialized with these options:
 
 - __aspectRatio__ (default: `false`) - Whether to keep the ratio between width and height
 - __autoHide__ (default: `false`) - If `true`, hide the handles unless the mouse is inside the resizable element
