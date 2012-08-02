@@ -3,7 +3,8 @@ steal(
 	'canui/fills',
 	'canui/selectable',
 	'canui/split',
-	'canui/list'
+	'canui/list',
+	'canui/grid'
 //	'canui/grid',
 //	'canui/block',
 //	'canui/grid',

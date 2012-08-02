@@ -178,7 +178,7 @@ function($) {
 				return this.options.data || new can.Observe.List();
 			}
 			this.update({
-				list : newList
+				list : newlist
 			});
 		}
 	});
