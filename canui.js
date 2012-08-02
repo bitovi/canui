@@ -6,5 +6,5 @@ steal(
 	'canui/list',
 	'canui/grid',
 	'canui/positionable',
-	'canui/resize'
+	'canui/resizable'
 )

@@ -3,7 +3,7 @@
 <html lang="en">
 	<head>
 		<title>splitter</title>
-		<link type="text/css" href="../resize/resize.css" rel="stylesheet" />
+		<link type="text/css" href="../resizable/resizable.css" rel="stylesheet" />
     <link type="text/css" href="split.css" rel="stylesheet" />
 				<style type='text/css'>
 						body {font-family: verdana}
@@ -155,7 +155,7 @@
 
 				<script type='text/javascript' src='../../steal/steal.js'></script>
 		<script type='text/javascript'>
-			steal('can/control/plugin').then('canui/split','canui/resize').then(function(){
+			steal('can/control/plugin').then('canui/split','canui/resizable').then(function(){
 				$.fn.farthest = function(selector){
 					var $parent = this.parent(selector);
 					return ($parent.length > 0) ? $parent.farthest(selector) : this;

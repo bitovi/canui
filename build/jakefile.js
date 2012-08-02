@@ -15,7 +15,7 @@ var path = require("path"),
 	// Additional files to deploy to a release directory
 	deployFiles = {
 		'split/split.css' : 'split.css',
-		'resize/resize.css' : 'resize.css'
+		'resizable/resizable.css' : 'resizable.css'
 	};
 
 desc('Runs make.js to build the application');

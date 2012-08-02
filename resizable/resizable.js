@@ -1,5 +1,4 @@
-steal('jquery', 'can/construct/proxy', 'can/control',
-	'jquery/event/drag', 'jquery/dom/dimensions', 'canui/fills', 'can/control/plugin',
+steal('jquery', 'can/control', 'jquery/event/drag', 'jquery/dom/dimensions', 'canui/fills', 'can/control/plugin',
 	function ($) {
 	$.support.correctOverflow = false;
 
@@ -154,7 +153,7 @@ steal('jquery', 'can/construct/proxy', 'can/control',
 	 *
 	 * @return {can.ui.Resize}
 	 */
-	can.Control('can.ui.Resize', {
+	can.Control('can.ui.Resizable', {
 		pluginName : 'resizable',
 		defaults : {
 			aspectRatio : false,
@@ -194,9 +193,9 @@ steal('jquery', 'can/construct/proxy', 'can/control',
 		},
 
 		init : function (el, options) {
-			this.element.prepend($.map(this.options.handles, this.proxy(function (dir) {
+			this.element.prepend($.map(this.options.handles, can.proxy(function (dir) {
 				return '<div class="ui-resizable-' + [dir, this.options.handleClassName].join(' ') + '"/>';
-			})).join(''));
+			}, this)).join(''));
 
 
 			this.options.autoHide && this.element.find('.ui-resizable-se').hide();
@@ -262,9 +261,9 @@ steal('jquery', 'can/construct/proxy', 'can/control',
 			this.delayMet = !this.options.delay;
 
 			if (!this.delayMet) {
-				this.dragTimeout = setTimeout(this.proxy(function () {
+				this.dragTimeout = setTimeout(can.proxy(function () {
 					this.delayMet = true;
-				}), this.options.delay);
+				}, this), this.options.delay);
 			}
 		},
 

@@ -7,7 +7,7 @@
  *
  * http://docs.jquery.com/UI/Position
  */
-(function( $, undefined ) {
+steal('jquery', function( $, undefined ) {
 
 	$.ui = $.ui || {};
 
@@ -387,4 +387,4 @@
 		}
 	};
 
-}( $ ) );
+});

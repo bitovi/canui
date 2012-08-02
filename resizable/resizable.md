@@ -1,4 +1,4 @@
-# can.ui.Resize
+# can.ui.Resizable
 
 can.ui comes with a simple resizable widget. It is a widget that allows you to resize elements with draggable handles. The base can.ui.Resize widget allows you to customize the resizing experience by:
 

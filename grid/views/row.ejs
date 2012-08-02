@@ -3,7 +3,7 @@
   <% if(current.isComputed) { %>
     <td><%== current() %></td>
   <% } else { %>
-    <td <%== (el) -> can.append(el, current) %>></td>
+    <td <%= (el) -> can.append(el, current) %>></td>
   <% } %>
 <% }); %>
 </tr>

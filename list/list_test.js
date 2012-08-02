@@ -62,6 +62,29 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		equal($.trim(container.find('li:first').html()), 'Deferred I', 'First li rendered');
 	});
 
+	test("Initialize with compute", function() {
+		var compute = can.compute([
+			{
+				name : 'Compute I',
+				age : 10
+			}, {
+				name : 'Compute II',
+				age : 18
+			}
+		]);
+
+		var container = $('<ul>').appendTo('#qunit-test-area').list({
+			view : '//canui/list/test.ejs',
+			loadingContent : '<li>Loading</li>',
+			emptyContent : '<li>Empty!</li>',
+			list : compute
+		});
+
+		equal($.trim(container.find('li:first').html()), 'Compute I', 'First li rendered');
+		compute([]);
+		equal($.trim(container.find('li:first').html()), 'Empty!', 'Showing empty content after updating compute');
+	});
+
 	test("items", function() {
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			view : '//canui/list/test.ejs',
@@ -102,5 +125,5 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 		var el = container.list('rowElements', people[0]);
 		equal(can.$.trim(el.html()), 'John I', 'Got element with correct HTML');
-	})
+	});
 })

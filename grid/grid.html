@@ -26,6 +26,8 @@
   <section style="height: 200px;">
     <table id="grid" class="table table-bordered"></table>
   </section>
+
+  <input id="page" type="text" />
 </div>
 
 
@@ -48,6 +50,12 @@
 
         can.fixture('GET /models', store.findAll);
 
+        var offset = 0,
+            paginator = new can.Observe({
+              offset : 0,
+              limit : 10
+            });
+
         var dfd = Model.findAll();
 
         $('#grid').grid({
@@ -64,10 +72,24 @@
                 return observe.attr('name') + ' ' + observe.attr('age');
               });
             }
+          }, {
+              header : 'Things',
+              content : function(observe) {
+                return observe._cid;
+            }
           }],
           scrollable : true,
-          list : dfd
+          list : can.compute(function() {
+            return Model.findAll({
+              offset : paginator.attr('offset'),
+              limit : paginator.attr('limit')
+            });
           })
+        })
+
+        $('#page').change(function() {
+          paginator.attr('offset', $(this).val());
+        });
 
 //        dfd.done(function(list) {
 //          setTimeout(function() {

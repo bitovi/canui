@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <title>resizable</title>
-    <link type="text/css" href="resize.css" rel="stylesheet" />
+    <link type="text/css" href="resizable.css" rel="stylesheet" />
     <style type='text/css'>
       body {font-family: verdana}
 
@@ -32,13 +32,6 @@
         margin: 30px;
       }
 
-      .modal {
-        width: 300px;
-        height: auto;
-        border: solid 1px black;
-        background-color: #eeeeff;
-      }
-
       .custom-overlay {
         background: rgba(255, 0, 247, 0.5);
         top: 0;
@@ -53,7 +46,6 @@
     <ul>
       <li><a href="javascript://" id="resize">Resize</a></li>
       <li><a href="javascript://" id="resizeAutoHide">Resize with hidden handles</a></li>
-      <li><a href="javascript://" id="resizeModal">Resize a Modal</a></li>
       <li><a href="javascript://" id="resizeImage">Resize an image</a></li>
       <li><a href="javascript://" id="resizeForm">Resize a form, disable when resizing, enable when done</a></li>
       <li><a href="javascript://" id="destroyResize">Destroy resize after displaying full content</a></li>
@@ -67,29 +59,14 @@
         <div class="status">Drag to show more content</div>
       </div>
 
-       <div id="modal" class="modal">
-        <h3>Some Modal</h3>
-
-        <p>Here is some text. Blah blah blah. I am watching SNL with Jennifer Lopez.
-          She still has it. But, I am not sure SNL does.
-        </p>
-      </div>
-      <img id="testImage" src="http://placekitten.com/300/300" height="300" width="300" />
-      <form id="testForm">
-        <input type="text" placeholder="username" />
-        <input type="password" placeholder="password" />
-        <input type="submit" value="login" />
-      </form>
-    </div>
-
-    <script type='text/javascript' 
+    <script type='text/javascript'
       src='../../steal/steal.js'
       package='main.js'
       compress='false'>   
     </script>
     <script type='text/javascript'>
-      steal('jquery', 'canui/resize', 'canui/modal').then(function() {
-        var disableWhenAllShownResize = can.ui.Resize({ }, {
+      steal('jquery', 'canui/resizable').then(function() {
+        var disableWhenAllShownResize = can.ui.Resizable({}, {
           init: function(el, ev) {
             this.options.handles = ['s'];
             this._super.apply(this, arguments);
@@ -110,7 +87,7 @@
           }
         })
 
-        var toggleFormResize = can.ui.Resize({}, {
+        var toggleFormResize = can.ui.Resizable({}, {
           " resizestart": function(el, ev) {
             el.find('input').prop('disabled', true);
           },
@@ -119,32 +96,21 @@
           }
         })
 
-        var resizableModal = can.ui.Modal({}, {
-          init: function() {
-            this._super.apply(this, arguments);
-            new can.ui.Resize(this.element);
-          }
-        })
-
         $('#resize').click(function() {
-          new can.ui.Resize('#test', {
+          $('#test').resizable({
             maxWidth: 400
           });
         });
 
         $('#resizeAutoHide').click(function() {
-          new can.ui.Resize('#test', {
+          $('#test').resizable({
             maxWidth: 400,
             autoHide: true
           });
         });
 
-        $('#resizeModal').click(function() {
-          var modal = new resizableModal($('#modal'));
-        })
-
         $('#resizeImage').click(function() {
-          new can.ui.Resize('#testImage');
+          $('#testImage').resizable();
         });
 
         $('#resizeForm').click(function() {

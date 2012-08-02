@@ -16,13 +16,14 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			view : function(observe) {
 				var row = [], self = this;
 				can.each(this.options.columns, function(col) {
-					row.push(can.isFunction(col.content) ?
+					var content = can.isFunction(col.content) ?
 						col.content.call(self, observe, col) :
 						can.compute(function() {
 							return observe.attr(col.content);
-						}));
+						});
+					row.push(content);
 				});
-				row.cid = observe.cid;
+				row.cid = observe._cid;
 				return can.view('//canui/grid/views/row.ejs', row);
 			},
 			headerContent : '//canui/grid/views/head.ejs',
@@ -42,10 +43,14 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			}
 			can.each(['emptyContent', 'loadingContent', 'footerContent'], function(name) {
 				var current = options[name] || self.constructor.defaults[name];
-				if(!can.$(current).length) {
-					options[name] = '<tr><td colspan="' + ops.columns.length
+				if(can.isFunction(current)) {
+					current = current.call(this, options);
+				}
+				if(!can.$(current).is('tr')) {
+					current = '<tr><td colspan="' + ops.columns.length
 						+ '">' + current + '</td></tr>';
 				}
+				options[name] = current;
 			});
 			if(!(options.columns instanceof can.Observe.List)) {
 				options.columns = new can.Observe.List(options.columns);
@@ -55,11 +60,13 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 		},
 
 		init : function(el, ops) {
-			this.el.header.append(this._fnView('headerContent', this.options.columns));
+			var header = can.isFunction(this.options.headerContent) ?
+					this.options.headerContent.call(this, this.options.columms) :
+					can.view(this.options.headerContent, this.options.columns);
+			this.el.header.append(header);
 			this.control = {
 				list : this.el.body.control(can.ui.List)
 			}
-			// this.el.footer.append(this._fnView('footerContent', this.options.columns));
 			this.update();
 		},
 

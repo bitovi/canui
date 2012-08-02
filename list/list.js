@@ -15,19 +15,12 @@ function($) {
 		/**
 		 * Updates the options and re-renders the list.
 		 *
-		 * @param {Object} [options] The updated options
+		 * @param {Object} [options] The options to udpate
 		 */
 		update : function(options) {
 			can.Control.prototype.update.call(this, options);
 			var list = this.options.list;
-			if(can.isFunction(list)) {
-				list = can.compute(list);
-			}
 			if(list && list.isComputed) {
-				// TODO doesn't trigger
-				this.on(list, 'change', can.proxy(function(ev, newVal) {
-					this._update(newVal);
-				}, this));
 				list = list();
 			}
 			this._update(list);
@@ -92,6 +85,12 @@ function($) {
 			return can.isFunction(val) ? val.apply(this, args || []) : val;
 		},
 
+		'{list} change' : function(target, ev, newVal) {
+			if(target.isComputed) {
+				this._update(newVal);
+			}
+		},
+
 		'{data} length' : function(list, ev, length) {
 			if(length === 0) {
 				this._render();
@@ -124,7 +123,7 @@ function($) {
 		},
 
 		/**
-		 * Returns all rows for a list of observables.
+		 * Returns all rows or all rows representing the given list of observables.
 		 *
 		 * @param arg
 		 * @return {*}
@@ -145,6 +144,13 @@ function($) {
 			return can.$(elements);
 		},
 
+		/**
+		 * Returns a `can.Observe.List` containing all observes (equivalent to `.list()`)
+		 * or all observes representing the given rows.
+		 *
+		 * @param {jQuery} rows The collection of row elements
+		 * @return {can.Observe.List}
+		 */
 		items : function(rows)
 		{
 			if(!rows) {
@@ -168,9 +174,9 @@ function($) {
 		},
 
 		/**
-		 * Returns all
+		 * Returns a `can.Observe.List` of the current list data.
 		 *
-		 * @param {Collection} rows An array or DOM element collection
+		 * @param {can.Observe.List|Array|can.compute|can.Deferred} newlist The list to replace
 		 * @return {can.Observe.List|can.Observe}
 		 */
 		list : function(newlist) {
