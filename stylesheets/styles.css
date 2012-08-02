@@ -401,3 +401,13 @@ html.lt-ie7 .github-fork img {
 #builder .button.disabled:hover {
 	background-color: #BBC2C7;
 }
+
+#builder .dependencies li {
+	list-style: none;
+	font-size: 80%;
+	color: #AFAFAF;
+}
+
+#builder .dependencies li.excluded {
+	text-decoration: line-through;
+}

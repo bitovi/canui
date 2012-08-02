@@ -57,6 +57,10 @@ $('#container').height(500).resize();
 [TableScroll](http://donejs.com/docs.html#!canui.) makes a table body scrollable while keeping the table headers and
 footers fixed. This is useful for making grid like widgets.
 
+The following example shows a scrollable table with fixed header and footer:
+
+<iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+
 To make a table scrollable call:
 
 {% highlight javascript %}
@@ -88,13 +92,9 @@ On a table like this:
 </div>
 {% endhighlight %}
 
-The following example shows a scrollable table with fixed header and footer:
-
-<iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/KHNyy/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
-
 ### update `$(element).tableScroll()`
 
-After creating a tableScoll, future calls to `$(element).tableScroll()` are used to update the table
+After creating a TableScoll, future calls to `$(element).tableScroll()` are used to update the table
 layout after a header or footer column has been added, removed, or had its content changed.
 
 {% highlight javascript %}
@@ -166,11 +166,13 @@ $('table').tableScroll();
 
 ### resize `$(element).resize()`
 
-The `resize` event should be triggered whenever any table dimensions have changed.
+The `resize` event should be triggered whenever any table dimensions or row contents have changed to keep
+header and footer widths synchronized.
 
 {% highlight javascript %}
 $('table').tableScroll();
-$('table').width(700);
+$('table').find('tr:first td:first')
+  .html("Very long content");
 $('table').resize();
 {% endhighlight %}
 
@@ -247,7 +249,7 @@ $('#list').list({
 
 Another possibility is to pass a `can.compute` which returns an array, `can.Observe.List` or `can.Deferred`.
 If you pass a function, it will be converted to a `can.compute`.
-Combined with `can.Observe`, this makes paginating Model requests very easy:
+Combined with `can.Observe`, this makes paginating Model requests very easy, for example:
 
 {% highlight javascript %}
 var paginator = new can.Observe({
@@ -274,7 +276,8 @@ paginator.attr('offset', 20);
 
 ### Example
 
-The following example uses the List widget to display a list of simple Todos:
+The following example uses the List widget to display a list of simple Todo data. It is also possible
+to add and remove Todos from the list:
 
 <iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/donejs/Vmxep/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
@@ -348,8 +351,8 @@ $('#list').list('rowElements', people[0])
 
 ## Grid `$(element).grid(options)`
 
-[Grid](http://donejs.com/docs.html#!canui.grid) displays a list of data in a table combining [List](#list) and
-[TableScroll](#tablescroll) into a full Grid widget.
+[Grid](http://donejs.com/docs.html#!canui.grid) combines [List](#list) and [TableScroll](#tablescroll)
+to display a list of data in a table.
 
 Possible options:
 
@@ -396,8 +399,7 @@ $('#grid').grid({
 });
 {% endhighlight %}
 
-The following example shows a grid that allows you to add and remove items and reset the list
-to its initial state:
+The following example shows a grid that allows you to add, edit and remove items:
 
 <iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/hY3AS/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
@@ -406,10 +408,10 @@ to its initial state:
 Column definitions are provided as a `can.Observe.List` or an array of objects. Each object
 must at least contain:
 
-- `header` - The table column header HTML content.
+- `header` - The table column header content.
 - `content` - The content to display for this column. This can either be an attribute name
-or a callback in the form of `function(observe, index)` that returns the content or a
-`can.compute` with computed properties for the current column.
+or a callback in the form of `function(observe, index)` that returns the string content or document
+fragment or a `can.compute` with computed properties for the current column.
 
 The following example creates a grid with a column that contains the combined first- and lastname:
 
@@ -500,7 +502,7 @@ $('#list').grid('rowElements', people[0])
 
 If the `scrollable` option is set to true, `$(element).grid('tableScroll')` will return the [TableScroll](#tablescroll)
 instance that is used to make the grid scrollable, `null` otherwise.
-This can be used, for example, to automatically load new data when the user scrolled to the bottom of the grid:
+This can be used, for example, to automatically request new data when the user scrolled to the bottom of the grid:
 
 {% highlight javascript %}
 var offset = 0;
@@ -575,7 +577,7 @@ $('.scrollable').bind('scroll', function(){
 });
 {% endhighlight %}
 
-If the target element is [draggable](http://jquerypp.com/#drag), `move` will be triggered automatically when the
+If the target element is [draggable](http://jquerypp.com/#drag), `move` will be triggered whenever the
 draggable moves.
 
 ### isOfVisible `$(element).positionable('isOfVisible')`
