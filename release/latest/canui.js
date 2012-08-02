@@ -2886,7 +2886,7 @@ module['canui/positionable/positionable.js'] = (function($){
 		}
 	});
 })(module["jquery"], module["can/control/control.js"], module["can/construct/proxy/proxy.js"], module["can/construct/super/super.js"], module["jquery"], module["jquery/event/reverse/reverse.js"], module["can/control/plugin/plugin.js"], module["canui/util/scrollbar_width.js"], module["canui/positionable/position.js"]);
-module['canui/resize/resize.js'] = (function ($, can) {
+module['canui/resize/resize.js'] = (function ($) {
 	$.support.correctOverflow = false;
 
 	$(function () {
@@ -3253,7 +3253,7 @@ module['canui/resize/resize.js'] = (function ($, can) {
 			can.Control.prototype.destroy.apply(this, arguments);
 		}
 	})
-})(module["jquery"], module["can/util/jquery/jquery.js"], module["can/construct/proxy/proxy.js"], module["can/control/control.js"], module["jquery/event/drag/drag.js"], module["jquery/dom/dimensions/dimensions.js"], module["canui/fills/fills.js"], module["can/control/plugin/plugin.js"]);
+})(module["jquery"], module["can/construct/proxy/proxy.js"], module["can/control/control.js"], module["jquery/event/drag/drag.js"], module["jquery/dom/dimensions/dimensions.js"], module["canui/fills/fills.js"], module["can/control/plugin/plugin.js"]);
 
 window.define = module._define;
 })();
