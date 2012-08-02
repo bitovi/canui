@@ -4,14 +4,7 @@ steal(
 	'canui/selectable',
 	'canui/split',
 	'canui/list',
-	'canui/grid'
-//	'canui/grid',
-//	'canui/block',
-//	'canui/grid',
-//	'canui/modal',
-//	'canui/positionable',
-//	'canui/resize',
-//	'canui/slider',
-//	'canui/split',
-//	'canui/tooltip'
+	'canui/grid',
+	'canui/positionable',
+	'canui/resize'
 )

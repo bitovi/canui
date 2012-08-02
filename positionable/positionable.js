@@ -1,11 +1,12 @@
-steal('can/control',
+steal('jquery', 'can/control',
 	'can/construct/proxy',
 	'can/construct/super',
 	'jquery',
 	'jquery/event/reverse',
 	'can/control/plugin',
-	'canui/util/scrollbar_width.js')
-.then('./position.js').then(function($){
+	'canui/util/scrollbar_width.js', './position.js',
+	function($){
+
 	if(!$.event.special.move) {
 		$.event.reverse('move');
 	}

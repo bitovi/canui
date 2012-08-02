@@ -37,7 +37,7 @@
     });
 
     $('.remove').on('click', function() {
-      var model = $('#list').list('list', $(this).closest('li'))[0];
+      var model = $('#list').list('items', $(this).closest('li'))[0];
       todos.splice(todos.indexOf(model), 1);
     });
 
