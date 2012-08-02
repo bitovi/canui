@@ -692,6 +692,10 @@ A resizable element will trigger the following events:
 See the [resize event](http://jquerypp.com/#resize) for more information.
 - __resizestop__ - When the resize motion has ended
 
+The following example shows a simple resizable `div` with minimum and maximum dimensions:
+
+<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/donejs/BjSeE/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+
 ## Split `$(element).split(options)`
 
 [Split](http://donejs.com/docs.html#!canui.split) manages a container with independently resizable content
@@ -725,6 +729,10 @@ $('#container').split({
   panelSelector : '.panel'
 });
 {% endhighlight %}
+
+The following example shows a vertical and horizontal split. Drag the handles to resize the respective areas:
+
+<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/donejs/bRktC/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ### panels `$(elements).split('panels')`
 
