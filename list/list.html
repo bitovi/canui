@@ -36,7 +36,7 @@
       list : todos
     });
 
-    $('.remove').on('click', function() {
+    $('#list').on('click', '.remove', function() {
       var model = $('#list').list('items', $(this).closest('li'))[0];
       todos.splice(todos.indexOf(model), 1);
     });

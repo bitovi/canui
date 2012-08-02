@@ -1,6 +1,6 @@
-steal('jquery', 'can/util', 'can/construct/proxy', 'can/control',
+steal('jquery', 'can/construct/proxy', 'can/control',
 	'jquery/event/drag', 'jquery/dom/dimensions', 'canui/fills', 'can/control/plugin',
-	function ($, can) {
+	function ($) {
 	$.support.correctOverflow = false;
 
 	$(function () {
