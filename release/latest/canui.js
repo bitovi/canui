@@ -1894,7 +1894,7 @@ module['canui/list/list.js'] = (function($) {
 		_render : function(rows) {
 			var content = !rows || rows.length === 0 ? this._fnOption('emptyContent') : rows;
 			this.element.html(content);
-			this.element.trigger('rendered');
+			this.element.trigger('rendered', this);
 		},
 
 		_fnOption : function(name, args) {
@@ -1916,7 +1916,7 @@ module['canui/list/list.js'] = (function($) {
 					delete self._cidMap[observe[self.options.cid]];
 				});
 				this.rowElements(observes).remove();
-				this.element.trigger('changed');
+				this.element.trigger('changed', this);
 			}
 		},
 
@@ -1930,7 +1930,7 @@ module['canui/list/list.js'] = (function($) {
 				// Or set it as the content
 				this.element.html(newRows);
 			}
-			this.element.trigger('changed');
+			this.element.trigger('changed', this);
 		},
 
 		/**
@@ -1955,15 +1955,10 @@ module['canui/list/list.js'] = (function($) {
 			return can.$(elements);
 		},
 
-		/**
-		 * Returns all
-		 *
-		 * @param {Collection} rows An array or DOM element collection
-		 * @return {can.Observe.List|can.Observe}
-		 */
-		list : function(rows) {
+		items : function(rows)
+		{
 			if(!rows) {
-				return this.options.data || new can.Observe.List();
+				return this.list();
 			}
 
 			var result = new can.Observe.List(),
@@ -1980,9 +1975,1285 @@ module['canui/list/list.js'] = (function($) {
 			});
 
 			return result;
+		},
+
+		/**
+		 * Returns all
+		 *
+		 * @param {Collection} rows An array or DOM element collection
+		 * @return {can.Observe.List|can.Observe}
+		 */
+		list : function(newlist) {
+			if(!newlist) {
+				return this.options.data || new can.Observe.List();
+			}
+			this.update({
+				list : newlist
+			});
 		}
 	});
 })(module["jquery"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["can/view/view.js"], module["can/observe/observe.js"]);
+module['canui/grid/grid.js'] = (function($) {
+	var appendIf = function(el, tag) {
+		if(el.is(tag) || !tag) {
+			return el;
+		}
+		var res = el.find(tag);
+		if(res.length) {
+			return res;
+		}
+		return el.append(can.$('<' + tag + '>')).find(tag);
+	};
+
+	can.Control('can.ui.Grid', {
+		pluginName : 'grid',
+		defaults : {
+			view : function(observe) {
+				var row = [], self = this;
+				can.each(this.options.columns, function(col) {
+					row.push(can.isFunction(col.content) ?
+						col.content.call(self, observe, col) :
+						can.compute(function() {
+							return observe.attr(col.content);
+						}));
+				});
+				row.cid = observe.cid;
+				return can.view('//canui/grid/views/row.ejs', row);
+			},
+			headerContent : '//canui/grid/views/head.ejs',
+			emptyContent : 'No data',
+			loadingContent : 'Loading...',
+			scrollable : false
+		}
+	}, {
+		setup : function(el, ops) {
+			var table = appendIf(can.$(el), 'table'),
+				options = can.extend({}, ops),
+				self = this;
+			this.el = {
+				header : appendIf(table, 'thead'),
+				body : appendIf(table, 'tbody'),
+				footer : appendIf(table, 'tfoot')
+			}
+			can.each(['emptyContent', 'loadingContent', 'footerContent'], function(name) {
+				var current = options[name] || self.constructor.defaults[name];
+				if(!can.$(current).length) {
+					options[name] = '<tr><td colspan="' + ops.columns.length
+						+ '">' + current + '</td></tr>';
+				}
+			});
+			if(!(options.columns instanceof can.Observe.List)) {
+				options.columns = new can.Observe.List(options.columns);
+			}
+			can.Control.prototype.setup.call(this, table, options);
+			return [table, options];
+		},
+
+		init : function(el, ops) {
+			this.el.header.append(this._fnView('headerContent', this.options.columns));
+			this.control = {
+				list : this.el.body.control(can.ui.List)
+			}
+			// this.el.footer.append(this._fnView('footerContent', this.options.columns));
+			this.update();
+		},
+
+		update : function(options) {
+			can.Control.prototype.update.apply(this, arguments);
+			this.el.body.list(this.options);
+		},
+
+		columns : function(cols) {
+			if(!cols) {
+				return this.options.columns;
+			}
+			this.update({ columns : cols });
+		},
+
+		_fnView : function(name, arg) {
+			var val = this.options[name];
+			if(can.isFunction(val)) {
+				return val.call(this, arg);
+			}
+			return can.view(val, arg);
+		},
+
+		'{columns} change' : function() {
+			if(this.options.scrollable) {
+				this.element.tableScroll();
+			}
+		},
+
+		' rendered' : function() {
+			if(this.options.scrollable) {
+				this.element.tableScroll();
+				this.control.tableScroll = this.element.control(can.ui.TableScroll);
+			}
+		},
+
+		' changed' : function() {
+			// Trigger resize to adjust the TableScroll
+			if(this.options.scrollable) {
+				this.element.trigger('resize');
+			}
+		},
+
+		items : function() {
+			return this.control.list.items.apply(this.control.list, arguments);
+		},
+
+		list : function() {
+			return this.control.list.list.apply(this.control.list, arguments);
+		},
+
+		rowElements : function() {
+			return this.control.list.rowElements.apply(this.control.list, arguments);
+		},
+
+		tableScroll : function() {
+			return this.control.tableScroll;
+		}
+	});
+})(module["jquery"], module["can/control/control.js"], module["canui/list/list.js"], module["can/view/ejs/ejs.js"], module["canui/table_scroll/table_scroll.js"]);/*
+ * jQuery UI Position 1.9m6
+ *
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Position
+ */
+(function( $, undefined ) {
+
+	$.ui = $.ui || {};
+
+	var rhorizontal = /left|center|right/,
+		rvertical = /top|center|bottom/,
+		roffset = /[+-]\d+%?/,
+		rposition = /^\w+/,
+		rpercent = /%$/,
+		center = "center",
+		_position = $.fn.position;
+
+	$.position = {
+		getScrollInfo: function(within) {
+			var notWindow = within[0] !== window,
+				overflowX = notWindow ? within.css( "overflow-x" ) : "",
+				overflowY = notWindow ? within.css( "overflow-y" ) : "",
+				scrollbarWidth = overflowX === "auto" || overflowX === "scroll" ? can.ui.scrollbarWidth() : 0,
+				scrollbarHeight = overflowY === "auto" || overflowY === "scroll" ? can.ui.scrollbarWidth() : 0;
+
+			return {
+				height: within.height() < within[0].scrollHeight ? scrollbarHeight : 0,
+				width: within.width() < within[0].scrollWidth ? scrollbarWidth : 0
+			};
+		}
+	};
+
+	$.fn.position = function( options ) {
+		if ( !options || !options.of ) {
+			return _position.apply( this, arguments );
+		}
+
+		// make a copy, we don't want to modify arguments
+		options = $.extend( {}, options );
+
+		var target = $( options.of ),
+			within  = $( options.within || window ),
+			targetElem = target[0],
+			collision = ( options.collision || "flip" ).split( " " ),
+			offsets = {},
+			atOffset,
+			targetWidth,
+			targetHeight,
+			basePosition;
+
+		if ( targetElem.nodeType === 9 ) {
+			targetWidth = target.width();
+			targetHeight = target.height();
+			basePosition = { top: 0, left: 0 };
+		} else if ( $.isWindow( targetElem ) ) {
+			targetWidth = target.width();
+			targetHeight = target.height();
+			basePosition = { top: target.scrollTop(), left: target.scrollLeft() };
+		} else if ( targetElem.preventDefault ) {
+			// force left top to allow flipping
+			options.at = "left top";
+			targetWidth = targetHeight = 0;
+			basePosition = { top: options.of.pageY, left: options.of.pageX };
+		} else {
+			targetWidth = target.outerWidth();
+			targetHeight = target.outerHeight();
+			basePosition = target.offset();
+		}
+
+		// force my and at to have valid horizontal and vertical positions
+		// if a value is missing or invalid, it will be converted to center
+		$.each( [ "my", "at" ], function() {
+			var pos = ( options[ this ] || "" ).split( " " ),
+				horizontalOffset,
+				verticalOffset;
+
+			if ( pos.length === 1) {
+				pos = rhorizontal.test( pos[ 0 ] ) ?
+					pos.concat( [ center ] ) :
+					rvertical.test( pos[ 0 ] ) ?
+						[ center ].concat( pos ) :
+						[ center, center ];
+			}
+			pos[ 0 ] = rhorizontal.test( pos[ 0 ] ) ? pos[ 0 ] : center;
+			pos[ 1 ] = rvertical.test( pos[ 1 ] ) ? pos[ 1 ] : center;
+
+			// calculate offsets
+			horizontalOffset = roffset.exec( pos[ 0 ] );
+			verticalOffset = roffset.exec( pos[ 1 ] );
+			offsets[ this ] = [
+				horizontalOffset ? horizontalOffset[ 0 ] : 0,
+				verticalOffset ? verticalOffset[ 0 ] : 0
+			];
+
+			// reduce to just the positions without the offsets
+			options[ this ] = [
+				rposition.exec( pos[ 0 ] )[ 0 ],
+				rposition.exec( pos[ 1 ] )[ 0 ]
+			];
+		});
+
+		// normalize collision option
+		if ( collision.length === 1 ) {
+			collision[ 1 ] = collision[ 0 ];
+		}
+
+		if ( options.at[ 0 ] === "right" ) {
+			basePosition.left += targetWidth;
+		} else if ( options.at[ 0 ] === center ) {
+			basePosition.left += targetWidth / 2;
+		}
+
+		if ( options.at[ 1 ] === "bottom" ) {
+			basePosition.top += targetHeight;
+		} else if ( options.at[ 1 ] === center ) {
+			basePosition.top += targetHeight / 2;
+		}
+
+		atOffset = [
+			parseInt( offsets.at[ 0 ], 10 ) *
+				( rpercent.test( offsets.at[ 0 ] ) ? targetWidth / 100 : 1 ),
+			parseInt( offsets.at[ 1 ], 10 ) *
+				( rpercent.test( offsets.at[ 1 ] ) ? targetHeight / 100 : 1 )
+		];
+		basePosition.left += atOffset[ 0 ];
+		basePosition.top += atOffset[ 1 ];
+
+		return this.each(function() {
+			var elem = $( this ),
+				elemWidth = elem.outerWidth(),
+				elemHeight = elem.outerHeight(),
+				marginLeft = parseInt( $.curCSS( this, "marginLeft", true ) ) || 0,
+				marginTop = parseInt( $.curCSS( this, "marginTop", true ) ) || 0,
+				scrollInfo = $.position.getScrollInfo( within ),
+				collisionWidth = elemWidth + marginLeft +
+					( parseInt( $.curCSS( this, "marginRight", true ) ) || 0 ) + scrollInfo.width,
+				collisionHeight = elemHeight + marginTop +
+					( parseInt( $.curCSS( this, "marginBottom", true ) ) || 0 ) + scrollInfo.height,
+				position = $.extend( {}, basePosition ),
+				myOffset = [
+					parseInt( offsets.my[ 0 ], 10 ) *
+						( rpercent.test( offsets.my[ 0 ] ) ? elem.outerWidth() / 100 : 1 ),
+					parseInt( offsets.my[ 1 ], 10 ) *
+						( rpercent.test( offsets.my[ 1 ] ) ? elem.outerHeight() / 100 : 1 )
+				],
+				collisionPosition;
+
+			if ( options.my[ 0 ] === "right" ) {
+				position.left -= elemWidth;
+			} else if ( options.my[ 0 ] === center ) {
+				position.left -= elemWidth / 2;
+			}
+
+			if ( options.my[ 1 ] === "bottom" ) {
+				position.top -= elemHeight;
+			} else if ( options.my[ 1 ] === center ) {
+				position.top -= elemHeight / 2;
+			}
+
+			position.left += myOffset[ 0 ];
+			position.top += myOffset[ 1 ];
+
+			collisionPosition = {
+				marginLeft: marginLeft,
+				marginTop: marginTop
+			};
+
+			$.each( [ "left", "top" ], function( i, dir ) {
+				if ( $.ui.position[ collision[ i ] ] ) {
+					$.ui.position[ collision[ i ] ][ dir ]( position, {
+						targetWidth: targetWidth,
+						targetHeight: targetHeight,
+						elemWidth: elemWidth,
+						elemHeight: elemHeight,
+						collisionPosition: collisionPosition,
+						collisionWidth: collisionWidth,
+						collisionHeight: collisionHeight,
+						offset: [ atOffset[ 0 ] + myOffset[ 0 ], atOffset [ 1 ] + myOffset[ 1 ] ],
+						my: options.my,
+						at: options.at,
+						within: within,
+						elem : elem
+					});
+				}
+			});
+
+			if ( $.fn.bgiframe ) {
+				elem.bgiframe();
+			}
+			elem.offset( $.extend( position, { using: options.using } ) );
+		});
+	};
+
+	$.ui.position = {
+		fit: {
+			left: function( position, data ) {
+				var within = data.within,
+					win = $( window ),
+					isWindow = $.isWindow( data.within[0] ),
+					withinOffset = isWindow ? win.scrollLeft() : within.offset().left,
+					outerWidth = isWindow ? win.width() : within.outerWidth(),
+					collisionPosLeft = position.left - data.collisionPosition.marginLeft,
+					overLeft = withinOffset - collisionPosLeft,
+					overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset,
+					newOverRight,
+					newOverLeft;
+
+				// element is wider than within
+				if ( data.collisionWidth > outerWidth ) {
+					// element is initially over the left side of within
+					if ( overLeft > 0 && overRight <= 0 ) {
+						newOverRight = position.left + overLeft + data.collisionWidth - outerWidth - withinOffset;
+						position.left += overLeft - newOverRight;
+						// element is initially over right side of within
+					} else if ( overRight > 0 && overLeft <= 0 ) {
+						position.left = withinOffset;
+						// element is initially over both left and right sides of within
+					} else {
+						if ( overLeft > overRight ) {
+							position.left = withinOffset + outerWidth - data.collisionWidth;
+						} else {
+							position.left = withinOffset;
+						}
+					}
+					// too far left -> align with left edge
+				} else if ( overLeft > 0 ) {
+					position.left += overLeft;
+					// too far right -> align with right edge
+				} else if ( overRight > 0 ) {
+					position.left -= overRight;
+					// adjust based on position and margin
+				} else {
+					position.left = Math.max( position.left - collisionPosLeft, position.left );
+				}
+			},
+			top: function( position, data ) {
+				var within = data.within,
+					win = $( window ),
+					isWindow = $.isWindow( data.within[0] ),
+					withinOffset = isWindow ? win.scrollTop() : within.offset().top,
+					outerHeight = isWindow ? win.height() : within.outerHeight(),
+					collisionPosTop = position.top - data.collisionPosition.marginTop,
+					overTop = withinOffset - collisionPosTop,
+					overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset,
+					newOverTop,
+					newOverBottom;
+
+				// element is taller than within
+				if ( data.collisionHeight > outerHeight ) {
+					// element is initially over the top of within
+					if ( overTop > 0 && overBottom <= 0 ) {
+						newOverBottom = position.top + overTop + data.collisionHeight - outerHeight - withinOffset;
+						position.top += overTop - newOverBottom;
+						// element is initially over bottom of within
+					} else if ( overBottom > 0 && overTop <= 0 ) {
+						position.top = withinOffset;
+						// element is initially over both top and bottom of within
+					} else {
+						if ( overTop > overBottom ) {
+							position.top = withinOffset + outerHeight - data.collisionHeight;
+						} else {
+							position.top = withinOffset;
+						}
+					}
+					// too far up -> align with top
+				} else if ( overTop > 0 ) {
+					position.top += overTop;
+					// too far down -> align with bottom edge
+				} else if ( overBottom > 0 ) {
+					position.top -= overBottom;
+					// adjust based on position and margin
+				} else {
+					position.top = Math.max( position.top - collisionPosTop, position.top );
+				}
+			}
+		},
+		flip: {
+			left: function( position, data ) {
+				if ( data.at[ 0 ] === center ) {
+					return;
+				}
+
+				data.elem
+					.removeClass( "ui-flipped-left ui-flipped-right" );
+
+				var within = data.within,
+					win = $( window ),
+					isWindow = $.isWindow( data.within[0] ),
+					withinOffset = ( isWindow ? 0 : within.offset().left ) + within.scrollLeft(),
+					outerWidth = isWindow ? within.width() : within.outerWidth(),
+					collisionPosLeft = position.left - data.collisionPosition.marginLeft,
+					overLeft = collisionPosLeft - withinOffset,
+					overRight = collisionPosLeft + data.collisionWidth - outerWidth - withinOffset,
+					left = data.my[ 0 ] === "left",
+					myOffset = data.my[ 0 ] === "left" ?
+						-data.elemWidth :
+						data.my[ 0 ] === "right" ?
+							data.elemWidth :
+							0,
+					atOffset = data.at[ 0 ] === "left" ?
+						data.targetWidth :
+						-data.targetWidth,
+					offset = -2 * data.offset[ 0 ],
+					newOverRight,
+					newOverLeft;
+
+				if ( overLeft < 0 ) {
+					newOverRight = position.left + myOffset + atOffset + offset + data.collisionWidth - outerWidth - withinOffset;
+					if ( newOverRight < 0 || newOverRight < Math.abs( overLeft ) ) {
+						data.elem
+							.addClass( "ui-flipped-right" );
+
+						position.left += myOffset + atOffset + offset;
+					}
+				}
+				else if ( overRight > 0 ) {
+					newOverLeft = position.left - data.collisionPosition.marginLeft + myOffset + atOffset + offset - withinOffset;
+					if ( newOverLeft > 0 || Math.abs( newOverLeft ) < overRight ) {
+						data.elem
+							.addClass( "ui-flipped-left" );
+
+						position.left += myOffset + atOffset + offset;
+					}
+				}
+			},
+			top: function( position, data ) {
+				if ( data.at[ 1 ] === center ) {
+					return;
+				}
+
+				data.elem
+					.removeClass( "ui-flipped-top ui-flipped-bottom" );
+
+				var within = data.within,
+					win = $( window ),
+					isWindow = $.isWindow( data.within[0] ),
+					withinOffset = ( isWindow ? 0 : within.offset().top ) + within.scrollTop(),
+					outerHeight = isWindow ? within.height() : within.outerHeight(),
+					collisionPosTop = position.top - data.collisionPosition.marginTop,
+					overTop = collisionPosTop - withinOffset,
+					overBottom = collisionPosTop + data.collisionHeight - outerHeight - withinOffset,
+					top = data.my[ 1 ] === "top",
+					myOffset = top ?
+						-data.elemHeight :
+						data.my[ 1 ] === "bottom" ?
+							data.elemHeight :
+							0,
+					atOffset = data.at[ 1 ] === "top" ?
+						data.targetHeight :
+						-data.targetHeight,
+					offset = -2 * data.offset[ 1 ],
+					newOverTop,
+					newOverBottom;
+				if ( overTop < 0 ) {
+					newOverBottom = position.top + myOffset + atOffset + offset + data.collisionHeight - outerHeight - withinOffset;
+					if ( newOverBottom < 0 || newOverBottom < Math.abs( overTop ) ) {
+						data.elem
+							.addClass( "ui-flipped-bottom" );
+
+						position.top += myOffset + atOffset + offset;
+					}
+				}
+				else if ( overBottom > 0 ) {
+					newOverTop = position.top -  data.collisionPosition.marginTop + myOffset + atOffset + offset - withinOffset;
+					if ( newOverTop > 0 || Math.abs( newOverTop ) < overBottom ) {
+						data.elem
+							.addClass( "ui-flipped-top" );
+
+						position.top += myOffset + atOffset + offset;
+					}
+				}
+			}
+		},
+		flipfit: {
+			left: function() {
+				$.ui.position.flip.left.apply( this, arguments );
+				$.ui.position.fit.left.apply( this, arguments );
+			},
+			top: function() {
+				$.ui.position.flip.top.apply( this, arguments );
+				$.ui.position.fit.top.apply( this, arguments );
+			}
+		}
+	};
+
+}( $ ) );
+
+module['canui/positionable/positionable.js'] = (function($){
+
+	if(!$.event.special.move) {
+		$.event.reverse('move');
+	}
+
+	/**
+	 * @class can.ui.layout.Positionable
+	 * @parent canui
+	 *
+	 * @description Allows you to position an element relative to another element.
+	 *
+	 * The positionable plugin allows you to position an element relative to
+	 * another. It abstracts all of the calculating you might have to do when
+	 * implementing UI widgets, such as tooltips and autocompletes.
+	 *
+	 * # Basic Example
+	 *
+	 * Given the following markup:
+	 *
+	 *		<a id="target" href="http://jupiterjs.com/">Bitovi!</a>
+	 *		<div id="tooltip">Bitovi</div>
+	 *
+	 * To position the tooltip element above the anchor link, you would use the
+	 * following code:
+	 *
+	 *		// Initialize the positionable plugin
+	 *		 new can.ui.layout.Positionable($("#tooltip"), {
+	 *			my: "bottom",
+	 *			at: "top",
+	 *			of: $("#target")
+	 *		});
+	 *
+	 *		// Trigger the move event on the tooltip to move it's position
+	 *		$("#tooltip").trigger("move");
+	 *
+	 * In the options passed to the positionable plugin, we're telling the plugin
+	 * to align the bottom of the `#tooltip` element to the top of the
+	 * `#target` element.
+	 *
+	 * # Autocomplete Example
+	 *
+	 * Given the following markup:
+	 *
+	 *		<form>
+	 *			<label>
+	 *				Search
+	 *				<input type="text" name="search" />
+	 *			</label>
+	 *		</form>
+	 *		<ul id="autocomplete">
+	 *		</ul>
+	 *
+	 * You could easily implement an autocompleting search input using the
+	 * following code:
+	 *
+	 *		// Position the autocomplete list below the search input
+	 *		new can.ui.layout.Positionable($("#autocomplete"), {
+	 *			my: "top left",
+	 *			at: "bottom left",
+	 *			of: $("#search")
+	 *		});
+	 *		
+	 *		// Autocomplete controller
+	 *		var Autocomplete = can.Control({
+	 *			"keyup" : function( el, ev ) {
+	 *				this.options.list.show();
+	 *				$.ajax({
+	 *					url : "/search.php",
+	 *					data : el.val(),
+	 *					success : this.callback("updateResults")
+	 *				});
+	 *			},
+	 *			"blur" : function() {
+	 *				this.options.list.hide();
+	 *			},
+	 *			"updateResults" : function( json ) {
+	 *				this.options.list.html( "views/autocomplete-list.ejs", json );
+	 *			},
+	 *			"{list} li click" : function( el, ev ) {
+	 *				this.blur();
+	 *				this.element.val( el.text() );
+	 *			}
+	 *		});
+	 *		
+	 *		// Initialize the autocomplete controller on the search element
+	 *		new Autocomplete($("#search"), {
+	 *			list: $("#autocomplete")
+	 *		});
+	 *
+	 *
+	 * ## Demo
+	 * @demo canui/layout/positionable/positionable.html
+	 *
+	 * @param {Object} options Object literal describing how to position the
+	 * current element against another.
+	 *
+	 *	- `my` {String} - String containing the edge of the positionable element to be
+	 *	used in positioning. Possible values are:
+	 *	- `at` {String} - String containing the edge of the target element to be
+	 *	used in positioning.
+	 *	- Possible values for both the `my` and `at` options include:
+	 *		- `"top"`
+	 *		- `"center"`
+	 *		- `"bottom"`
+	 *		- `"left"`
+	 *		- `"right"`
+	 *		- Horizontal and vertical values can be used in conjunction with
+	 *		eachother, separated by a space. For example, `"bottom left"`.
+	 *	- `of` {jQuery} - The target DOM element.
+	 *	- `collision` {String} - Collision strategy to be used in case the positionable
+	 *	element does not fit in the window. Possible values include
+	 *		- `fit` - Attempts to position the element as close as possible to
+	 *		the target without clipping the positionable.
+	 *		- `flip` - Flips the element to the opposite side of the target.
+	 *		- `none` - Don't use any collision strategey.
+	 *	- `using` {Function} - function that recieves the calculated position
+	 *	in the format of `{ top: x, left: y }` to handle the positioning. If a
+	 *	`using` parameter is passed, the element won't be positioned
+	 *	automatically, but must be positioned by hand in the `using` callback.
+	 * - `hideWhenOfInvisible` - `{Boolean}` - hide element when `of` element is
+	 * not visible because of scrolling. If you set this to `true` make sure that
+	 * `of` element's parent that is scrollable has `position` set to `relative` or
+	 *`absolute`
+	 *
+	 * 
+	 * This plugin is built on top of the [jQuery UI Position Plugin](http://docs.jquery.com/UI/Position),
+	 * so you may refer to their documentation for more advanced usage.
+	 */
+	can.Control("can.ui.Positionable",
+	 {
+		pluginName : 'positionable',
+	 	rhorizontal : /left|center|right/,
+		rvertical : /top|center|bottom/,
+		hdefault : "center",
+		vdefault : "center",
+	 	defaults : {
+			iframe: false,
+			of: window,
+			keep : false, //keeps it where it belongs,
+			hideWhenOfInvisible : false
+	 	},
+		
+		getScrollInfo: function(within) {
+			var notWindow = within[0] !== window,
+				overflowX = notWindow ? within.css( "overflow-x" ) : "",
+				overflowY = notWindow ? within.css( "overflow-y" ) : "",
+				scrollbarWidth = overflowX === "auto" || overflowX === "scroll" ? can.ui.scrollbarWidth() : 0,
+				scrollbarHeight = overflowY === "auto" || overflowY === "scroll" ? can.ui.scrollbarWidth() : 0;
+	
+			return {
+				height: within.height() < within[0].scrollHeight ? scrollbarHeight : 0,
+				width: within.width() < within[0].scrollWidth ? scrollbarWidth : 0
+			};
+		}
+	 },
+	/** 
+	 * @prototype
+	 */
+	 {
+	 	setup : function(element, options){
+	 		var controls = $(element).data('controls'),
+	 			pluginName = this.constructor._shortName;
+	 		if(controls && controls.length > 0){
+	 			for(var i = 0; i < controls.length; i++){
+	 				if(controls[i].constructor._shortName === pluginName){
+	 					controls[i].destroy();
+	 				}
+	 			}
+	 		}
+	 		this._super(element, options);
+	 	},
+
+		init : function(element, options) {
+			//if(this.element.length === 0) return;
+			this.element.css("position","absolute");
+			if(!this.options.keep){
+				// Remove element from it's parent only if this element _has_ parent.
+				// This allows us to call positionable like `new can.ui.layout.Positionable($('<div/>'))
+				if(this.element[0].parentNode){
+					this.element[0].parentNode.removeChild(this.element[0])
+				}
+				document.body.appendChild(this.element[0]);
+				
+			}
+		},
+
+		show : function(el, ev, position){
+			this.move.apply(this, arguments)
+			//clicks elsewhere should hide
+		},
+
+		move : function( el, ev, positionFrom ) {
+			var position = this.position.apply(this, arguments),
+				elem     = this.element,
+				options  = this.options;
+	
+			// if elem is hidden, show it before setting offset
+			var visible = elem.is(":visible")
+			if ( ! visible ) {
+				elem.css("opacity", 0).show()
+			}
+
+			elem.offset( $.extend( position, { using: options.using } ) );
+
+			if ( ! visible ) {
+				elem.css("opacity", 1).hide();
+			}
+			if(this.options.hideWhenOfInvisible){
+				this.element.toggle(this.isOfVisible());
+			}
+		},
+
+		isOfVisible : function(){
+			var of = this.options.of,
+				pos = of.position();
+
+			if(pos.top < 0 ||
+				pos.top > of.offsetParent().height() ||
+				pos.left < 0 ||
+				pos.left + of.width() > of.offsetParent().width()) {
+					return false;
+			} 
+			return true;
+		},
+
+		/**
+		 * Calculate the position of the element.
+		 */
+		position : function(el, ev, positionFrom){
+			var options  = $.extend({},this.options);
+				 options.of= positionFrom || options.of;
+			if(!options.of)	return;
+			var target = $( options.of ),
+				collision = ( options.collision || "flip" ).split( " " ),
+				offset = options.offset ? options.offset.split( " " ) : [ 0, 0 ],
+				targetWidth,
+				targetHeight,
+				basePosition;
+			if ( options.of.nodeType === 9 ) {
+				targetWidth = target.width();
+				targetHeight = target.height();
+				basePosition = { top: 0, left: 0 };
+			} else if ( options.of.scrollTo && options.of.document ) {
+				targetWidth = target.width();
+				targetHeight = target.height();
+				basePosition = { top: target.scrollTop(), left: target.scrollLeft() };
+			} else if ( options.of.preventDefault ) {
+				// force left top to allow flipping
+				options.at = "left top";
+				targetWidth = targetHeight = 0;
+				basePosition = { top: options.of.pageY, left: options.of.pageX };
+			} else if (options.of.top){
+				options.at = "left top";
+				targetWidth = targetHeight = 0;
+				basePosition = { top: options.of.top, left: options.of.left };
+				
+			} else {
+				targetWidth = target.outerWidth();
+				targetHeight = target.outerHeight();
+				if(false){
+					var to = target.offset();
+					
+					var eo =this.element.parent().children(":first").offset();
+					
+					basePosition = {
+						left: to.left - eo.left,
+						top: to.top -eo.top
+					}
+				}else{
+					basePosition = target.offset();
+				}
+				
+			}
+		
+			// force my and at to have valid horizontal and veritcal positions
+			// if a value is missing or invalid, it will be converted to center 
+			$.each( [ "my", "at" ], this.proxy( function( i, val ) {
+				var pos = ( options[val] || "" ).split( " " );
+				if ( pos.length === 1) {
+					pos = this.constructor.rhorizontal.test( pos[0] ) ?
+						pos.concat( [this.constructor.vdefault] ) :
+						this.constructor.rvertical.test( pos[0] ) ?
+							[ this.constructor.hdefault ].concat( pos ) :
+							[ this.constructor.hdefault, this.constructor.vdefault ];
+				}
+				pos[ 0 ] = this.constructor.rhorizontal.test( pos[0] ) ? pos[ 0 ] : this.constructor.hdefault;
+				pos[ 1 ] = this.constructor.rvertical.test( pos[1] ) ? pos[ 1 ] : this.constructor.vdefault;
+				options[ val ] = pos;
+			}));
+		
+			// normalize collision option
+			if ( collision.length === 1 ) {
+				collision[ 1 ] = collision[ 0 ];
+			}
+		
+			// normalize offset option
+			offset[ 0 ] = parseInt( offset[0], 10 ) || 0;
+			if ( offset.length === 1 ) {
+				offset[ 1 ] = offset[ 0 ];
+			}
+			offset[ 1 ] = parseInt( offset[1], 10 ) || 0;
+		
+			if ( options.at[0] === "right" ) {
+				basePosition.left += targetWidth;
+			} else if (options.at[0] === this.constructor.hdefault ) {
+				basePosition.left += targetWidth / 2;
+			}
+		
+			if ( options.at[1] === "bottom" ) {
+				basePosition.top += targetHeight;
+			} else if ( options.at[1] === this.constructor.vdefault ) {
+				basePosition.top += targetHeight / 2;
+			}
+		
+			basePosition.left += offset[ 0 ];
+			basePosition.top += offset[ 1 ];
+			
+			
+			var elem = this.element,
+				elemWidth = elem.outerWidth(),
+				elemHeight = elem.outerHeight(),
+				position = $.extend( {}, basePosition ),
+				getScrollInfo = this.constructor.getScrollInfo;
+
+			if ( options.my[0] === "right" ) {
+				position.left -= elemWidth;
+			} else if ( options.my[0] === this.constructor.hdefault ) {
+				position.left -= elemWidth / 2;
+			}
+	
+			if ( options.my[1] === "bottom" ) {
+				position.top -= elemHeight;
+			} else if ( options.my[1] === this.constructor.vdefault ) {
+				position.top -= elemHeight / 2;
+			}
+
+			$.each( [ "left", "top" ], function( i, dir ) {
+				if ( $.ui.position[ collision[i] ] ) {
+					var isEvent = ((options.of && options.of.preventDefault) != null),
+						within = $(isEvent || !options.of ? window : options.of),
+						marginLeft = parseInt( $.curCSS( elem[0], "marginLeft", true ) ) || 0,
+						marginTop = parseInt( $.curCSS( elem[0], "marginTop", true ) ) || 0;
+						
+					var scrollInfo = getScrollInfo(within);
+					$.ui.position[ collision[i] ][ dir ]( position, {
+						targetWidth: targetWidth,
+						targetHeight: targetHeight,
+						elem: elem,
+						within : within,
+						collisionPosition : {
+							marginLeft: parseInt( $.curCSS( elem[0], "marginLeft", true ) ) || 0,
+							marginTop: parseInt( $.curCSS( elem[0], "marginTop", true ) ) || 0
+						},
+						collisionWidth: elemWidth + marginLeft +
+							( parseInt( $.curCSS( elem[0], "marginRight", true ) ) || 0 ) + scrollInfo.width,
+						collisionHeight: elemHeight + marginTop +
+						( parseInt( $.curCSS( elem[0], "marginBottom", true ) ) || 0 ) + scrollInfo.height,
+						elemWidth: elemWidth,
+						elemHeight: elemHeight,
+						offset: offset,
+						my: options.my,
+						at: options.at
+					});
+				}
+			});
+			return position;
+		},
+
+		/**
+		 * Move element when the `of` element is moving
+		 */
+		"{of} move" : function(el, ev){
+			clearTimeout(this._finalMove)
+			this.move(this.element, ev, el);
+			this._finalMove = setTimeout(this.proxy(function(){
+				this.move(this.element, ev, el);
+			}), 1)
+		}
+	});
+})(module["jquery"], module["can/control/control.js"], module["can/construct/proxy/proxy.js"], module["can/construct/super/super.js"], module["jquery"], module["jquery/event/reverse/reverse.js"], module["can/control/plugin/plugin.js"], module["canui/util/scrollbar_width.js"], module["canui/positionable/position.js"]);
+module['canui/resize/resize.js'] = (function ($) {
+	$.support.correctOverflow = false;
+
+	$(function () {
+		var container = $('<div style="height: 18px; padding: 0; margin: 0">' +
+			'<div style="height: 20px; padding: 0; margin: 0"></div></div>')
+			.appendTo(document.body)
+		$.support.correctOverflow = container.height() == 18;
+		container.remove();
+		container = null;
+	});
+
+	/**
+	 * @class can.ui.Resize
+	 * @parent canui
+	 * @test canui/resize/funcunit.html
+	 *
+	 * @description A lightweight resize widget
+	 *
+	 * A lightweight resize widget
+	 *
+	 * ## Use
+	 *
+	 * Create a new resizable control instance:
+	 *
+	 *     new can.ui.Resize($('#resize'));
+	 *
+	 * This will take the jQuery object and allow you to
+	 * resize it on the bottom, right, and bottom right
+	 * of the element. If you want to choose which side
+	 * you can resize it from, use the handles option:
+	 *
+	 *     new can.ui.Resize($('#resize'), {
+	 *       handles: ['s']
+	 *     });
+	 *
+	 * This will allow your content to be resizable only
+	 * by dragging the bottom of the element. You can use any
+	 * combination, and each direction corresponds to a side
+	 * of the element:
+	 *
+	 * - s: bottom of the element
+	 * - e: right side of the element
+	 * - se: bottom right corner of the element
+	 *
+	 * You can also constrain how big or how small you want to
+	 * allow the content to be with the min/max height/width
+	 * options:
+	 *
+	 *     new can.ui.Resize($('#resize'), {
+	 *       maxWidth: 300,
+	 *       maxHeight: 300,
+	 *       minWidth: 100,
+	 *       minHeight: 200,
+	 *     });
+	 *
+	 * This will limit the height of the resizable widget to between
+	 * 200px and 300px and the width of the widget to between 100px
+	 * and 300px.
+	 *
+	 * Similarly, it is also possible to keep the proportion of the height and width
+	 * equal as you resize the element, this is done with the aspectRatio
+	 * option:
+	 *
+	 *     new can.ui.Resize($('#resize'), {
+	 *       aspectRatio: 16 / 9
+	 *     });
+	 *
+	 * This will keep the size of your resizable widget with the aspect ratio
+	 * of standard HD videos. This could come in handly if you are resizing
+	 * a video element. This is also helpful if your widget resizes an image
+	 * and you wish to keep the proportions of the image the same while resizing.
+	 *
+	 * You can contrain when resizing will take place on your widget. This is
+	 * useful when a user might inadvertently start resizing the element. There are
+	 * two ways to go about this:
+	 *
+	 *     new can.ui.Resize($('#resize'), {
+	 *       delay: 2000,
+	 *       distance: 10
+	 *     });
+	 *
+	 * With the delay and distance options set, resizing cannot happen until
+	 * two seconds have passed and you drag at least 10 pixels away from where you
+	 * moused down at. Resizing will not occure until both conditions are met.
+	 *
+	 * It is possible to both style and hide the handles of the resizable widget
+	 * You can choose to either style the default handle class, ui-resizable-handle
+	 * which has the following styles applied to it be default:
+	 *
+	 *     .ui-resizable-handle {
+	 *       display:block;
+	 *       font-size:0.1px;
+	 *       position:absolute;
+	 *       z-index: 1000;
+	 *     }
+	 *
+	 * You can also style specific handles with the ui-resizable-{direction name}
+	 * classes. By default these are:
+	 *     .ui-resizable-s {
+	 *       bottom:-3px;
+	 *       cursor:s-resize;
+	 *       height:7px;
+	 *       left:0;
+	 *       width:100%;
+	 *     }
+	 *
+	 *     .ui-resizable-e {
+	 *       cursor:e-resize;
+	 *       height:100%;
+	 *       right:-3px;
+	 *       top:0;
+	 *       width:7px;
+	 *     }
+	 *
+	 *     .ui-resizable-se {
+	 *       bottom:0px;
+	 *       cursor:se-resize;
+	 *       height:12px;
+	 *       right:0px;
+	 *       width:12px;
+	 *       background-color: #ddddff;
+	 *     }
+	 *
+	 * Finally, you can choose to not have these handles appear until you
+	 * move your mouse into the widget, this is done as:
+	 *
+	 *     new can.ui.Resize($('#resize'), {
+	 *       autoHide: true
+	 *     });
+	 *
+	 * With autoHide set to true, the handles will not appear on the screen until
+	 * your mouse enters your widget, and will disappear as soon as your mouse
+	 * leaves the widget.
+	 *
+	 * ## Demo
+	 * @demo canui/resize/resize.html
+	 *
+	 * @param {Object} [options] Values to configure the behavior of resize:
+	 *
+	 * - `aspectRatio` - `{Number}` - The proportional relationship between the widget's width and its height
+	 * - `autoHide` - `{Boolean}` - If `true`, the resize handles will not appear unless the
+	 * mouse is inside the widget
+	 * - `delay`  - `{Number}` - How long, in milliseconds, to wait until resizing starts
+	 * - `distance` - `{Number}` - How far, in pixels, to wait until resizing starts
+	 * - `handles` - `{Array}` - Where the handles should be in relation to the widget itself
+	 * - `maxHeight` - `{Number}` - The maxiumum height the widget can be
+	 * - `maxWidth` - `{Number}` - The maxiumum width the widget can be
+	 * - `minHeight` - `{Number}` - The minimum height the widget can be
+	 * - `minWidth` - `{Number}` - The minimum width the widget can be
+	 * - `handleClassName` - `{String}` - A class name to use for the resizing handles.
+	 *
+	 * @return {can.ui.Resize}
+	 */
+	can.Control('can.ui.Resize', {
+		pluginName : 'resizable',
+		defaults : {
+			aspectRatio : false,
+			autoHide : false,
+			delay : 0,
+			distance : 0,
+			handles : ['e', 's', 'se'],
+			maxHeight : null,
+			maxWidth : null,
+			minHeight : 10,
+			minWidth : 10,
+			handleClassName : 'ui-resizable-handle'
+		}
+	}, {
+		directionInfo : {
+			's' : {
+				limit : 'vertical',
+				dim : 'height'
+			},
+			'e' : {
+				limit : 'horizontal',
+				dim : 'width'
+			},
+			'se' : {
+
+			}
+		},
+
+		setup : function (el, options) {
+			var diff = this._wrap($(el))[0];
+			can.Control.prototype.setup.call(this, diff, options)
+
+			this.original = $(el);
+			if (diff != $(el)[0]) {
+				this.original = $(el).fills({all : true}); //set to fill
+			}
+		},
+
+		init : function (el, options) {
+			this.element.prepend($.map(this.options.handles, this.proxy(function (dir) {
+				return '<div class="ui-resizable-' + [dir, this.options.handleClassName].join(' ') + '"/>';
+			})).join(''));
+
+
+			this.options.autoHide && this.element.find('.ui-resizable-se').hide();
+		},
+
+		_wrap : function (el) {
+			var ret = [];
+			el.each(function () {
+				if (this.nodeName.match(/canvas|textarea|input|select|button|img/i)) {
+					var $el = $(this),
+						$org = $el
+					//Opera fix for relative positioning
+					if (/relative/.test($el.css('position')) && $.browser.opera)
+						$el.css({ position : 'relative', top : 'auto', left : 'auto' });
+
+					//Create a wrapper element and set the wrapper to the new current internal element
+					var position = $el.css('position')
+					$el.wrap(
+						$('<div class="ui-wrapper"></div>').css({
+							position : position == 'static' ? "relative" : position,
+							width : $el.outerWidth(),
+							height : $el.outerHeight(),
+							top : $el.css('top'),
+							left : $el.css('left')
+						})
+					);
+
+					//Overwrite the original $el
+					$el = $el.parent()
+
+					$elIsWrapper = true;
+
+					//Move margins to the wrapper
+					$el.css({
+						marginLeft : $org.css("marginLeft"),
+						marginTop : $org.css("marginTop"),
+						marginRight : $org.css("marginRight"),
+						marginBottom : $org.css("marginBottom")
+					});
+
+					$org.css({
+						marginLeft : "0px",
+						marginTop : "0px",
+						marginRight : "0px",
+						marginBottom : "0px"
+					});
+
+					ret.push($el)
+				} else {
+					ret.push(this)
+				}
+			});
+
+			return $(ret);
+		},
+
+		_getDirection : function (el) {
+			return el[0].className.match(/ui-resizable-(se|s|e)/)[1]
+		},
+
+		'.{handleClassName} dragdown' : function (el, ev, drag) {
+			drag.distance(this.options.distance);
+			this.delayMet = !this.options.delay;
+
+			if (!this.delayMet) {
+				this.dragTimeout = setTimeout(this.proxy(function () {
+					this.delayMet = true;
+				}), this.options.delay);
+			}
+		},
+
+		mouseenter : function () {
+			this.options.autoHide && this.element.find('.ui-resizable-se').show();
+		},
+
+		mouseleave : function () {
+			this.options.autoHide && this.element.find('.ui-resizable-se').hide();
+		},
+
+		'.{handleClassName} draginit' : function (el, ev, drag) {
+			this.margin = this.element.offsetv().plus(this.element.dimensionsv('outer')).minus(el.offsetv());
+			this.overflow = $.curCSS(this.element[0], 'overflow');
+
+			if (!$.support.correctOverflow && this.overflow == 'visible') {
+				this.element.css('overflow', 'hidden');
+			}
+
+			var direction = this._getDirection(el);
+
+			ev.stopPropagation();
+
+			if (this.directionInfo[direction].limit) {
+				drag[this.directionInfo[direction].limit]()
+			}
+			this.original.trigger('resizestart', arguments);
+		},
+
+		'.{handleClassName} dragmove' : function (el, ev, drag) {
+			ev.preventDefault();
+			if (this.delayMet) {
+				this._move(el, ev, drag);
+				this.original.trigger('resize', arguments);
+			}
+		},
+
+		_move : function (el, ev, drag) {
+			var direction = this._getDirection(el);
+
+			if (direction.indexOf('s') > -1) {
+				this._smallerMove(drag.location.y(),
+					this.element.offset().top,
+					this.options.minHeight,
+					this.options.maxHeight,
+					'outerHeight',
+					this.options.minWidth,
+					this.options.maxWidth,
+					'outerWidth',
+					this.margin.y(),
+					this.options.aspectRatio)
+			}
+
+			if (direction.indexOf('e') > -1) {
+				this._smallerMove(drag.location.x(),
+					this.element.offset().left,
+					this.options.minWidth,
+					this.options.maxWidth,
+					'outerWidth',
+					this.options.minHeight,
+					this.options.maxHeight,
+					'outerHeight',
+					this.margin.x(),
+					1 / this.options.aspectRatio)
+			}
+
+			this.element.resize();
+		},
+
+		_smallerMove : function (end, start, min, max, outerFunc, oMin, oMax, oOuterFunc, margin, aspectRatio) {
+			var outer = end - start;
+			outer = Math.max(outer, min);
+
+			if (max) {
+				outer = Math.min(outer, max);
+			}
+
+			this.element[outerFunc](outer + margin);
+
+			if (aspectRatio) {
+				var otherOuter = outer * aspectRatio;
+				otherOuter = Math.max(otherOuter, oMin);
+
+				if (oMax) {
+					otherOuter = Math.min(otherOuter, oMax);
+				}
+				this.element[oOuterFunc](otherOuter);
+			}
+		},
+
+		'.{handleClassName} dragend' : function (el, ev, drag) {
+			if (!$.support.correctOverflow && this.overflow == 'visible') {
+				this.element.css('overflow', 'visible')
+			}
+			this.original.trigger('resizestop', arguments)
+		},
+
+		destroy : function () {
+			this.element.find('.' + this.options.handleClassName).remove();
+			can.Control.prototype.destroy.apply(this, arguments);
+		}
+	})
+})(module["jquery"], module["can/construct/proxy/proxy.js"], module["can/control/control.js"], module["jquery/event/drag/drag.js"], module["jquery/dom/dimensions/dimensions.js"], module["canui/fills/fills.js"], module["can/control/plugin/plugin.js"]);
 
 window.define = module._define;
 })();
