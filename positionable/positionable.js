@@ -12,8 +12,10 @@ steal('jquery', 'can/control',
 	}
 
 	/**
-	 * @class canui.Positionable
+	 * @class can.ui.layout.Positionable
 	 * @parent canui
+	 *
+	 * @description Allows you to position an element relative to another element.
 	 *
 	 * The positionable plugin allows you to position an element relative to
 	 * another. It abstracts all of the calculating you might have to do when
@@ -95,7 +97,7 @@ steal('jquery', 'can/control',
 	 *
 	 *
 	 * ## Demo
-	 * @demo canui/positionable/demos.html
+	 * @demo canui/layout/positionable/positionable.html
 	 *
 	 * @param {Object} options Object literal describing how to position the
 	 * current element against another.

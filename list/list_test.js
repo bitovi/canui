@@ -5,9 +5,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		var emptyHtml = '<li>Nothing here...</li>',
 			container = $('<ul>').appendTo('#qunit-test-area').list({
 				view : '//canui/list/test.ejs',
-				emptyContent : function() {
-					return emptyHtml;
-				}
+				emptyContent : emptyHtml
 			});
 
 		equal(container.html(), emptyHtml, 'Set to empty text');
@@ -46,9 +44,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			view : '//canui/list/test.ejs',
-			loadingContent : function() {
-				return '<li>Loading</li>';
-			},
+			loadingContent : '<li>Loading</li>',
 			list : dfd
 		});
 
@@ -79,12 +75,8 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			view : '//canui/list/test.ejs',
-			loadingContent : function() {
-				return '<li>Loading</li>';
-			},
-			emptyContent : function() {
-				return '<li>Empty!</li>'
-			},
+			loadingContent : '<li>Loading</li>',
+			emptyContent : '<li>Empty!</li>',
 			list : compute
 		});
 

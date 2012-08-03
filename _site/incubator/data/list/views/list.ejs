@@ -1,5 +1,0 @@
-<% can.each(items, function(item) { %>
-  <<%=options.nodeType%> <%= (el) -> el.data(options.dataKey, item) %> class='item <%= options.className%>'>
-        <%== can.view.render(options.show, item) %>
-  </<%=options.nodeType%>>
-<% }) %>

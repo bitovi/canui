@@ -36,23 +36,47 @@ steal('jquery', 'jquery/dom/dimensions', 'jquery/event/resize', function( $ ) {
 		},
 		/**
 		 * @function jQuery.fn.fills
-		 * @parent canui.Fills
+		 * @parent jQuery.fills
 		 * @test jquery/dom/fills/funcunit.html
 		 * @plugin jquery/dom/fills
 		 *
 		 * Fills a parent element's height with the current element.
 		 * This is extremely useful for complex layout, especially when you want to account for line-wrapping.
 		 *
+		 * ## Basic Example
+		 *
+		 * If you have the following html:
+		 *
+		 *     <div id='box'>
+		 * 	    <p>I am a long heading.</p>
+		 * 	    <div id='child'>I'm a child.</div>
+		 *     </div>
+		 *
+		 * The follow makes `#child` fill up `#box`:
+		 *
+		 *     $('#child').can_ui_layout_fill("#box")
+		 *
+		 * ## Limitations
+		 *
+		 * Fill currently does not well with:
+		 *
+		 *   - Bleeding margins - Where margins leak through parent elements
+		 *     because the parent elements do not have a padding or border.
+		 *
+		 *   - Tables - You shouldn't be using tables to do layout anyway.
+		 *
+		 *   - Floated Elements - the child element has `float: left` or `float: right`
+		 *
 		 *
 		 * @param {HTMLElement|selector|Object} [parent] the parent element
-		 * to fill, defaults to the window.
+		 * to fill, defaults to the element's parent.
 		 *
 		 * The following fills the parent to `#child`:
 		 *
-		 *     $('#child').fills($('#child').parent())
+		 *     $('#child').fills()
 		 *
-		 * A selector can also be passed. This selector is passed to jQuery's
-		 * closest method. The following matches the first `#parent` element that
+		 * A selector can also be pased.  This selector is passed to jQuery's
+		 * closet method.  The following matches the first `#parent` element that
 		 * is a parentNode of `#child`:
 		 *
 		 *     $('#child').fills("#parent")
@@ -66,6 +90,7 @@ steal('jquery', 'jquery/dom/dimensions', 'jquery/event/resize', function( $ ) {
 		 *
 		 * - __parent__ - The parent element selector or jQuery object
 		 * - __className__ - A class name to add to the element that fills
+		 * - __all__ - Reset the parents height when resizing
 		 *
 		 * @return {jQuery} the original jQuery collection for chaining.
 		 */
