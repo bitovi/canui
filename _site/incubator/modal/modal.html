@@ -1,0 +1,318 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+		"http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<title>modal</title>
+	<style type='text/css'>
+		body {
+			font-family: verdana;
+		}
+
+		.error {
+			border: solid 1px red;
+		}
+
+		.error_text {
+			color: red;
+			font-size: 10px;
+		}
+
+		td {
+			padding: 3px;
+		}
+
+		.modal {
+			width: 300px;
+			height: auto;
+			border: solid 1px black;
+			background-color: #eeeeff;
+			box-shadow: 0 0 20px 0 rgba(0,0,0,0.5);
+		}
+
+		#elem {
+			width: 400px;
+			height: 300px;
+			line-height: 300px;
+			border: 1px dotted #aaa;
+			text-align: center;
+		}
+
+		.custom-overlay {
+			background: rgba(255, 0, 247, 0.5);
+			top: 0;
+			bottom: 0;
+			right: 0;
+			left: 0;
+		}
+
+		.custom-overlay-2 {
+			background: rgba(0, 0, 200, 0.5);
+			top: 0;
+			bottom: 0;
+			right: 0;
+			left: 0;
+		}
+
+		#customOverlayElement {
+			line-height: 20px;
+			text-align: left;
+		}
+		.make-page-scroll {
+			height: 2000px;
+			width: 200%;
+		}
+		.scrollable {
+			width: 300px;
+			height: 300px;
+			overflow: auto;
+			border: 1px solid black;
+		}
+		.scrollable::-webkit-scrollbar {
+			-webkit-appearance: none;
+			width: 11px;
+			height: 11px;
+		}
+
+		.scrollable::-webkit-scrollbar-thumb {
+			border-radius: 8px;
+			border: 2px solid white; /* should match background, can't be transparent */
+			background-color: rgba(0, 0, 0, .5);
+		}
+
+		.scrollable-content {
+			width: 800px;
+			height: 800px;
+		}
+	</style>
+</head>
+<body>
+<h1>Modal</h1>
+<ul>
+	<li>
+		<a href="javascript://" id='show'>Show as modal</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-custom'>Show as modal with custom show function (Twitter bootstrap style, with animation and on top of the page)</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-stacked'>Show five stacked modals</a>
+	</li>
+	<li>
+		<a href="javascript://" id='move-to-top'>Move modal from the bottom to the top</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-custom-overlay-class'>Show modal with custom overlay class</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-in-scrollable'>Show modal in scrollable element</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-custom-element'>Show modal within an element</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-without-overlay'>Show modal without overlay</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-custom-widget'>Show modal with custom modal controller</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-five-modals-overlay'>Show five modals that use same overlay element</a>
+	</li>
+	<li>
+		<a href="javascript://" id='show-modal-pausable'>Show modal with pausable events</a>
+	</li>
+</ul>
+<div id="elem">
+	Just a random element
+</div>
+<div id='modal' class="modal">
+	<h3>Some Modal</h3>
+
+	<p>Here is some text. Blah blah blah. I am watching SNL with Jennifer Lopez.
+		She still has it. But, I am not sure SNL does.
+	</p>
+</div>
+<div id='modal2' class="modal" style="display: none">
+	<h3>Some Modal</h3>
+
+	<p>I'm a modal inside of an element.
+	</p>
+</div>
+<div id='modal3' class="modal" style="display: none">
+	<h3>Some Modal</h3>
+
+	<p>I'm a modal that will be opened with the custom modal class.</p>
+</div>
+<div id="signup-form" class="modal">
+	<form>
+		<div><label>Username</label><input name="username" /></div>
+		<div><label>Password</label><input name="password" type="password" /></div>
+		<div><input type="submit" value="Save!" /></div>
+	</form>
+</div>
+<div class="scrollable">
+	<div class="scrollable-content">This is scrollable content</div>
+</div>
+<div class="make-page-scroll"></div>
+<div id="customOverlayElement" style="display: none">This is a custom overlay element</div>
+<script type='text/javascript' src='../../steal/steal.js'></script>
+<script type='text/javascript'>
+	steal('canui/modal', 'jquery/event/pause', function () {
+
+		var customModal = can.ui.Modal({
+			show : function(el, position, overlay, cb){
+				overlay.show();
+				el.show().css($.extend(position, {background: "red", color: "white"}));
+				cb();
+			}
+		}, {})
+
+
+		var confirmModal = can.ui.Modal({
+			defaults : {
+				confirm       : function(){},
+				destroyOnHide : true
+			}
+		}, {
+			init : function(){
+				this.element.html('Are you sure? <a href="javascript://"" class="confirm">YES!</a>').addClass('modal');
+				this._super.apply(this, arguments)
+			},
+			".confirm click" : function(){
+				this.options.confirm();
+				this.element.remove();
+			}
+		})
+
+		var pausableModal = can.ui.Modal({}, {
+			"input keydown" : "markDirty",
+			"input change"  : "markDirty",
+			markDirty : function(){
+				this.element.addClass('dirty')
+			},
+			" hide" : function(el, ev){
+				if(this.element.hasClass('dirty')){
+					ev.pause();
+					new confirmModal($('<div/>'), {
+						confirm : function(){
+							ev.resume();
+						},
+						of : this.element
+					})
+				}
+			}
+		})
+
+		var bootstrapModal = can.ui.Modal({
+			show : function(el, position, overlay, cb){
+				var height = el.height();
+				var hiddenPosition = $.extend({}, position, {top: "-" + height + "px"})
+				overlay.css('opacity', 0).show().animate({opacity: 1}, 100);
+				el.show().css(hiddenPosition).animate(position, 100, cb);
+			},
+			hide : function(el, overlay, cb){
+				var height = el.height();
+				el.animate({top: "-" + height + "px"}, 100, cb)
+				overlay.animate({opacity: 0}, 100)
+			}
+		}, {})
+
+		$('#show-modal-pausable').click(function(){
+			new pausableModal($('#signup-form'))
+		})
+
+
+
+		$("#show").click(function () {
+			new can.ui.Modal($("#modal"), {
+				overlay : false
+			});
+		})
+		$('#show-stacked').click(function () {
+			for (var i = 1; i < 6; i++) {
+				var div = $('<div class="modal"">Test ' + i + '. <a href="#" class="close">Close</a></div>');
+				new can.ui.Modal(div, {
+					destroyOnHide : true,
+					overlay : true
+				});
+				div.find('.close').on('click', function () {
+					$(this).trigger('hide')
+				});
+			}
+		})
+		$('#show-five-modals-overlay').click(function () {
+			for (var i = 1; i < 6; i++) {
+				var div = $('<div class="modal"">Test ' + i + '. <a href="#" class="close">Close</a></div>');
+				new can.ui.Modal(div, {
+					destroyOnHide : true,
+					overlay : $('#customOverlayElement')
+				});
+				div.find('.close').on('click', function () {
+					$(this).trigger('hide')
+				});
+			}
+		})
+		$('#move-to-top').click(function(){
+			var modal =$('.can_ui_modal:first')
+			if(modal.length > 0){
+				modal.data().controls[0].moveToTop();
+			}
+		})
+		$("#show-custom-overlay-class").click(function () {
+			new can.ui.Modal($("#modal"), {
+				overlayClass : 'custom-overlay',
+				overlay : true
+			});
+		})
+		$("#show-custom-element").click(function () {
+			new can.ui.Modal($("#modal2"), {
+				overlayClass : 'custom-overlay-2',
+				overlay : $("#customOverlayElement"),
+				of : $("#elem")
+			});
+		})
+		$("#show-in-scrollable").click(function () {
+			new can.ui.Modal($("#modal2"), {
+				overlayClass : 'custom-overlay-2',
+				overlay : $("#customOverlayElement"),
+				of : $(".scrollable")
+			});
+		})
+		$("#show-without-overlay").click(function () {
+			new can.ui.Modal($("#modal2"), {
+				overlayClass : 'custom-overlay-2',
+				overlay : false
+			});
+		})
+
+		$("#show-custom-widget").click(function () {
+			new customModal($("#modal3"), {
+				hide : function(el, overlay, cb){
+					var height = el.outerHeight();
+					el.animate({top: "-" + height + "px"}, 100, cb)
+				}
+			});
+		})
+		$('#show-custom').click(function(){
+			/*new can.ui.Modal($("#modal"), {
+				overlay : true,
+				show : function(el, position, overlay, cb){
+					var height         = el.outerHeight(),
+						hiddenPosition = $.extend({}, position, {top: "-" + height + "px"})
+					overlay.css('opacity', 0).show().animate({opacity: 1}, 100);
+					el.show().css(hiddenPosition).animate(position, 100, cb);
+				},
+				hide : function(el, overlay, cb){
+					var height = el.outerHeight();
+					el.animate({top: "-" + height + "px"}, 100, cb)
+					overlay.animate({opacity: 0}, 100)
+				}
+			});*/
+			new bootstrapModal($('#modal'), {
+				overlay: true
+			})
+		})
+	})
+</script>
+</body>
+</html>

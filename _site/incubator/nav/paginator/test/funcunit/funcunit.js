@@ -1,0 +1,1 @@
+steal("funcunit").then("./tests/basic.js")

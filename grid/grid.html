@@ -36,6 +36,14 @@
   steal('jquery', 'canui/grid', 'can/model', 'can/util/fixture', 'steal/less',
     function ($) {
       steal('canui/table_scroll/table_scroll.less', function() {
+
+        var container = $('<div>').appendTo('body');
+        container.grid({
+          columns : columns
+        });
+
+        console.log(container.grid('list'));
+
         var Model = can.Model({
           findAll : 'GET /models'
         }, {});
@@ -85,7 +93,7 @@
               limit : paginator.attr('limit')
             });
           })
-        })
+        });
 
         $('#page').change(function() {
           paginator.attr('offset', $(this).val());

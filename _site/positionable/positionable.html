@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>jQuery UI Position - Default functionality</title>
+
+		
+		<style type="text/css">
+			body, legend, .demo {
+				font-family: Verdana, Tahoma, sans-serif;
+				/*overflow: hidden;*/
+			}
+
+			div#parent {
+				width: 100px;
+				height: 100px;
+				line-height: 20px;
+				margin: 10px auto;
+				padding: 5px;
+				float: right;
+				border: 1px solid #777;
+				background-color: #fbca93;
+				text-align: center;
+				margin-top: 81px;
+			}
+
+			div.positionable {
+				width: 100px;
+				height: 75px;
+				position: absolute;
+				display: block;
+				right: 10px;
+				bottom: 10px;
+				background-color: #bcd5e6;
+				text-align: center;
+				cursor: move;
+				line-height: 75px;
+			}
+
+			select, input {
+				margin-left: 15px;
+			}
+
+			form {
+				float: left;
+			}
+
+			fieldset {
+				font-family: monospace;
+			}
+
+			li {
+				list-style: none outside none;
+				padding: 2px 0;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Positionable</h1>
+<form>
+	<fieldset>
+
+		<legend>Position Options</legend>
+
+		{
+		<ul>
+			<li>
+				<label>my:</label>
+				<select id="my_horizontal">
+					<option value="left">left</option>
+					<option value="center">center</option>
+					<option value="right" selected>right</option>
+				</select> 
+				<select id="my_vertical">
+
+					<option value="top">top</option>
+					<option value="middle">center</option>
+					<option value="bottom" selected>bottom</option>
+				</select>,
+			</li>
+			<li>
+				<label>at:</label>
+
+				<select id="at_horizontal">
+					<option value="left">left</option>
+					<option value="center">center</option>
+					<option value="right">right</option>
+				</select>
+				<select id="at_vertical">
+					<option value="top">top</option>
+
+					<option value="middle">center</option>
+					<option value="bottom">bottom</option>
+				</select>,
+			</li>
+			<li>
+
+				<label>offset:</label>
+				<input id="offset" type="text" size="15"/>,
+			</li>
+			<li>
+				<label>collision:</label>
+				<select id="collision_horizontal">
+					<option value="flip">flip</option>
+					<option value="fit">fit</option>
+					<option value="none">none</option>
+				</select>
+				<select id="collision_vertical">
+					<option value="flip">flip</option>
+					<option value="fit">fit</option>
+					<option value="none">none</option>
+				</select>
+			</li>
+		</ul>
+		}
+	</fieldset>
+</form>
+
+
+<div class="demo">
+
+<div id="parent">
+    This is the position parent element.
+</div>
+
+<div class="positionable">Drag me!</div>
+
+<div class="positionable" style="width:120px; height: 40px; line-height: 40px">
+	Drag me!
+</div>
+
+<script type='text/javascript' 
+                src='../../steal/steal.js'
+                package='main.js'
+                compress='false'>   
+</script>
+<script type='text/javascript'>
+	
+	steal(
+		"canui/positionable",
+		'jquery/event/drag',
+		'jquery'
+	).then(function() {
+
+		var $positionable = $(".positionable"),
+			$parent = $("#parent"),
+			$input = $(":input"),
+			$offset = $("#offset"),
+			getOptions = (function() {
+
+				var elems = {
+					my : {
+						horizontal	: $('#my_horizontal'),
+						vertical	: $('#my_vertical')
+					},
+					at : {
+						horizontal	: $('#at_horizontal'),
+						vertical	: $('#at_vertical')
+					},
+					collision: {
+						horizontal	: $("#collision_horizontal"),
+						vertical	: $('#collision_vertical')
+					}
+				};
+
+				return function() {
+					var options = {};
+					$.each( ["my", "at", "collision"], function( i, part ) {
+						options[ part ] = $.map( elems[ part ], function( elem ) {
+							return elem.val();
+						}).join(" ");
+					});
+					options.offset = $offset.val();
+					return options;
+				}
+
+			}());
+
+
+		
+		function position(using) {
+			var options = getOptions();
+			options.using = using || undefined;
+			options.of    = $parent
+
+			$positionable.each(function() {
+        $(this).positionable(options);
+				$(this).trigger( "move", $parent );
+			});
+		}
+		
+		$positionable
+			.css("opacity", 0.7)
+			.bind("dragmove", function(event, ui) {
+				var elem = $(this),
+					left = parseInt(ui.location[0]),
+					top  = parseInt(ui.location[1])
+				position(function(result) {
+					$offset.val( [ left - result.left, top - result.top ].join(" ") );
+					elem.offset( result );
+				});
+			});
+
+		// Update offset input on dragmove
+		$parent.bind('dragmove', function() { $(this).trigger('move') });
+
+		// Update the position when form controls change
+		$input.bind('change', function() {
+
+			position();
+		}).trigger("change");
+		
+	})
+</script>
+</body>
+</html>
+
+

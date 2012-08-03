@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>can.ui.List demo</title>
+</head>
+<body>
+
+<script type="text/ejs" id="rowEJS">
+  <li data-cid="<%= this._cid %>">
+    <%= this.attr('name') %> <a class="remove" href="javascript://">X</a>
+  </li>
+</script>
+
+<ul id="list">
+
+</ul>
+
+<label for="name">Name</label>
+<input type="text" id="name" />
+<button class="add">Add Todo</button>
+
+<script type="text/javascript" src="../../steal/steal.js"></script>
+<script type="text/javascript">
+  steal('jquery', 'canui/list', 'can/view/ejs').then(function($) {
+    var todos = new can.Observe.List([
+      {
+        name : 'Do dishes'
+      }, {
+        name : 'Learn CanUI'
+      }
+    ]);
+
+    $('#list').list({
+      view : 'rowEJS',
+      emptyContent : '<li class="empty">Yay! Everything done</li>',
+      list : todos
+    });
+
+    $('#list').on('click', '.remove', function() {
+      var model = $('#list').list('items', $(this).closest('li'))[0];
+      todos.splice(todos.indexOf(model), 1);
+    });
+
+    $('.add').on('click', function() {
+      var name = $('#name').val();
+      if(name) {
+        todos.push(new can.Observe({
+          name : name
+        }));
+        $('#name').val('');
+      }
+    });
+  });
+</script>
+</body>
+</html>

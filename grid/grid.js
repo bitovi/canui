@@ -4,7 +4,7 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			return el;
 		}
 		var res = el.find(tag);
-		if(res.length) {
+		if(res && res.length) {
 			return res;
 		}
 		return el.append(can.$('<' + tag + '>')).find(tag);
@@ -27,8 +27,12 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 				return can.view('//canui/grid/views/row.ejs', row);
 			},
 			headerContent : '//canui/grid/views/head.ejs',
-			emptyContent : 'No data',
-			loadingContent : 'Loading...',
+			emptyContent : function() {
+				return 'No data';
+			},
+			loadingContent : function() {
+				return 'Loading...';
+			},
 			scrollable : false
 		}
 	}, {
@@ -36,16 +40,15 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			var table = appendIf(can.$(el), 'table'),
 				options = can.extend({}, ops),
 				self = this;
+
 			this.el = {
 				header : appendIf(table, 'thead'),
 				body : appendIf(table, 'tbody'),
 				footer : appendIf(table, 'tfoot')
 			}
 			can.each(['emptyContent', 'loadingContent', 'footerContent'], function(name) {
-				var current = options[name] || self.constructor.defaults[name];
-				if(can.isFunction(current)) {
-					current = current.call(this, options);
-				}
+				var current = this._fnView(options[name] || self.constructor.defaults[name]);
+				// Wrap it if it is not a table row
 				if(!can.$(current).is('tr')) {
 					current = '<tr><td colspan="' + ops.columns.length
 						+ '">' + current + '</td></tr>';
@@ -64,15 +67,15 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 					this.options.headerContent.call(this, this.options.columms) :
 					can.view(this.options.headerContent, this.options.columns);
 			this.el.header.append(header);
-			this.control = {
-				list : this.el.body.control(can.ui.List)
-			}
 			this.update();
 		},
 
 		update : function(options) {
 			can.Control.prototype.update.apply(this, arguments);
 			this.el.body.list(this.options);
+			this.control = {
+				list : this.el.body.control(can.ui.List)
+			}
 		},
 
 		columns : function(cols) {
@@ -82,12 +85,9 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			this.update({ columns : cols });
 		},
 
-		_fnView : function(name, arg) {
+		_fnView : function(name, args) {
 			var val = this.options[name];
-			if(can.isFunction(val)) {
-				return val.call(this, arg);
-			}
-			return can.view(val, arg);
+			return can.isFunction(val) ? val.call(this, args) : can.view(val, args);
 		},
 
 		'{columns} change' : function() {

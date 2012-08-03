@@ -1,0 +1,26 @@
+@import url("../style/bootstrap/less/variables.less");
+@import url("../style/bootstrap/less/mixins.less");
+
+.can_ui_table_scroll {
+  table {
+    margin-bottom: 0;
+  }
+
+  .spacing, .spacing th {
+    border: none;
+  }
+
+  th {
+    #gradient > .vertical(@white, @grayLighter);
+    border-bottom: 1px solid @tableBorder;
+  }
+}
+
+.table-bordered .can_ui_table_scroll {
+  border-left: 1px solid @tableBorder;
+
+  thead:first-child tr:first-child th:first-child,
+  tbody:first-child tr td:first-child {
+    border-left: none;
+  }
+}
