@@ -314,17 +314,6 @@ can.Control('Builder', {
 			}, 1000);
 		})
 		ev.preventDefault();
-	},
-
-	'[name="excludes"] click' : function(el) {
-		var val = el.attr('value'),
-			name = val.substr(0, val.length - 1),
-			elements = this.element.find('[data-library="' + name + '"]');
-		if(!el.is(':checked')) {
-			elements.addClass('excluded');
-		} else {
-			elements.removeClass('excluded');
-		}
 	}
 });
 
