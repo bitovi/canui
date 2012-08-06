@@ -32,8 +32,12 @@ steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
 		var container = $('<table>').appendTo('#qunit-test-area');
 		container.grid({
 			columns : columns,
-			loadingContent : 'Loading...',
-			emptyContent : 'Nothing found'
+			loadingContent : function() {
+				return 'Loading...';
+			},
+			emptyContent : function() {
+				return 'Nothing found';
+			}
 		});
 
 		var dfd = can.Deferred();
