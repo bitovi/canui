@@ -1,8 +1,7 @@
-(function() {
- var module = { _define : window.define };
+var module = { _orig: window.module, _define: window.define };
 module['jquery'] = jQuery;
 module['can/util'] = can;
-define = function(id, deps, value) {
+var define = function(id, deps, value) {
 	module[id] = value();
 };
 define.amd = { jQuery: true };
@@ -1825,19 +1824,12 @@ module['canui/list/list.js'] = (function($) {
 		/**
 		 * Updates the options and re-renders the list.
 		 *
-		 * @param {Object} [options] The updated options
+		 * @param {Object} [options] The options to udpate
 		 */
 		update : function(options) {
 			can.Control.prototype.update.call(this, options);
 			var list = this.options.list;
-			if(can.isFunction(list)) {
-				list = can.compute(list);
-			}
 			if(list && list.isComputed) {
-				// TODO doesn't trigger
-				this.on(list, 'change', can.proxy(function(ev, newVal) {
-					this._update(newVal);
-				}, this));
 				list = list();
 			}
 			this._update(list);
@@ -1902,6 +1894,12 @@ module['canui/list/list.js'] = (function($) {
 			return can.isFunction(val) ? val.apply(this, args || []) : val;
 		},
 
+		'{list} change' : function(target, ev, newVal) {
+			if(target.isComputed) {
+				this._update(newVal);
+			}
+		},
+
 		'{data} length' : function(list, ev, length) {
 			if(length === 0) {
 				this._render();
@@ -1934,7 +1932,7 @@ module['canui/list/list.js'] = (function($) {
 		},
 
 		/**
-		 * Returns all rows for a list of observables.
+		 * Returns all rows or all rows representing the given list of observables.
 		 *
 		 * @param arg
 		 * @return {*}
@@ -1955,6 +1953,13 @@ module['canui/list/list.js'] = (function($) {
 			return can.$(elements);
 		},
 
+		/**
+		 * Returns a `can.Observe.List` containing all observes (equivalent to `.list()`)
+		 * or all observes representing the given rows.
+		 *
+		 * @param {jQuery} rows The collection of row elements
+		 * @return {can.Observe.List}
+		 */
 		items : function(rows)
 		{
 			if(!rows) {
@@ -1978,9 +1983,9 @@ module['canui/list/list.js'] = (function($) {
 		},
 
 		/**
-		 * Returns all
+		 * Returns a `can.Observe.List` of the current list data.
 		 *
-		 * @param {Collection} rows An array or DOM element collection
+		 * @param {can.Observe.List|Array|can.compute|can.Deferred} newlist The list to replace
 		 * @return {can.Observe.List|can.Observe}
 		 */
 		list : function(newlist) {
@@ -1999,11 +2004,19 @@ module['canui/grid/grid.js'] = (function($) {
 			return el;
 		}
 		var res = el.find(tag);
-		if(res.length) {
+		if(res && res.length) {
 			return res;
 		}
 		return el.append(can.$('<' + tag + '>')).find(tag);
 	};
+
+	can.view.ejs('can.ui.Grid.row', '<tr>' +
+		'<% can.each(this, function(col) { %>' +
+			'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
+			'<%= col.attr(\'header\') %>' +
+			'</th>' +
+		'<% }) %>' +
+	'</tr>');
 
 	can.Control('can.ui.Grid', {
 		pluginName : 'grid',
@@ -2011,56 +2024,51 @@ module['canui/grid/grid.js'] = (function($) {
 			view : function(observe) {
 				var row = [], self = this;
 				can.each(this.options.columns, function(col) {
-					row.push(can.isFunction(col.content) ?
+					var content = can.isFunction(col.content) ?
 						col.content.call(self, observe, col) :
 						can.compute(function() {
 							return observe.attr(col.content);
-						}));
+						});
+					row.push(content);
 				});
-				row.cid = observe.cid;
+				row.cid = observe._cid;
 				return can.view('//canui/grid/views/row.ejs', row);
 			},
 			headerContent : '//canui/grid/views/head.ejs',
-			emptyContent : 'No data',
-			loadingContent : 'Loading...',
+			emptyContent : function() {
+				return 'No data';
+			},
+			loadingContent : function() {
+				return 'Loading...';
+			},
 			scrollable : false
 		}
 	}, {
 		setup : function(el, ops) {
-			var table = appendIf(can.$(el), 'table'),
-				options = can.extend({}, ops),
-				self = this;
+			var table = appendIf(can.$(el), 'table');
 			this.el = {
 				header : appendIf(table, 'thead'),
 				body : appendIf(table, 'tbody'),
 				footer : appendIf(table, 'tfoot')
 			}
-			can.each(['emptyContent', 'loadingContent', 'footerContent'], function(name) {
-				var current = options[name] || self.constructor.defaults[name];
-				if(!can.$(current).length) {
-					options[name] = '<tr><td colspan="' + ops.columns.length
-						+ '">' + current + '</td></tr>';
-				}
-			});
-			if(!(options.columns instanceof can.Observe.List)) {
-				options.columns = new can.Observe.List(options.columns);
+			if(!(ops.columns instanceof can.Observe.List)) {
+				ops.columns = new can.Observe.List(ops.columns);
 			}
-			can.Control.prototype.setup.call(this, table, options);
-			return [table, options];
+			can.Control.prototype.setup.call(this, table, ops);
+			return [table, ops];
 		},
 
 		init : function(el, ops) {
 			this.el.header.append(this._fnView('headerContent', this.options.columns));
-			this.control = {
-				list : this.el.body.control(can.ui.List)
-			}
-			// this.el.footer.append(this._fnView('footerContent', this.options.columns));
 			this.update();
 		},
 
 		update : function(options) {
 			can.Control.prototype.update.apply(this, arguments);
 			this.el.body.list(this.options);
+			this.control = {
+				list : this.el.body.control(can.ui.List)
+			}
 		},
 
 		columns : function(cols) {
@@ -2070,12 +2078,14 @@ module['canui/grid/grid.js'] = (function($) {
 			this.update({ columns : cols });
 		},
 
-		_fnView : function(name, arg) {
-			var val = this.options[name];
-			if(can.isFunction(val)) {
-				return val.call(this, arg);
+		_fnView : function(name, args) {
+			var val = this.options[name],
+				current = can.isFunction(val) ? val.call(this, args) : can.view(val, args);
+			if(!can.$(current).is('tr')) {
+				current = can.$('<tr><td colspan="' + this.options.columns.length
+					+ '"></td></tr>').find('td').html(current).end();
 			}
-			return can.view(val, arg);
+			return current;
 		},
 
 		'{columns} change' : function() {
@@ -2114,16 +2124,8 @@ module['canui/grid/grid.js'] = (function($) {
 			return this.control.tableScroll;
 		}
 	});
-})(module["jquery"], module["can/control/control.js"], module["canui/list/list.js"], module["can/view/ejs/ejs.js"], module["canui/table_scroll/table_scroll.js"]);/*
- * jQuery UI Position 1.9m6
- *
- * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
- * Dual licensed under the MIT or GPL Version 2 licenses.
- * http://jquery.org/license
- *
- * http://docs.jquery.com/UI/Position
- */
-(function( $, undefined ) {
+})(module["jquery"], module["can/control/control.js"], module["canui/list/list.js"], module["can/view/ejs/ejs.js"], module["canui/table_scroll/table_scroll.js"]);
+module['canui/positionable/position.js'] = (function( $, undefined ) {
 
 	$.ui = $.ui || {};
 
@@ -2503,8 +2505,7 @@ module['canui/grid/grid.js'] = (function($) {
 		}
 	};
 
-}( $ ) );
-
+})(module["jquery"]);
 module['canui/positionable/positionable.js'] = (function($){
 
 	if(!$.event.special.move) {
@@ -2886,7 +2887,7 @@ module['canui/positionable/positionable.js'] = (function($){
 		}
 	});
 })(module["jquery"], module["can/control/control.js"], module["can/construct/proxy/proxy.js"], module["can/construct/super/super.js"], module["jquery"], module["jquery/event/reverse/reverse.js"], module["can/control/plugin/plugin.js"], module["canui/util/scrollbar_width.js"], module["canui/positionable/position.js"]);
-module['canui/resize/resize.js'] = (function ($) {
+module['canui/resizable/resizable.js'] = (function ($) {
 	$.support.correctOverflow = false;
 
 	$(function () {
@@ -3040,7 +3041,7 @@ module['canui/resize/resize.js'] = (function ($) {
 	 *
 	 * @return {can.ui.Resize}
 	 */
-	can.Control('can.ui.Resize', {
+	can.Control('can.ui.Resizable', {
 		pluginName : 'resizable',
 		defaults : {
 			aspectRatio : false,
@@ -3080,9 +3081,9 @@ module['canui/resize/resize.js'] = (function ($) {
 		},
 
 		init : function (el, options) {
-			this.element.prepend($.map(this.options.handles, this.proxy(function (dir) {
+			this.element.prepend($.map(this.options.handles, can.proxy(function (dir) {
 				return '<div class="ui-resizable-' + [dir, this.options.handleClassName].join(' ') + '"/>';
-			})).join(''));
+			}, this)).join(''));
 
 
 			this.options.autoHide && this.element.find('.ui-resizable-se').hide();
@@ -3148,9 +3149,9 @@ module['canui/resize/resize.js'] = (function ($) {
 			this.delayMet = !this.options.delay;
 
 			if (!this.delayMet) {
-				this.dragTimeout = setTimeout(this.proxy(function () {
+				this.dragTimeout = setTimeout(can.proxy(function () {
 					this.delayMet = true;
-				}), this.options.delay);
+				}, this), this.options.delay);
 			}
 		},
 
@@ -3253,7 +3254,8 @@ module['canui/resize/resize.js'] = (function ($) {
 			can.Control.prototype.destroy.apply(this, arguments);
 		}
 	})
-})(module["jquery"], module["can/construct/proxy/proxy.js"], module["can/control/control.js"], module["jquery/event/drag/drag.js"], module["jquery/dom/dimensions/dimensions.js"], module["canui/fills/fills.js"], module["can/control/plugin/plugin.js"]);
+})(module["jquery"], module["can/control/control.js"], module["jquery/event/drag/drag.js"], module["jquery/dom/dimensions/dimensions.js"], module["canui/fills/fills.js"], module["can/control/plugin/plugin.js"]);
 
 window.define = module._define;
-})();
+
+window.module = module._orig;
