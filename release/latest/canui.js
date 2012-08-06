@@ -2010,12 +2010,22 @@ module['canui/grid/grid.js'] = (function($) {
 		return el.append(can.$('<' + tag + '>')).find(tag);
 	};
 
-	can.view.ejs('can.ui.Grid.row', '<tr>' +
+	can.view.ejs('canui_grid_header', '<tr>' +
 		'<% can.each(this, function(col) { %>' +
 			'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
 			'<%= col.attr(\'header\') %>' +
 			'</th>' +
 		'<% }) %>' +
+	'</tr>');
+
+	can.view.ejs('canui_grid_row', '<tr data-cid="<%= cid %>">' +
+		'<% can.each(this, function(current) { %>' +
+		'<% if(current.isComputed) { %>' +
+			'<td><%== current() %></td>' +
+			'<% } else { %>' +
+			'<td <%= (el) -> can.append(el, current) %>></td>' +
+			'<% } %>' +
+		'<% }); %>' +
 	'</tr>');
 
 	can.Control('can.ui.Grid', {
@@ -2032,9 +2042,9 @@ module['canui/grid/grid.js'] = (function($) {
 					row.push(content);
 				});
 				row.cid = observe._cid;
-				return can.view('//canui/grid/views/row.ejs', row);
+				return can.view('canui_grid_row', row);
 			},
-			headerContent : '//canui/grid/views/head.ejs',
+			headerContent : 'canui_grid_header',
 			emptyContent : function() {
 				return 'No data';
 			},
@@ -2626,7 +2636,7 @@ module['canui/positionable/positionable.js'] = (function($){
 	 *	in the format of `{ top: x, left: y }` to handle the positioning. If a
 	 *	`using` parameter is passed, the element won't be positioned
 	 *	automatically, but must be positioned by hand in the `using` callback.
-	 * - `hideWhenOfInvisible` - `{Boolean}` - hide element when `of` element is
+	 * - `hideWhenInvisible` - `{Boolean}` - hide element when `of` element is
 	 * not visible because of scrolling. If you set this to `true` make sure that
 	 * `of` element's parent that is scrollable has `position` set to `relative` or
 	 *`absolute`
@@ -2646,7 +2656,7 @@ module['canui/positionable/positionable.js'] = (function($){
 			iframe: false,
 			of: window,
 			keep : false, //keeps it where it belongs,
-			hideWhenOfInvisible : false
+			hideWhenInvisible : false
 	 	},
 		
 		getScrollInfo: function(within) {
@@ -2714,7 +2724,7 @@ module['canui/positionable/positionable.js'] = (function($){
 			if ( ! visible ) {
 				elem.css("opacity", 1).hide();
 			}
-			if(this.options.hideWhenOfInvisible){
+			if(this.options.hideWhenInvisible){
 				this.element.toggle(this.isOfVisible());
 			}
 		},
