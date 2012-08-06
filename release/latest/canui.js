@@ -3256,8 +3256,6 @@ module['canui/resizable/resizable.js'] = (function ($) {
 	})
 })(module["jquery"], module["can/control/control.js"], module["jquery/event/drag/drag.js"], module["jquery/dom/dimensions/dimensions.js"], module["canui/fills/fills.js"], module["can/control/plugin/plugin.js"]);
 
-window.can = module['can/util/can.js'];
-
 window.define = module._define;
 
 window.module = module._orig;
