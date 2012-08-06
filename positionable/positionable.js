@@ -125,7 +125,7 @@ steal('jquery', 'can/control',
 	 *	in the format of `{ top: x, left: y }` to handle the positioning. If a
 	 *	`using` parameter is passed, the element won't be positioned
 	 *	automatically, but must be positioned by hand in the `using` callback.
-	 * - `hideWhenOfInvisible` - `{Boolean}` - hide element when `of` element is
+	 * - `hideWhenInvisible` - `{Boolean}` - hide element when `of` element is
 	 * not visible because of scrolling. If you set this to `true` make sure that
 	 * `of` element's parent that is scrollable has `position` set to `relative` or
 	 *`absolute`
@@ -145,7 +145,7 @@ steal('jquery', 'can/control',
 			iframe: false,
 			of: window,
 			keep : false, //keeps it where it belongs,
-			hideWhenOfInvisible : false
+			hideWhenInvisible : false
 	 	},
 		
 		getScrollInfo: function(within) {
@@ -213,7 +213,7 @@ steal('jquery', 'can/control',
 			if ( ! visible ) {
 				elem.css("opacity", 1).hide();
 			}
-			if(this.options.hideWhenOfInvisible){
+			if(this.options.hideWhenInvisible){
 				this.element.toggle(this.isOfVisible());
 			}
 		},

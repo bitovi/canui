@@ -10,12 +10,22 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 		return el.append(can.$('<' + tag + '>')).find(tag);
 	};
 
-	can.view.ejs('can.ui.Grid.row', '<tr>' +
+	can.view.ejs('canui_grid_header', '<tr>' +
 		'<% can.each(this, function(col) { %>' +
 			'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
 			'<%= col.attr(\'header\') %>' +
 			'</th>' +
 		'<% }) %>' +
+	'</tr>');
+
+	can.view.ejs('canui_grid_row', '<tr data-cid="<%= cid %>">' +
+		'<% can.each(this, function(current) { %>' +
+		'<% if(current.isComputed) { %>' +
+			'<td><%== current() %></td>' +
+			'<% } else { %>' +
+			'<td <%= (el) -> can.append(el, current) %>></td>' +
+			'<% } %>' +
+		'<% }); %>' +
 	'</tr>');
 
 	can.Control('can.ui.Grid', {
@@ -32,9 +42,9 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 					row.push(content);
 				});
 				row.cid = observe._cid;
-				return can.view('//canui/grid/views/row.ejs', row);
+				return can.view('canui_grid_row', row);
 			},
-			headerContent : '//canui/grid/views/head.ejs',
+			headerContent : 'canui_grid_header',
 			emptyContent : function() {
 				return 'No data';
 			},
