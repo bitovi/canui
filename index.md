@@ -37,14 +37,14 @@ $('#container').fills();
 $('#fill').fills('#container');
 {% endhighlight %}
 
-Resize the container in the following example using the blue square to see how the `#fill`
-element adjusts its size correctly to fill out the remaining space:
+The following example shows a container that can be resized using the blue square and demonstrates how the
+`#fill` element adjusts its size correctly to fill out the remaining space:
 
 <iframe style="width: 100%; height: 370px" src="http://jsfiddle.net/HSWTA/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ### resize `$(element).resize()`
 
-Fills listens to the [resize event](http://jquerypp.com/#resize) to recalculate the fill element dimensions.
+Fills listens to the [jQuery++ resize](http://jquerypp.com/#resize) event to recalculate the fill element dimensions.
 Whenever the container dimensions are changed programmatically `resize` has to be triggered:
 
 {% highlight javascript %}
@@ -94,7 +94,7 @@ On a table like this:
 
 ### update `$(element).tableScroll()`
 
-After creating a TableScoll, future calls to `$(element).tableScroll()` are used to update the table
+After creating a TableScoll, future calls to `$(element).tableScroll()` update the tables'
 layout after a header or footer column has been added, removed, or had its content changed.
 
 {% highlight javascript %}
@@ -170,9 +170,10 @@ The `resize` event should be triggered whenever any table dimensions or row cont
 header and footer widths synchronized.
 
 {% highlight javascript %}
-$('table').tableScroll();
-$('table').find('tr:first td:first')
-  .html("Very long content");
+// Get the table body
+var body = $('table').tableScroll('elements').body;
+// Change the first rows content
+body.find('tr:first td:first').html("Very long content");
 $('table').resize();
 {% endhighlight %}
 
@@ -204,9 +205,6 @@ Initialize it with the following options:
 - `loadingContent` - The content to show while a deferred is being resolved.
 - `cid` (default : `'_cid'`) - The unique id attribute to identify a `can.Observe`.
 - `attribute` (default : `'data-cid'`) - The rows attribute name that stores the `cid` value.
-
-List triggers the `rendered` event after the list has been fully rendered with the current data and the
-`changed` event when items got removed or added.
 
 ### Row views
 
@@ -273,6 +271,37 @@ $('#list').list({
 paginator.attr('offset', 20);
 {% endhighlight %}
 
+### Events
+
+List triggers the `rendered` event after the list has been fully rendered and the `changed` event when items
+got removed or added. Listening to the `rendered` event is useful if you want to get the actual converted list data,
+for example after a deferred or computed property changed:
+
+{% highlight javascript %}
+var compute = can.compute([]);
+
+$('#list').list({
+  loadingContent : '<li>Please wait...</li>',
+  emptyContent : '<li class="empty">Sorry, nothing found...</li>',
+  view : 'rowEJS',
+  list : compute
+});
+
+// When the list is rendered, retrieve the first element
+$('#list').on('rendered', function(ev) {
+  var list = $(this).list('list');
+  list[0] instanceof can.Observe // -> true
+  list[0].attr()
+  // -> { firstname : "John", lastname : "Doe" }
+});
+
+// Update the compute with an array
+compute([{
+  firstname : "John",
+  lastname : "Doe"
+}]);
+{% endhighlight %}
+
 ### Example
 
 The following example uses the List widget to display a list of simple Todo data. It is also possible
@@ -307,7 +336,7 @@ $('#list').list({
   list : Person.findAll()
 });
 
-// When the list is rendered, remove the last element
+// After the list is rendered, remove the last element
 $('#list').on('rendered', function(ev) {
   $('#list').list('list').pop();
 });
@@ -327,7 +356,7 @@ $('li[data-cid]').on('click', function() {
 Or to remove a `can.Model` from the list when clicking on a `.remove` element in a row:
 
 {% highlight javascript %}
-$('.remove').on('click', function() {
+$('#list').on('click', '.remove', function() {
   var row = $(this).closest('li[data-cid]'),
       model = $('#list').list('items', row)[0];
 
@@ -340,12 +369,18 @@ $('.remove').on('click', function() {
 ### rowElements `$(element).list('rowElements', [observes])`
 
 `$(element).list('rowElements', [observes])` returns a jQuery collection of all rows or all row elements
-representing the given observes:
+representing the given observes. The following example retrieves all observes with an age of less
+than 18 and adds the `underage` class to their row elements:
 
 {% highlight javascript %}
-// Retrieves the row element for the first observe
-$('#list').list('rowElements', people[0])
-// -> [<li data-cid="...">...</li>]
+var underaged = new can.Observe.List();
+$('#list').list('list').each(function(observe) {
+  if(observe.attr('age') < 18) {
+    underaged.push(observe);
+  }
+});
+
+$('#list').list('rowElements', underaged).addClass('underage');
 {% endhighlight %}
 
 ## Grid `$(element).grid(options)`
@@ -398,9 +433,7 @@ $('#grid').grid({
 });
 {% endhighlight %}
 
-The following example shows a grid that allows you to add, edit and remove items:
-
-<iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/hY3AS/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
+<iframe style="width: 100%; height: 270px" src="http://jsfiddle.net/donejs/GRxpe/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
 ### columns `$(element).grid('columns', [columns])`
 
@@ -500,7 +533,7 @@ $('#list').grid('rowElements', people[0])
 ### tableScroll `$(element).grid('tableScroll')`
 
 If the `scrollable` option is set to true, `$(element).grid('tableScroll')` will return the [TableScroll](#tablescroll)
-instance that is used to make the grid scrollable, `null` otherwise.
+instance that is used to make the grid scrollable, otherwise `null`.
 This can be used, for example, to automatically request new data when the user scrolled to the bottom of the grid:
 
 {% highlight javascript %}
@@ -545,18 +578,19 @@ elements.scrollBody.on('scroll', function() {
 ## Positionable `$(element).positionable(options)`
 
 [Positionable](http://donejs.com/docs.html#!canui.positionable) allows to position an element relative to
-another. This is very useful for implementing UI widgets, such as tooltips and autocompletes. Positionable
-uses the [jQueryUI position plugin](http://jqueryui.com/demos/position/) and takes the following options:
+another. This is very useful for implementing UI widgets, such as tooltips and autocompletes.
+Positionable takes the following options:
 
-- __my__ - Edge of the positionable element to use for positioning. Can be one of `top`, `center`, `bottom`, `left` and `right`.
+- `my` - Edge of the positionable element to use for positioning.
+Can be one of `"top"`, `"center"`, `"bottom"`, `"left"` and `"right"`.
 Combined values like `bottom left` are also possible.
-- __at__ - Edge of the target element to use for positioning. Accepts the same values as `my`.
-- __of__ - The target element or selector to use for positioning.
-- __collision__ - The collision strategy to use when the positionable element doesn't fit in the window. Possible values:
-  - `fit` - Attempts to position the element as close as possible to the target without clipping the positionable.
-  - `flip` - Flips the element to the opposite side of the target.
-  - `none` - Doesn't use any collision strategey.
-- __hideWhenOfInvisible__ - Hide the positionable element when the target element scrolls out of visibility range.
+- `at` - Edge of the target element to use for positioning. Accepts the same values as `my`.
+- `of` - The target element or selector to use for positioning.
+- `collision` - The collision strategy to use when the positionable element doesn't fit in the window. Possible values:
+  - `"fit"` - Attempts to position the element as close as possible to the target without clipping the positionable.
+  - `"flip"` - Flips the element to the opposite side of the target.
+  - `"none"` - Doesn't use any collision strategey.
+- `hideWhenInvisible` - Hide the positionable element when the target element scrolls out of visibility range.
 
 <iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/donejs/UqNs8/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
@@ -581,32 +615,18 @@ $('.scrollable').bind('scroll', function(){
 If the target element is [draggable](http://jquerypp.com/#drag), `move` will be triggered whenever the
 draggable moves.
 
-### isOfVisible `$(element).positionable('isOfVisible')`
-
-`$(element).positionable('isOfVisible')` returns if the target element is currently visible. This is used internally
-for the `hideWhenOfInvisible` option to hide the positionable when the target element moves out of the visible area but
-it also can be used to perform other actions when the positionable moves:
-
-{% highlight javascript %}
-$('#tooltip').on('move', function() {
-  if(!$(this).positionable('isOfVisible')) {
-    // target element became invisble
-  }
-});
-{% endhighlight %}
-
 ## Selectable `$(element).selectable(options)`
 
 [Selectable](http://donejs.com/docs.html#!canui.selectable) provides keyboard and mouse selection for a group
 of elements. It handles keyboard navigation, multi selection and automatic deselection. A selectable can be
 initialized with the following options:
 
-- __selectOn__ (default: `"[tabindex]"`) - The selector to use for selectable items
-- __selectedClassName__ (default: `"selected"`) - The class name to add to a selected item
-- __activateClassName__ (default: `"activated"`) - The class name to add to an activated item
-- __multiActivate__ (default: `true`) - If multi selection is enabled
-- __outsideDeactivate__ (default: `true`) - Deactivate everything when a click or keypress happens outside of the selectable
-- __deactivateParent__ (default: `document`) - If `outsideDeactivate` is true, the parent element to use for deactivating
+- `selectOn` (default: `"[tabindex]"`) - The selector to use for selectable items
+- `selectedClassName` (default: `"selected"`) - The class name to add to a selected item
+- `activateClassName` (default: `"activated"`) - The class name to add to an activated item
+- `multiActivate` (default: `true`) - If multi selection is enabled
+- `outsideDeactivate` (default: `true`) - Deactivate everything when a click or keypress happens outside of the selectable
+- `deactivateParent` (default: `document`) - If `outsideDeactivate` is true, the parent element to use for deactivating
 
 <iframe style="width: 100%; height: 350px" src="http://jsfiddle.net/donejs/hJdf2/embedded/result,html,js,css" allowfullscreen="allowfullscreen" frameborder="0">JSFiddle</iframe>
 
