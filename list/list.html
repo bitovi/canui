@@ -6,9 +6,7 @@
 <body>
 
 <script type="text/ejs" id="rowEJS">
-  <li data-cid="<%= this._cid %>">
-    <%= this.attr('name') %> <a class="remove" href="javascript://">X</a>
-  </li>
+  <%= this.attr('name') %> <a class="remove" href="javascript://">X</a>
 </script>
 
 <ul id="list">
@@ -31,6 +29,7 @@
     ]);
 
     $('#list').list({
+      tag : 'li',
       view : 'rowEJS',
       emptyContent : '<li class="empty">Yay! Everything done</li>',
       list : todos

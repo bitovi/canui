@@ -2,13 +2,14 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 	module("can.ui.List");
 
 	test("Initialize empty", function () {
-		var emptyHtml = '<li>Nothing here...</li>',
+		var emptyHtml = 'Nothing here...',
 			container = $('<ul>').appendTo('#qunit-test-area').list({
 				view : '//canui/list/test.ejs',
-				emptyContent : emptyHtml
+				emptyContent : emptyHtml,
+				tag : 'li'
 			});
 
-		equal(container.html(), emptyHtml, 'Set to empty text');
+		equal(container.find('li:first').html(), emptyHtml, 'Set to empty text');
 	});
 
 	test("Initialize with observe list, live binding", function () {
@@ -24,7 +25,8 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 				view : '//canui/list/test.ejs',
-				list : people
+				list : people,
+				tag : 'li'
 			});
 
 		equal(container.find('li').length, 2, 'Two items rendered');
@@ -44,8 +46,9 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			view : '//canui/list/test.ejs',
-			loadingContent : '<li>Loading</li>',
-			list : dfd
+			loadingContent : 'Loading',
+			list : dfd,
+			tag : 'li'
 		});
 
 		equal(container.find('li:first').html(), 'Loading', 'Showing loading');
@@ -75,9 +78,10 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			view : '//canui/list/test.ejs',
-			loadingContent : '<li>Loading</li>',
-			emptyContent : '<li>Empty!</li>',
-			list : compute
+			loadingContent : 'Loading',
+			emptyContent : 'Empty!',
+			list : compute,
+			tag : 'li'
 		});
 
 		equal($.trim(container.find('li:first').html()), 'Compute I', 'First li rendered');
@@ -87,6 +91,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 	test("items", function() {
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
+			tag : 'li',
 			view : '//canui/list/test.ejs',
 			list : [
 				{
@@ -120,6 +125,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			view : '//canui/list/test.ejs',
+			tag : 'li',
 			list : people
 		});
 
