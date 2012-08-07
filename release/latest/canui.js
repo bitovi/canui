@@ -1865,15 +1865,29 @@ module['canui/list/list.js'] = (function($) {
 		_rows : function(observes) {
 			var self = this;
 			observes = can.makeArray(observes);
-			var rows = $.map(observes, can.proxy(function(observe) {
+			return can.$.map(observes, can.proxy(function(observe) {
 				// Update the mapping from can.Observe unique id to Observe instance
 				self._cidMap[observe[self.options.cid]] = observe;
-				if(can.isFunction(this.options.view)) {
-					return this.options.view.call(this, observe);
-				}
-				return can.view(this.options.view, observe);
+				var view = can.isFunction(this.options.view) ?
+						this.options.view.call(this, observe) :
+						can.view(this.options.view, observe);
+				return self._wrapWithTag(view, observe);
 			}, this));
-			return can.$(rows);
+		},
+
+		_wrapWithTag : function(content, observe) {
+			if(!this.options.tag) {
+				return content;
+			}
+			var tag = can.$(this.options.tag.indexOf(0) == '<' ? this.options.tag : '<' + this.options.tag + '>');
+			if(observe) {
+				tag.attr(this.options.attribute, observe[this.options.cid]);
+			}
+			if(content) {
+				tag.append(content);
+			}
+			// We need to return the raw DOM element
+			return tag[0];
 		},
 
 		/**
@@ -1891,7 +1905,7 @@ module['canui/list/list.js'] = (function($) {
 
 		_fnOption : function(name, args) {
 			var val = this.options[name];
-			return can.isFunction(val) ? val.apply(this, args || []) : val;
+			return this._wrapWithTag(can.isFunction(val) ? val.apply(this, args || []) : val);
 		},
 
 		'{list} change' : function(target, ev, newVal) {
