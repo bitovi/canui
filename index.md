@@ -231,7 +231,8 @@ $('#list').list({
 {% endhighlight %}
 
 `empty` and `loading` will also be wrapped into the tag and can be either a view name or a callback
-that returns the content. To set it to a string, for example, initializing an empty list (to fill it later)
+that returns the content. This can also be a a view renderer retrieved by `can.view('viewname')`.
+To set it to a string, for example, initializing an empty list (to fill it later)
 can be done like this:
 
 {% highlight javascript %}
@@ -263,8 +264,12 @@ var Person = can.Model({
 
 $('#list').list({
   tag : 'li',
-  loading : 'Please wait...',
-  empty : 'Sorry, nothing found...',
+  loading : function() {
+    return 'Please wait...';
+  },
+  empty : function() {
+    return 'Sorry, nothing found...';
+  },
   view : 'rowEJS',
   list : Person.findAll()
 });
@@ -281,8 +286,12 @@ var paginator = new can.Observe({
 
 $('#list').list({
   tag : 'li',
-  loading : 'Please wait...',
-  empty : 'Sorry, nothing found...',
+  loading : function() {
+    return 'Please wait...';
+  },
+  empty : function() {
+    return 'Sorry, nothing found...';
+  },
   view : 'rowEJS',
   list : can.compute(function() {
     return Person.findAll({
@@ -308,8 +317,12 @@ var compute = can.compute([]);
 
 $('#list').list({
   tag : 'li',
-  loading : 'Please wait...',
-  empty : 'Sorry, nothing found...',
+  loading : function() {
+    return 'Please wait...';
+  },
+  empty : function() {
+    return 'Sorry, nothing found...';
+  },
   view : 'rowEJS',
   list : compute
 });
@@ -358,8 +371,12 @@ to work with the resolved list data, for example when a Deferred was passed init
 {% highlight javascript %}
 $('#list').list({
   tag : 'li',
-  loading : 'Please wait...',
-  empty : 'Sorry, nothing found...',
+  loading : function() {
+    return 'Please wait...';
+  },
+  empty : function() {
+    return 'Sorry, nothing found...';
+  },
   view : 'rowEJS',
   list : Person.findAll()
 });
@@ -418,9 +435,9 @@ widget to display a list of data in a table.
 
 Possible options:
 
-- `empty` - The content to display when there are no items.
-- `loading` - The content to display while a deferred is being resolved.
-- `footer` - The content to display in the table footer.
+- `empty` - The view name or a callback for the content to display when the list is empty.
+- `loading` - The view name or a callback for the content to display while a deferred is being resolved.
+- `footer` - The view name or a callback for the content to display in the table footer.
 - `row` - View name for a single grid row that gets the converted columns passed.
 - `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the [list data](#list-list_data).
 - `columns` - The definition of the [columns](#grid-column) to display.
@@ -451,8 +468,12 @@ The grid can be initialized like this:
 
 {% highlight javascript %}
 $('#grid').grid({
-  empty : 'Sorry, nothing found',
-  loading : 'Retrieving people list...',
+  empty : function() {
+    return 'Sorry, nothing found';
+  },
+  loading : function() {
+    return 'Retrieving people list...';
+  },
   columns : [
     { header : 'First name', content : 'firstname' },
     { header : 'Last name', content : 'lastname' },
@@ -539,7 +560,9 @@ This can be used, for example, to automatically request new data when the user s
 {% highlight javascript %}
 var offset = 0;
 $('#grid').grid({
-  loadingContent : 'Loading data...',
+  loading : function() {
+    return 'Loading data...';
+  },
   columns : [{
       header : 'First name',
       attr : 'firstname'
