@@ -200,24 +200,48 @@ content to display when the list is empty or a deferred is being resolved.
 Initialize it with the following options:
 
 - `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the list data.
+- `tag` - The tag name for the wrapping row element.
 - `view` - The view to render a single row. Gets the current `can.Observe` passed.
-- `emptyContent` - The content to show when the list is empty.
-- `loadingContent` - The content to show while a deferred is being resolved.
+- `empty` - The content to show when the list is empty.
+- `loading` - The content to show while a deferred is being resolved.
 - `cid` (default : `'_cid'`) - The unique id attribute to identify a `can.Observe`.
 - `attribute` (default : `'data-cid'`) - The rows attribute name that stores the `cid` value.
 
 ### Row views
 
-A row is identified by having the `attribute` property set to the unique id of a `can.Observe`, usually in the
-form of `data-cid="<%= this._cid %>"` in an [EJS](http://canjs.us/#can_ejs) view.
-A simple row view for an ordered or unordered list can look like this:
+A row is defined by the `tag` name and a `view` name or callback for the content of that tag.
+With a simple [EJS](http://canjs.us/#can_ejs) row view like this:
 
 {% highlight html %}
 <script type="text/ejs" id="rowEJS">
-  <li data-cid="<%= this._cid %>">
     <%= this.attr('name') %>
-  </li>
 </script>
+{% endhighlight %}
+
+Initialising the list widget for an unordered list like `<ul id="list"></ul>` can look like this:
+
+{% highlight javascript %}
+$('#list').list({
+  tag : 'li',
+  view : 'rowEJS',
+  list : new can.Observe.List([{
+    name : 'Jean-Luc'
+  }])
+});
+{% endhighlight %}
+
+`empty` and `loading` will also be wrapped into the tag and can be either a view name or a callback
+that returns the content. To set it to a string, for example, initializing an empty list (to fill it later)
+can be done like this:
+
+{% highlight javascript %}
+$('#list').list({
+  tag : 'li',
+  view : 'rowEJS',
+  empty : function() {
+    return 'Nothing found';
+  }
+});
 {% endhighlight %}
 
 ### List data
@@ -225,7 +249,7 @@ A simple row view for an ordered or unordered list can look like this:
 There are several ways to provide list data. Usually it will be a `can.Observe.List` instance
 that contains observable objects. When passing a normal Array, it will be converted to an observable list.
 Another option is to pass a `can.Deferred` that resolves to an observable list or array. The grid will show the
-content of `loadingContent` while the Deferred is being resolved. This makes it possible to directly pass
+content of `loading` while the Deferred is being resolved. This makes it possible to directly pass
 `can.Model.findAll` requests:
 
 {% highlight javascript %}
@@ -238,8 +262,9 @@ var Person = can.Model({
 }, {});
 
 $('#list').list({
-  loadingContent : '<li>Please wait...</li>',
-  emptyContent : '<li class="empty">Sorry, nothing found...</li>',
+  tag : 'li',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
   view : 'rowEJS',
   list : Person.findAll()
 });
@@ -255,8 +280,9 @@ var paginator = new can.Observe({
 });
 
 $('#list').list({
-  loadingContent : '<li>Please wait...</li>',
-  loadingContent : '<li class="empty">Sorry, nothing found...</li>',
+  tag : 'li',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
   view : 'rowEJS',
   list : can.compute(function() {
     return Person.findAll({
@@ -281,8 +307,9 @@ for example after a deferred or computed property changed:
 var compute = can.compute([]);
 
 $('#list').list({
-  loadingContent : '<li>Please wait...</li>',
-  emptyContent : '<li class="empty">Sorry, nothing found...</li>',
+  tag : 'li',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
   view : 'rowEJS',
   list : compute
 });
@@ -316,7 +343,7 @@ using the updated options.
 
 {% highlight javascript %}
 // Will update the list with an empty array
-// causing it to `emptyContent`
+// causing it to show `empty`
 $('#list').list({
   list : []
 });
@@ -330,8 +357,9 @@ to work with the resolved list data, for example when a Deferred was passed init
 
 {% highlight javascript %}
 $('#list').list({
-  loadingContent : '<li>Please wait...</li>',
-  emptyContent : '<li class="empty">Sorry, nothing found...</li>',
+  tag : 'li',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
   view : 'rowEJS',
   list : Person.findAll()
 });
@@ -390,9 +418,10 @@ widget to display a list of data in a table.
 
 Possible options:
 
-- `emptyContent` - The content to display when there are no items.
-- `loadingContent` - The content to display while a deferred is being resolved.
-- `footerContent` - The content to display in the table footer.
+- `empty` - The content to display when there are no items.
+- `loading` - The content to display while a deferred is being resolved.
+- `footer` - The content to display in the table footer.
+- `row` - View name for a single grid row that gets the converted columns passed.
 - `list` - An array, `can.Observe.List`, `can.Deferred` or `can.compute` providing the [list data](#list-list_data).
 - `columns` - The definition of the [columns](#grid-column) to display.
 - `scrollable` (default: `false`) - If this grid should be scrollable using [TableScroll](#tablescroll).
@@ -422,8 +451,8 @@ The grid can be initialized like this:
 
 {% highlight javascript %}
 $('#grid').grid({
-  emptyContent : 'Sorry, nothing found',
-  loadingContent : 'Retrieving people list...',
+  empty : 'Sorry, nothing found',
+  loading : 'Retrieving people list...',
   columns : [
     { header : 'First name', content : 'firstname' },
     { header : 'Last name', content : 'lastname' },
@@ -442,8 +471,8 @@ must at least contain:
 
 - `header` - The table column header content.
 - `content` - The content to display for this column. This can either be an attribute name
-or a callback in the form of `function(observe, index)` that returns the string content or document
-fragment or a `can.compute` with computed properties for the current column.
+or a callback in the form of `function(observe)` that returns the string content or document
+fragment with computed properties for the current column.
 
 The following example creates a grid with a column that contains the combined first- and lastname:
 
@@ -452,39 +481,10 @@ $('#grid').grid({
   columns : [{
       header : 'Name',
       content : function(observe) {
-        return can.compute(function() {
-          return observe.attr('firstname') + ' ' + observe.attr('lastname');
-        });
+        return observe.attr('firstname') + ' ' + observe.attr('lastname');
       }
     },
     { header : 'Age', content : 'age' }
-  ],
-  list : people
-});
-{% endhighlight %}
-
-It is also possible to render [views](http://canjs.us/#can_view). For example this [EJS](http://canjs.us/#can_ejs)
-script:
-
-{% highlight html %}
-<script type="text/ejs" id="ageEJS">
-<span <% if(person.attr('age') < 21) { %>class="underage"<% } %>>
-  <%= person.attr('age') %>
-</span>
-</script>
-{% endhighlight %}
-
-{% highlight javascript %}
-$('#grid').grid({
-  columns : [
-    { header : 'First name', content : 'firstname' },
-    { header : 'Last name', content : 'lastname' },
-    {
-      header : 'Age',
-      content : function(observe) {
-        return can.view('ageEJS', { person : observe });
-      }
-    }
   ],
   list : people
 });
