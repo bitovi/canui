@@ -32,10 +32,10 @@ steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
 		var container = $('<table>').appendTo('#qunit-test-area');
 		container.grid({
 			columns : columns,
-			loadingContent : function() {
+			loading : function() {
 				return 'Loading...';
 			},
-			emptyContent : function() {
+			empty : function() {
 				return 'Nothing found';
 			}
 		});
@@ -55,13 +55,35 @@ steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
 		equal(can.$.trim(container.find('td:first').html()), 'Updated', 'Got compute array');
 	});
 
+	test("Computed columns", function() {
+		var container = $('<table>').appendTo('#qunit-test-area');
+		container.grid({
+			columns : [{
+				name : "Person",
+				content : function(observe) {
+					return observe.attr('name') + ' (' + observe.attr('age') + ')';
+				}
+			}],
+			list : [{
+				name : 'John',
+				age : 23
+			}]
+		});
+		equal(can.$.trim(container.find('td:first').html()), 'John (23)', 'Rendering computed property');
+		var list = container.grid('list');
+		ok(list instanceof can.Observe.List, 'List passed through properly');
+		list[0].attr('age', 50);
+		equal(can.$.trim(container.find('td:first').html()), 'John (50)', 'Live binding compute');
+	});
+
 	test("tableScroll", function() {
 		var container = $('<table>').appendTo('#qunit-test-area');
 		container.grid({
 			columns : columns,
-			loadingContent : 'Loading...',
-			emptyContent : 'Nothing found',
-			scrollable : true
+			loading : function() { return 'Loading...'; },
+			empty : function() { return 'Nothing found' },
+			scrollable : true,
+			list : []
 		});
 	});
 });

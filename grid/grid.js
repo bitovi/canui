@@ -10,6 +10,7 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 		return el.append(can.$('<' + tag + '>')).find(tag);
 	};
 
+	// The header default EJS view
 	can.view.ejs('canui_grid_header', '<tr>' +
 		'<% can.each(this, function(col) { %>' +
 			'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
@@ -18,15 +19,10 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 		'<% }) %>' +
 	'</tr>');
 
-	can.view.ejs('canui_grid_row', '<tr data-cid="<%= cid %>">' +
-		'<% can.each(this, function(current) { %>' +
-		'<% if(current.isComputed) { %>' +
-			'<td><%== current() %></td>' +
-			'<% } else { %>' +
-			'<td <%= (el) -> can.append(el, current) %>></td>' +
-			'<% } %>' +
-		'<% }); %>' +
-	'</tr>');
+	// The default row view
+	can.view.ejs('canui_grid_row', '<% can.each(this, function(current) { %>' +
+		'<td><%== current() %></td>' +
+	'<% }); %>');
 
 	can.Control('can.ui.Grid', {
 		pluginName : 'grid',
@@ -35,50 +31,88 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 				var row = [], self = this;
 				can.each(this.options.columns, function(col) {
 					var content = can.isFunction(col.content) ?
-						col.content.call(self, observe, col) :
+						can.compute(function() {
+							return col.content.call(self, observe, col);
+						}) :
 						can.compute(function() {
 							return observe.attr(col.content);
 						});
 					row.push(content);
 				});
-				row.cid = observe._cid;
-				return can.view('canui_grid_row', row);
+				return this._rowView('row', false, row);
 			},
-			headerContent : 'canui_grid_header',
-			emptyContent : function() {
+			row : 'canui_grid_row',
+			header : 'canui_grid_header',
+			empty : function() {
 				return 'No data';
 			},
-			loadingContent : function() {
+			loading : function() {
 				return 'Loading...';
 			},
-			scrollable : false
+			scrollable : false,
+			tag : 'tr'
 		}
 	}, {
 		setup : function(el, ops) {
 			var table = appendIf(can.$(el), 'table');
+
 			this.el = {
 				header : appendIf(table, 'thead'),
 				body : appendIf(table, 'tbody'),
 				footer : appendIf(table, 'tfoot')
 			}
+
 			if(!(ops.columns instanceof can.Observe.List)) {
 				ops.columns = new can.Observe.List(ops.columns);
 			}
+
 			can.Control.prototype.setup.call(this, table, ops);
 			return [table, ops];
 		},
 
 		init : function(el, ops) {
-			this.el.header.append(this._fnView('headerContent', this.options.columns));
+			this.el.header.append(this._rowView('header', false, this.options.columns));
+			if(this.options.footer) {
+				this.el.header.append(this._rowView('footer', false));
+			}
+			this.control = {};
 			this.update();
+		},
+
+		_rowView : function(name, wrap, param) {
+			var self = this;
+			return function() {
+				var current = self.options[name];
+				if(!current) {
+					return '';
+				}
+
+				current =  can.isFunction(current) ?
+					current.call(this, param) :
+					can.view(current, param);
+
+				// TODO maybe make an option
+				if(wrap && !can.$(current).is('td')) {
+					current = can.$('<td colspan="' + self.options.columns.length
+						+ '"></td>').html(current);
+				}
+
+				return current;
+			}
 		},
 
 		update : function(options) {
 			can.Control.prototype.update.apply(this, arguments);
-			this.el.body.list(this.options);
-			this.control = {
-				list : this.el.body.control(can.ui.List)
-			}
+			var self = this;
+			this.el.body.list({
+				loading : this._rowView('loading', true),
+				empty : this._rowView('empty', true),
+				view : can.proxy(self.options.view, this),
+				tag : this.options.tag,
+				list : this.options.list
+			});
+
+			this.control.list = this.el.body.control(can.ui.List)
 		},
 
 		columns : function(cols) {
@@ -86,16 +120,6 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 				return this.options.columns;
 			}
 			this.update({ columns : cols });
-		},
-
-		_fnView : function(name, args) {
-			var val = this.options[name],
-				current = can.isFunction(val) ? val.call(this, args) : can.view(val, args);
-			if(!can.$(current).is('tr')) {
-				current = can.$('<tr><td colspan="' + this.options.columns.length
-					+ '"></td></tr>').find('td').html(current).end();
-			}
-			return current;
 		},
 
 		'{columns} change' : function() {

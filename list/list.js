@@ -36,7 +36,7 @@ function($) {
 		_update : function(data) {
 			data = data || [];
 			if(can.isDeferred(data)) {
-				this.element.html(this._fnOption('loadingContent'));
+				this.element.html(this._content('loading'));
 				data.done(can.proxy(this._update, this));
 			} else {
 				this._cidMap = {};
@@ -59,11 +59,18 @@ function($) {
 			return can.$.map(observes, can.proxy(function(observe) {
 				// Update the mapping from can.Observe unique id to Observe instance
 				self._cidMap[observe[self.options.cid]] = observe;
-				var view = can.isFunction(this.options.view) ?
-						this.options.view.call(this, observe) :
-						can.view(this.options.view, observe);
-				return self._wrapWithTag(view, observe);
+				return this._content('view', observe);
 			}, this));
+		},
+
+		_content : function(name, param) {
+			if(!this.options[name]) {
+				return '';
+			}
+			var rendered = can.isFunction(this.options[name]) ?
+				this.options[name].call(this, param) :
+				can.view(this.options[name], param);
+			return this._wrapWithTag(rendered, param);
 		},
 
 		_wrapWithTag : function(content, observe) {
@@ -71,7 +78,7 @@ function($) {
 				return content;
 			}
 			var tag = can.$(this.options.tag.indexOf(0) == '<' ? this.options.tag : '<' + this.options.tag + '>');
-			if(observe) {
+			if(observe instanceof can.Observe) {
 				tag.attr(this.options.attribute, observe[this.options.cid]);
 			}
 			if(content) {
@@ -89,14 +96,9 @@ function($) {
 		 * @private
 		 */
 		_render : function(rows) {
-			var content = !rows || rows.length === 0 ? this._fnOption('emptyContent') : rows;
+			var content = !rows || rows.length === 0 ? this._content('empty') : rows;
 			this.element.html(content);
 			this.element.trigger('rendered', this);
-		},
-
-		_fnOption : function(name, args) {
-			var val = this.options[name];
-			return this._wrapWithTag(can.isFunction(val) ? val.apply(this, args || []) : val);
 		},
 
 		'{list} change' : function(target, ev, newVal) {

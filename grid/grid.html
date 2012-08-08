@@ -27,84 +27,70 @@
     <table id="grid" class="table table-bordered"></table>
   </section>
 
-  <input id="page" type="text" />
+  <input id="page" type="text"/>
 </div>
 
 
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
   steal('jquery', 'canui/grid', 'can/model', 'can/util/fixture', 'steal/less',
-    function ($) {
-      steal('canui/table_scroll/table_scroll.less', function() {
-        var Model = can.Model({
-          findAll : 'GET /models'
-        }, {});
+      function ($) {
+        steal('canui/table_scroll/table_scroll.less', function () {
+          var Model = can.Model({
+            findAll : 'GET /models'
+          }, {});
 
-        var store = can.fixture.make(40, function(i) {
-          return {
-            id : i,
-            name : 'Dave ' + i,
-            age : i + 20
-          }
-        });
+          var store = can.fixture.make(40, function (i) {
+            return {
+              id : i,
+              name : 'Dave ' + i,
+              age : i + 20
+            }
+          });
 
-        can.fixture('GET /models', store.findAll);
+          can.fixture('GET /models', store.findAll);
 
-        var offset = 0,
-            paginator = new can.Observe({
-              offset : 0,
-              limit : 10
-            });
-
-        var dfd = Model.findAll();
-
-        $('#grid').grid({
-          columns : [{
-            header : 'Test',
-            content : 'name'
-          }, {
-            header : 'Age',
-            content : 'age'
-          }, {
-            header : 'Stuff',
-            content : function(observe) {
-              return can.compute(function() {
-                return observe.attr('name') + ' ' + observe.attr('age');
+          var offset = 0,
+              paginator = new can.Observe({
+                offset : 0,
+                limit : 10
               });
-            }
-          }, {
-              header : 'Things',
-              content : function(observe) {
-                return observe._cid;
-            }
-          }],
-          scrollable : true,
-          list : can.compute(function() {
-            return Model.findAll({
-              offset : paginator.attr('offset'),
-              limit : paginator.attr('limit')
-            });
-          })
-        })
 
-        $('#page').change(function() {
-          paginator.attr({
-            'offset': $(this).val(),
-            'limit' : $(this).val()
+          var dfd = Model.findAll();
+
+          $('#grid').grid({
+            columns : [
+              {
+                header : 'Test',
+                content : 'name'
+              },
+              {
+                header : 'Age',
+                content : 'age'
+              },
+              {
+                header : 'Stuff',
+                content : function (observe) {
+                  return observe.attr('name') + ' ' + observe.attr('age');
+                }
+              },
+              {
+                header : 'Things',
+                content : function (observe) {
+                  return observe._cid;
+                }
+              }
+            ],
+            scrollable : true,
+            list : []
+          });
+
+
+          $('#page').change(function () {
+            paginator.attr('offset', $(this).val());
           });
         });
-
-//        dfd.done(function(list) {
-//          setTimeout(function() {
-//            list.push(Model.model({ name : 'Bla bla', age : 'Test test test Test test test' }))
-//          }, 3000);
-//        });
-
-//        setTimeout(function() {
-//          $('#grid').grid('columns').attr('1.header', 'Testering LALALALALALLKSJFKLDJGFKDH');
-//        }, 2000)
-      });
-  })
+      })
 </script>
 </body>
 </html>
