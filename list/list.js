@@ -1,4 +1,4 @@
-steal('jquery', 'can/control', 'can/control/plugin', 'can/view', 'can/observe',
+steal('jquery', 'can/control', 'can/control/plugin', 'can/view', 'can/observe', 'can/view/ejs',
 function($) {
 	can.Control('can.ui.List', {
 		pluginName : 'list',
@@ -59,7 +59,9 @@ function($) {
 			return can.$.map(observes, can.proxy(function(observe) {
 				// Update the mapping from can.Observe unique id to Observe instance
 				self._cidMap[observe[self.options.cid]] = observe;
-				return this._content('view', observe);
+				var op = this.options.view,
+					row = can.isFunction(op) ? op.call(this, observe) : can.view(op, observe);
+				return this._wrapWithTag(row, observe)
 			}, this));
 		},
 
@@ -67,9 +69,8 @@ function($) {
 			if(!this.options[name]) {
 				return '';
 			}
-			var rendered = can.isFunction(this.options[name]) ?
-				this.options[name].call(this, param) :
-				can.view(this.options[name], param);
+			var op = this.options[name],
+				rendered = can.isFunction(op) ? op.call(this, param) : can.EJS({ text : op })(param);
 			return this._wrapWithTag(rendered, param);
 		},
 

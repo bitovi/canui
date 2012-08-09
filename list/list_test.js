@@ -134,26 +134,4 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		var el = container.list('rowElements', people[0]);
 		equal(can.$.trim(el.html()), 'John I', 'Got element with correct HTML');
 	});
-
-	test("view content", function() {
-		can.view.ejs('list_test', '<%= this.name %>');
-		var people = new can.Observe.List([
-			{
-				name : 'Rendered I',
-				age : 10
-			}, {
-				name : 'Rendered II',
-				age : 18
-			}
-		]);
-
-		var container = $('<ul>').appendTo('#qunit-test-area').list({
-			view : can.view('list_test'),
-			tag : 'li',
-			list : people
-		});
-
-		equal(container.find('li').length, 2, 'Two items rendered');
-		equal($.trim(container.find('li:first').html()), 'Rendered I', 'First li rendered');
-	});
 })
