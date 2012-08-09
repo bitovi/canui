@@ -319,19 +319,13 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 
 			},
 			init : function () {
-				// add a filler ...
-				var options = {};
-				if (this.options.parent) {
-					options.parent = this.options.parent;
-					options.fill = this.options.fill;
-				}
-				this.element.fills(options).css('overflow', 'auto');
+				this.element.fills(this.options.parent).css('overflow', 'auto');
 
 			},
 			// listen on resize b/c we want to do this right away
 			// in case anyone else cares about the table's
 			// dimensions (like table scroll)
-			resize : function (ev) {
+			resize : function (el, ev) {
 				var table = this.$.table,
 					el = this.element[0];
 				//let the table flow naturally
@@ -342,7 +336,6 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 				} else {
 					table.outerWidth(this.element.width())
 				}
-
 			}
 		});
 
@@ -408,9 +401,6 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 				this._addSpacer('tfoot');
 			}
 
-
-			// add representations of the header cells to the bottom of the table
-
 			// fill up the parent
 			// make the scroll body fill up all other space
 			if (this.options.fill) {
@@ -419,6 +409,7 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 				});
 			}
 
+			// add representations of the header cells to the bottom of the table
 			var scrolls = $(this.$.head).add(this.$.foot);
 			this.on(this.$.scrollBody, 'scroll', function (ev) {
 				scrolls.scrollLeft($(ev.target).scrollLeft());
@@ -428,7 +419,7 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 			this.update();
 		},
 
-		update : function() {
+		update : function(options) {
 			if (this.$.foot) {
 				this._addSpacer('tfoot');
 			}
@@ -436,7 +427,11 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 				this._addSpacer('thead');
 			}
 
-			this.resize();
+			// Triggering the resize event needs a slight delay
+			// TODO figure how this would work without
+			setTimeout(can.proxy(function() {
+				this.element.trigger('resize');
+			}, this), 10);
 		},
 
 		_wrapWithTable : function (i, tag) {
@@ -558,7 +553,7 @@ module['canui/table_scroll/table_scroll.js'] = (function ($) {
 		 * This is either triggered by the `resize` event or should be called manually when
 		 * the table content or dimensions change.
 		 */
-		resize : function () {
+		resize : function (el, ev) {
 			var body = this.$.body,
 				children = body.find("tr:first:not([data-spacer])").children(),
 				// getting the outer widths is the most expensive thing
@@ -1869,6 +1864,9 @@ module['canui/list/list.js'] = (function($) {
 				// Update the mapping from can.Observe unique id to Observe instance
 				self._cidMap[observe[self.options.cid]] = observe;
 				return this._content('view', observe);
+				var op = this.options.view,
+					row = can.isFunction(op) ? op.call(this, observe) : can.view(op, observe);
+				return this._wrapWithTag(row, observe)
 			}, this));
 		},
 
@@ -1876,9 +1874,10 @@ module['canui/list/list.js'] = (function($) {
 			if(!this.options[name]) {
 				return '';
 			}
-			var rendered = can.isFunction(this.options[name]) ?
-				this.options[name].call(this, param) :
-				can.view(this.options[name], param);
+			var op = this.options[name],
+				rendered = can.isFunction(op) ?
+					op.call(this, param) :
+					can.view.frag(can.EJS({ text : op })(param));
 			return this._wrapWithTag(rendered, param);
 		},
 
@@ -2013,7 +2012,7 @@ module['canui/list/list.js'] = (function($) {
 			});
 		}
 	});
-})(module["jquery"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["can/view/view.js"], module["can/observe/observe.js"]);
+})(module["jquery"], module["can/control/control.js"], module["can/control/plugin/plugin.js"], module["can/view/view.js"], module["can/observe/observe.js"], module["can/view/ejs/ejs.js"]);
 module['canui/grid/grid.js'] = (function($) {
 	var appendIf = function(el, tag) {
 		if(el.is(tag) || !tag) {
@@ -2024,21 +2023,17 @@ module['canui/grid/grid.js'] = (function($) {
 			return res;
 		}
 		return el.append(can.$('<' + tag + '>')).find(tag);
-	};
-
-	// The header default EJS view
-	can.view.ejs('canui_grid_header', '<tr>' +
-		'<% can.each(this, function(col) { %>' +
-			'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
-			'<%= col.attr(\'header\') %>' +
-			'</th>' +
-		'<% }) %>' +
-	'</tr>');
-
-	// The default row view
-	can.view.ejs('canui_grid_row', '<% can.each(this, function(current) { %>' +
-		'<td><%== current() %></td>' +
-	'<% }); %>');
+	},
+	headerView = '<tr>' +
+			'<% can.each(this, function(col) { %>' +
+				'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
+				'<%= col.attr(\'header\') %>' +
+				'</th>' +
+			'<% }) %>' +
+		'</tr>',
+	rowView = '<% can.each(this, function(current) { %>' +
+			'<td><%== current() %></td>' +
+		'<% }); %>';
 
 	can.Control('can.ui.Grid', {
 		pluginName : 'grid',
@@ -2057,8 +2052,8 @@ module['canui/grid/grid.js'] = (function($) {
 				});
 				return this._rowView('row', false, row);
 			},
-			row : 'canui_grid_row',
-			header : 'canui_grid_header',
+			row : rowView,
+			header : headerView,
 			empty : function() {
 				return 'No data';
 			},
@@ -2110,9 +2105,9 @@ module['canui/grid/grid.js'] = (function($) {
 					return '';
 				}
 
-				current =  can.isFunction(current) ?
+				current = can.isFunction(current) ?
 					current.call(this, param) :
-					can.view(current, param);
+					can.view.frag(can.EJS({ text : current })(param));
 
 				// TODO maybe make an option
 				if(wrap && !can.$(current).is('td')) {
