@@ -209,39 +209,29 @@ Initialize it with the following options:
 
 ### Row views
 
-A row is defined by the `tag` name and a `view` name or callback for the content of that tag.
-With a simple [EJS](http://canjs.us/#can_ejs) row view like this:
-
-{% highlight html %}
-<script type="text/ejs" id="rowEJS">
-    <%= this.attr('name') %>
-</script>
-{% endhighlight %}
-
-Initialising the list widget for an unordered list like `<ul id="list"></ul>` can look like this:
+A row is defined by the `tag` name and a `view` containing an [EJS](http://canjs.us/#can_ejs) view
+or callback that returns the content of that tag. The current observable will be passed either as the EJS
+view context or as the callback parameter.
+Initialize the list widget on an unordered list (`<ul id="list"></ul>`) like this:
 
 {% highlight javascript %}
 $('#list').list({
   tag : 'li',
-  view : 'rowEJS',
+  view : '<%= this.attr(\'name\') %>',
   list : new can.Observe.List([{
     name : 'Jean-Luc'
   }])
 });
 {% endhighlight %}
 
-`empty` and `loading` will also be wrapped into the tag and can be either a view name or a callback
-that returns the content. This can also be a a view renderer retrieved by `can.view('viewname')`.
-To set it to a string, for example, initializing an empty list (to fill it later)
-can be done like this:
+`empty` and `loading` will also be wrapped into the tag and can be either an EJS view or a callback
+that returns the content. Initializing an empty list can be done like this:
 
 {% highlight javascript %}
 $('#list').list({
   tag : 'li',
-  view : 'rowEJS',
-  empty : function() {
-    return 'Nothing found';
-  }
+  view : '<%= this.attr(\'name\') %>',
+  empty : 'Nothing found'
 });
 {% endhighlight %}
 
@@ -264,13 +254,9 @@ var Person = can.Model({
 
 $('#list').list({
   tag : 'li',
-  loading : function() {
-    return 'Please wait...';
-  },
-  empty : function() {
-    return 'Sorry, nothing found...';
-  },
-  view : 'rowEJS',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
+  view : '<%= this.attr(\'name\') %>',
   list : Person.findAll()
 });
 {% endhighlight %}
@@ -286,13 +272,9 @@ var paginator = new can.Observe({
 
 $('#list').list({
   tag : 'li',
-  loading : function() {
-    return 'Please wait...';
-  },
-  empty : function() {
-    return 'Sorry, nothing found...';
-  },
-  view : 'rowEJS',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
+  view : '<%= this.attr(\'name\') %>',
   list : can.compute(function() {
     return Person.findAll({
       offset : paginator.attr('offset'),
@@ -317,13 +299,9 @@ var compute = can.compute([]);
 
 $('#list').list({
   tag : 'li',
-  loading : function() {
-    return 'Please wait...';
-  },
-  empty : function() {
-    return 'Sorry, nothing found...';
-  },
-  view : 'rowEJS',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
+  view : '<%= this.attr(\'name\') %>',
   list : compute
 });
 
@@ -371,13 +349,9 @@ to work with the resolved list data, for example when a Deferred was passed init
 {% highlight javascript %}
 $('#list').list({
   tag : 'li',
-  loading : function() {
-    return 'Please wait...';
-  },
-  empty : function() {
-    return 'Sorry, nothing found...';
-  },
-  view : 'rowEJS',
+  loading : 'Please wait...',
+  empty : 'Sorry, nothing found...',
+  view : '<%= this.attr(\'name\') %>',
   list : Person.findAll()
 });
 
@@ -468,12 +442,8 @@ The grid can be initialized like this:
 
 {% highlight javascript %}
 $('#grid').grid({
-  empty : function() {
-    return 'Sorry, nothing found';
-  },
-  loading : function() {
-    return 'Retrieving people list...';
-  },
+  empty : 'Sorry, nothing found',
+  loading : 'Retrieving people list...',
   columns : [
     { header : 'First name', content : 'firstname' },
     { header : 'Last name', content : 'lastname' },
