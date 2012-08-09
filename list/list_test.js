@@ -4,7 +4,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 	test("Initialize empty", function () {
 		var emptyHtml = 'Nothing here...',
 			container = $('<ul>').appendTo('#qunit-test-area').list({
-				view : '//canui/list/test.ejs',
+				view : "<%= this.attr('name') %>",
 				empty : function() {
 					return emptyHtml;
 				},
@@ -26,7 +26,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		]);
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
-				view : '//canui/list/test.ejs',
+				view : "<%= this.attr('name') %>",
 				list : people,
 				tag : 'li'
 			});
@@ -47,7 +47,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		var dfd = can.Deferred();
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
-			view : '//canui/list/test.ejs',
+			view : "<%= this.attr('name') %>",
 			loading : function() { return 'Loading'; },
 			list : dfd,
 			tag : 'li'
@@ -79,7 +79,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		]);
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
-			view : '//canui/list/test.ejs',
+			view : "<%= this.attr('name') %>",
 			loading : function() { return 'Loading'; },
 			empty : function() { return 'Empty!' },
 			list : compute,
@@ -94,7 +94,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 	test("items", function() {
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
 			tag : 'li',
-			view : '//canui/list/test.ejs',
+			view : "<%= this.attr('name') %>",
 			list : [
 				{
 					name : 'John I',
@@ -126,7 +126,7 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		]);
 
 		var container = $('<ul>').appendTo('#qunit-test-area').list({
-			view : '//canui/list/test.ejs',
+			view : "<%= this.attr('name') %>",
 			tag : 'li',
 			list : people
 		});

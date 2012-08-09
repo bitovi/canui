@@ -8,21 +8,17 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			return res;
 		}
 		return el.append(can.$('<' + tag + '>')).find(tag);
-	};
-
-	// The header default EJS view
-	can.view.ejs('canui_grid_header', '<tr>' +
-		'<% can.each(this, function(col) { %>' +
-			'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
-			'<%= col.attr(\'header\') %>' +
-			'</th>' +
-		'<% }) %>' +
-	'</tr>');
-
-	// The default row view
-	can.view.ejs('canui_grid_row', '<% can.each(this, function(current) { %>' +
-		'<td><%== current() %></td>' +
-	'<% }); %>');
+	},
+	headerView = '<tr>' +
+			'<% can.each(this, function(col) { %>' +
+				'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
+				'<%= col.attr(\'header\') %>' +
+				'</th>' +
+			'<% }) %>' +
+		'</tr>',
+	rowView = '<% can.each(this, function(current) { %>' +
+			'<td><%== current() %></td>' +
+		'<% }); %>';
 
 	can.Control('can.ui.Grid', {
 		pluginName : 'grid',
@@ -41,8 +37,8 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 				});
 				return this._rowView('row', false, row);
 			},
-			row : 'canui_grid_row',
-			header : 'canui_grid_header',
+			row : rowView,
+			header : headerView,
 			empty : function() {
 				return 'No data';
 			},
@@ -94,9 +90,9 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 					return '';
 				}
 
-				current =  can.isFunction(current) ?
+				current = can.isFunction(current) ?
 					current.call(this, param) :
-					can.view(current, param);
+					can.view.frag(can.EJS({ text : current })(param));
 
 				// TODO maybe make an option
 				if(wrap && !can.$(current).is('td')) {
