@@ -72,6 +72,7 @@ steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
 		equal(can.$.trim(container.find('td:first').html()), 'John (50)', 'Live binding compute');
 	});
 
+	/* TODO how to test this best?
 	test("tableScroll", function() {
 		var container = $('<table>').appendTo('#qunit-test-area');
 		container.grid({
@@ -82,4 +83,5 @@ steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
 			list : []
 		});
 	});
+	*/
 });
