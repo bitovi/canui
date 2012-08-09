@@ -3,5 +3,6 @@ steal('funcunit',
 	'../table_scroll/table_scroll_test.js',
 	'../selectable/selectable_test.js',
 	'../split/split_test.js',
-	'../resizable/resizable_test.js'
+	'../resizable/resizable_test.js',
+	'../positionable/positionable_test.js'
 );
