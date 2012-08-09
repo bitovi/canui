@@ -2069,6 +2069,13 @@ module['canui/grid/grid.js'] = (function($) {
 			tag : 'tr'
 		}
 	}, {
+		/**
+		 * Set the grid up.
+		 *
+		 * @param {HTMLElement|jQuery|String} el The original element passed
+		 * @param {Object} ops The original options
+		 * @return {Array} Arguments to pass to `init`
+		 */
 		setup : function(el, ops) {
 			var table = appendIf(can.$(el), 'table');
 
@@ -2117,6 +2124,11 @@ module['canui/grid/grid.js'] = (function($) {
 			}
 		},
 
+		/**
+		 * Update the options and rerender
+		 *
+		 * @param {Object} options The options to update
+		 */
 		update : function(options) {
 			can.Control.prototype.update.apply(this, arguments);
 			var self = this;
