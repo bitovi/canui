@@ -30,19 +30,13 @@ steal('jquery', 'can/control',
 
 			},
 			init : function () {
-				// add a filler ...
-				var options = {};
-				if (this.options.parent) {
-					options.parent = this.options.parent;
-					options.fill = this.options.fill;
-				}
-				this.element.fills(options).css('overflow', 'auto');
+				this.element.fills(this.options.parent).css('overflow', 'auto');
 
 			},
 			// listen on resize b/c we want to do this right away
 			// in case anyone else cares about the table's
 			// dimensions (like table scroll)
-			resize : function (ev) {
+			resize : function (el, ev) {
 				var table = this.$.table,
 					el = this.element[0];
 				//let the table flow naturally
@@ -53,7 +47,6 @@ steal('jquery', 'can/control',
 				} else {
 					table.outerWidth(this.element.width())
 				}
-
 			}
 		});
 
@@ -119,9 +112,6 @@ steal('jquery', 'can/control',
 				this._addSpacer('tfoot');
 			}
 
-
-			// add representations of the header cells to the bottom of the table
-
 			// fill up the parent
 			// make the scroll body fill up all other space
 			if (this.options.fill) {
@@ -130,6 +120,7 @@ steal('jquery', 'can/control',
 				});
 			}
 
+			// add representations of the header cells to the bottom of the table
 			var scrolls = $(this.$.head).add(this.$.foot);
 			this.on(this.$.scrollBody, 'scroll', function (ev) {
 				scrolls.scrollLeft($(ev.target).scrollLeft());
@@ -139,7 +130,7 @@ steal('jquery', 'can/control',
 			this.update();
 		},
 
-		update : function() {
+		update : function(options) {
 			if (this.$.foot) {
 				this._addSpacer('tfoot');
 			}
@@ -147,7 +138,11 @@ steal('jquery', 'can/control',
 				this._addSpacer('thead');
 			}
 
-			this.resize();
+			// Triggering the resize event needs a slight delay
+			// TODO figure how this would work without
+			setTimeout(can.proxy(function() {
+				this.element.trigger('resize');
+			}, this), 10);
 		},
 
 		_wrapWithTable : function (i, tag) {
@@ -269,7 +264,7 @@ steal('jquery', 'can/control',
 		 * This is either triggered by the `resize` event or should be called manually when
 		 * the table content or dimensions change.
 		 */
-		resize : function () {
+		resize : function (el, ev) {
 			var body = this.$.body,
 				children = body.find("tr:first:not([data-spacer])").children(),
 				// getting the outer widths is the most expensive thing
