@@ -6,11 +6,13 @@ module("can.ui.Positionable",{
 	}
 });
 
-test("General positioning", function(){
+test("General positioning", 3, function(){
 	S('.tooltip').invisible('Tooltip hidden');
 	S('a:first').click();
 	S('.tooltip').visible('Tooltip shows');
-	S('.tooltip').css('top', '30px', 'Top is set to 30px');
+	S(function() {
+		ok(S.win.$('.tooltip').offset().top >= 30, "Positioned properly");
+	});
 });
 
 test("hideWhenInvisible", function(){
