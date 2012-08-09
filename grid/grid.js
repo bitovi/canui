@@ -53,6 +53,13 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			tag : 'tr'
 		}
 	}, {
+		/**
+		 * Set the grid up.
+		 *
+		 * @param {HTMLElement|jQuery|String} el The original element passed
+		 * @param {Object} ops The original options
+		 * @return {Array} Arguments to pass to `init`
+		 */
 		setup : function(el, ops) {
 			var table = appendIf(can.$(el), 'table');
 
@@ -101,6 +108,11 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			}
 		},
 
+		/**
+		 * Update the options and rerender
+		 *
+		 * @param {Object} options The options to update
+		 */
 		update : function(options) {
 			can.Control.prototype.update.apply(this, arguments);
 			var self = this;
