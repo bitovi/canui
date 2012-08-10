@@ -60,9 +60,6 @@ function($) {
 				// Update the mapping from can.Observe unique id to Observe instance
 				self._cidMap[observe[self.options.cid]] = observe;
 				return this._content('view', observe);
-				var op = this.options.view,
-					row = can.isFunction(op) ? op.call(this, observe) : can.view(op, observe);
-				return this._wrapWithTag(row, observe)
 			}, this));
 		},
 
@@ -73,8 +70,8 @@ function($) {
 			var op = this.options[name],
 				rendered = can.isFunction(op) ?
 					op.call(this, param) :
-					can.view.frag(can.EJS({ text : op })(param));
-			return this._wrapWithTag(rendered, param);
+					can.EJS({ text : op })(param);
+			return this._wrapWithTag(can.view.frag(rendered), param);
 		},
 
 		_wrapWithTag : function(content, observe) {

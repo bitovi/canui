@@ -134,4 +134,24 @@ steal('jquery', 'funcunit', 'canui/list', 'can/view/ejs', function($) {
 		var el = container.list('rowElements', people[0]);
 		equal(can.$.trim(el.html()), 'John I', 'Got element with correct HTML');
 	});
+
+	test("Renderer functions", function() {
+		var people = new can.Observe.List([
+			{
+				name : 'John I',
+				age : 10
+			}, {
+				name : 'John II',
+				age : 18
+			}
+		]);
+
+		var container = $('<ul>').appendTo('#qunit-test-area').list({
+			view : can.view('//canui/list/test.ejs'),
+			tag : 'li',
+			list : people
+		});
+
+		equal(container.find('li:first').html(), '<span>10</span>', 'Got element with correct HTML');
+	})
 })
