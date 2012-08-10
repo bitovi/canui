@@ -224,6 +224,18 @@ $('#list').list({
 });
 {% endhighlight %}
 
+Because `can.view(viewname)` returns a renderer callback you can load views like this:
+
+{% highlight javascript %}
+$('#list').list({
+  tag : 'li',
+  view : can.view('path/to/view.ejs'),
+  list : new can.Observe.List([{
+    name : 'Jean-Luc'
+  }])
+});
+{% endhighlight %}
+
 `empty` and `loading` will also be wrapped into the tag and can be either an EJS view or a callback
 that returns the content. Initializing an empty list can be done like this:
 
