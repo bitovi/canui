@@ -2020,17 +2020,19 @@ module['canui/grid/grid.js'] = (function($) {
 			return res;
 		}
 		return el.append(can.$('<' + tag + '>')).find(tag);
-	},
-	headerView = '<tr>' +
-			'<% can.each(this, function(col) { %>' +
-				'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
-				'<%= col.attr(\'header\') %>' +
-				'</th>' +
-			'<% }) %>' +
-		'</tr>',
-	rowView = '<% can.each(this, function(current) { %>' +
-			'<td><%== current() %></td>' +
-		'<% }); %>';
+	};
+
+	can.view.ejs('canui_grid_header', '<tr>' +
+		'<% can.each(this, function(col) { %>' +
+			'<th <%= (el) -> can.data(el, \'column\', col) %>>' +
+			'<%= col.attr(\'header\') %>' +
+			'</th>' +
+		'<% }) %>' +
+	'</tr>');
+
+	can.view.ejs('canui_grid_row', '<% can.each(this, function(current) { %>' +
+		'<td><%== current() %></td>' +
+	'<% }); %>');
 
 	can.Control('can.ui.Grid', {
 		pluginName : 'grid',
@@ -2047,16 +2049,12 @@ module['canui/grid/grid.js'] = (function($) {
 						});
 					row.push(content);
 				});
-				return this._rowView('row', false, row);
+				return this._rowView('row', false, row)();
 			},
-			row : rowView,
-			header : headerView,
-			empty : function() {
-				return 'No data';
-			},
-			loading : function() {
-				return 'Loading...';
-			},
+			row : can.view('canui_grid_row'),
+			header : can.view('canui_grid_header'),
+			empty : 'No data',
+			loading : 'Loading...',
 			scrollable : false,
 			tag : 'tr'
 		}
@@ -2101,10 +2099,11 @@ module['canui/grid/grid.js'] = (function($) {
 				if(!current) {
 					return '';
 				}
-
 				current = can.isFunction(current) ?
 					current.call(this, param) :
-					can.view.frag(can.EJS({ text : current })(param));
+					can.EJS({ text : current })(param);
+
+				current = can.view.frag(current);
 
 				// TODO maybe make an option
 				if(wrap && !can.$(current).is('td')) {
