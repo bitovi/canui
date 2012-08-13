@@ -1,10 +1,11 @@
-steal('jquery', 'can/control',
+steal('jquery', 
+	'can/control',
 	'can/construct/proxy',
 	'can/construct/super',
-	'jquery',
 	'jquery/event/reverse',
 	'can/control/plugin',
-	'canui/util/scrollbar_width.js', './position.js',
+	'canui/util/scrollbar_width.js', 
+	'./position.js',
 	function($){
 
 	if(!$.event.special.move) {
@@ -32,7 +33,7 @@ steal('jquery', 'can/control',
 	 * following code:
 	 *
 	 *		// Initialize the positionable plugin
-	 *		 new can.ui.layout.Positionable($("#tooltip"), {
+	 *		 new can.ui.Positionable($("#tooltip"), {
 	 *			my: "bottom",
 	 *			at: "top",
 	 *			of: $("#target")
@@ -62,9 +63,9 @@ steal('jquery', 'can/control',
 	 * following code:
 	 *
 	 *		// Position the autocomplete list below the search input
-	 *		new can.ui.layout.Positionable($("#autocomplete"), {
-	 *			my: "top left",
-	 *			at: "bottom left",
+	 *		new can.ui.Positionable($("#autocomplete"), {
+	 *			my: "left top",
+	 * 			at: "left bottom",
 	 *			of: $("#search")
 	 *		});
 	 *		
@@ -75,7 +76,7 @@ steal('jquery', 'can/control',
 	 *				$.ajax({
 	 *					url : "/search.php",
 	 *					data : el.val(),
-	 *					success : this.callback("updateResults")
+	 *					success : this.proxy("updateResults")
 	 *				});
 	 *			},
 	 *			"blur" : function() {
@@ -97,7 +98,7 @@ steal('jquery', 'can/control',
 	 *
 	 *
 	 * ## Demo
-	 * @demo canui/layout/positionable/positionable.html
+	 * @demo canui/positionable/positionable.html
 	 *
 	 * @param {Object} options Object literal describing how to position the
 	 * current element against another.
@@ -130,7 +131,6 @@ steal('jquery', 'can/control',
 	 * `of` element's parent that is scrollable has `position` set to `relative` or
 	 *`absolute`
 	 *
-	 * 
 	 * This plugin is built on top of the [jQuery UI Position Plugin](http://docs.jquery.com/UI/Position),
 	 * so you may refer to their documentation for more advanced usage.
 	 */
@@ -168,6 +168,7 @@ steal('jquery', 'can/control',
 	 	setup : function(element, options){
 	 		var controls = $(element).data('controls'),
 	 			pluginName = this.constructor._shortName;
+
 	 		if(controls && controls.length > 0){
 	 			for(var i = 0; i < controls.length; i++){
 	 				if(controls[i].constructor._shortName === pluginName){
@@ -175,11 +176,11 @@ steal('jquery', 'can/control',
 	 				}
 	 			}
 	 		}
+
 	 		this._super(element, options);
 	 	},
 
 		init : function(element, options) {
-			//if(this.element.length === 0) return;
 			this.element.css("position","absolute");
 			if(!this.options.keep){
 				// Remove element from it's parent only if this element _has_ parent.
@@ -187,14 +188,13 @@ steal('jquery', 'can/control',
 				if(this.element[0].parentNode){
 					this.element[0].parentNode.removeChild(this.element[0])
 				}
-				document.body.appendChild(this.element[0]);
-				
+
+				document.body.appendChild(this.element[0]);				
 			}
 		},
 
 		show : function(el, ev, position){
 			this.move.apply(this, arguments)
-			//clicks elsewhere should hide
 		},
 
 		move : function( el, ev, positionFrom ) {
@@ -213,6 +213,7 @@ steal('jquery', 'can/control',
 			if ( ! visible ) {
 				elem.css("opacity", 1).hide();
 			}
+
 			if(this.options.hideWhenInvisible){
 				this.element.toggle(this.isOfVisible());
 			}
@@ -228,6 +229,7 @@ steal('jquery', 'can/control',
 				pos.left + of.width() > of.offsetParent().width()) {
 					return false;
 			} 
+
 			return true;
 		},
 
@@ -237,13 +239,16 @@ steal('jquery', 'can/control',
 		position : function(el, ev, positionFrom){
 			var options  = $.extend({},this.options);
 				 options.of= positionFrom || options.of;
+
 			if(!options.of)	return;
+
 			var target = $( options.of ),
 				collision = ( options.collision || "flip" ).split( " " ),
 				offset = options.offset ? options.offset.split( " " ) : [ 0, 0 ],
 				targetWidth,
 				targetHeight,
 				basePosition;
+
 			if ( options.of.nodeType === 9 ) {
 				targetWidth = target.width();
 				targetHeight = target.height();
@@ -260,15 +265,14 @@ steal('jquery', 'can/control',
 			} else if (options.of.top){
 				options.at = "left top";
 				targetWidth = targetHeight = 0;
-				basePosition = { top: options.of.top, left: options.of.left };
-				
+				basePosition = { top: options.of.top, left: options.of.left };		
 			} else {
 				targetWidth = target.outerWidth();
 				targetHeight = target.outerHeight();
+
 				if(false){
-					var to = target.offset();
-					
-					var eo =this.element.parent().children(":first").offset();
+					var to = target.offset(),
+						eo =this.element.parent().children(":first").offset();
 					
 					basePosition = {
 						left: to.left - eo.left,
@@ -276,14 +280,14 @@ steal('jquery', 'can/control',
 					}
 				}else{
 					basePosition = target.offset();
-				}
-				
+				}			
 			}
 		
 			// force my and at to have valid horizontal and veritcal positions
 			// if a value is missing or invalid, it will be converted to center 
 			$.each( [ "my", "at" ], this.proxy( function( i, val ) {
 				var pos = ( options[val] || "" ).split( " " );
+
 				if ( pos.length === 1) {
 					pos = this.constructor.rhorizontal.test( pos[0] ) ?
 						pos.concat( [this.constructor.vdefault] ) :
@@ -291,6 +295,7 @@ steal('jquery', 'can/control',
 							[ this.constructor.hdefault ].concat( pos ) :
 							[ this.constructor.hdefault, this.constructor.vdefault ];
 				}
+
 				pos[ 0 ] = this.constructor.rhorizontal.test( pos[0] ) ? pos[ 0 ] : this.constructor.hdefault;
 				pos[ 1 ] = this.constructor.rvertical.test( pos[1] ) ? pos[ 1 ] : this.constructor.vdefault;
 				options[ val ] = pos;
@@ -306,6 +311,7 @@ steal('jquery', 'can/control',
 			if ( offset.length === 1 ) {
 				offset[ 1 ] = offset[ 0 ];
 			}
+
 			offset[ 1 ] = parseInt( offset[1], 10 ) || 0;
 		
 			if ( options.at[0] === "right" ) {
@@ -322,7 +328,6 @@ steal('jquery', 'can/control',
 		
 			basePosition.left += offset[ 0 ];
 			basePosition.top += offset[ 1 ];
-			
 			
 			var elem = this.element,
 				elemWidth = elem.outerWidth(),
@@ -371,6 +376,7 @@ steal('jquery', 'can/control',
 					});
 				}
 			});
+
 			return position;
 		},
 
@@ -378,7 +384,7 @@ steal('jquery', 'can/control',
 		 * Move element when the `of` element is moving
 		 */
 		"{of} move" : function(el, ev){
-			clearTimeout(this._finalMove)
+			clearTimeout(this._finalMove);
 			this.move(this.element, ev, el);
 			this._finalMove = setTimeout(this.proxy(function(){
 				this.move(this.element, ev, el);
