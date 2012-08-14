@@ -1,10 +1,10 @@
-steal(
-	'can/construct/proxy',
-	'can/control',
-	'can/observe/compute',
-	'jquery/event/drag/limit', 
-	'jquery/event/drag/step'
-).then(function() {
+steal('can/construct/proxy',
+	  'can/control',
+	  'can/observe/compute',
+	  'jquery/event/drag/limit', 
+	  'jquery/event/drag/step',
+	  'jquery/dom/styles')
+.then(function() {
 
 	/**
 	 * @class can.ui.Slider
@@ -47,7 +47,7 @@ steal(
 	 *		});
 	 *
 	 * ## Demo
-	 * @demo canui/nav/slider/slider.html
+	 * @demo canui/slider/slider.html
 	 *
 	 * @param {Object} options - An object literal describing the range,
 	 * interval and starting value of the slider
@@ -57,20 +57,44 @@ steal(
 	 *	- `interval` {Number} - The step size that the slider should increment
 	 *	by when being moved.	
 	 *	- `val` {Number} - The initial starting value of the slider.
+	 * - `dim` {String} - The orientation of the slider.  Possible options are: 
+	 *	'h' for horiztonal or 'v' for vertical.
+	 * - `range` {String,Boolean} - A 'min' range goes from the slider min to one handle. 
+	 *	A 'max' range goes from one handle to the slider max.  Defaults to 'false'.
+	 * `contained` {Boolean} - If the slider is contained in the parent.
 	 */
 	can.Control("can.ui.Slider",
-		/**
-		 * @hide
-		 * @static
-		 */
+	/**
+	 * @hide
+	 * @static
+	 */
 	{
 		defaults: {
 			min: 0,
 			max: 10,
 			step : 1,
-			// if the slider is contained in the parent
 			contained : true,
-			val : undefined
+			val : undefined,
+			orientation: "h",
+			range: false
+		},
+		dimMap:{
+			h: {
+				outer: "outerWidth",
+				offset: "left",
+				border: "borderLeft",
+				padding: "paddingLeft",
+				dim: "width",
+				pos: "clientX"
+			},
+			v: {
+				outer: "outerHeight",
+				offset: "top",
+				border: "borderTop",
+				padding: "paddingTop",
+				dim: "height",
+				pos: "clientY"
+			},
 		}
 	}, 
 	/**
@@ -79,11 +103,22 @@ steal(
 	{		
 		init: function() {
 			this.element.css("position", 'relative');
-			// convert options to computed
+			this.dimMap = this.constructor.dimMap[this.options.orientation];
+
 			for(var optionName in this.options){
 				this.options[optionName] = can.compute(this.options[optionName])
 			}
-			// rebind
+
+			if(this.options.contained){
+				this.options.parent = this.element.parent();
+			}
+
+			if(this.options.range){
+				this.element[this.options.range() === "min" 
+					? 'before' : 'after']("<div class='slider-fill " + 
+						this.options.range() + "' />");
+			}
+
 			this.on();
 			if ( this.options.val() ) {
 				this.updatePosition()
@@ -95,42 +130,53 @@ steal(
 		getDimensions: function() {
 			var spots = this.options.max() - this.options.min() + 1,
 				parent = this.element.parent(),
-				outerWidth = this.element.outerWidth(),
-				styles, leftSpace;
+				outer = this.element[this.dimMap.outer](),
+				styles, space;
 
-			this.widthToMove = parent.width() - outerWidth;
-			this.widthOfSpot = this.widthToMove / (spots - 1);
+			this.dimToMove = parent[this.dimMap.dim]() - outer;
+			this.dimOfSpot = this.dimToMove / (spots - 1);
 
-			styles = parent.styles("borderLeftWidth", "paddingLeft");
-			leftSpace = parseInt(styles.borderLeftWidth) + parseInt(styles.paddingLeft) || 0;
-			this.leftStart = parent.offset().left + leftSpace - (this.options.contained() ? 0 : Math.round(outerWidth / 2));
+			styles = parent.styles(this.dimMap.border, this.dimMap.padding);
+			space = parseInt(styles[this.dimMap.border]) + parseInt(styles[this.dimMap.padding]) || 0;
+
+			this.start = parent.offset()[this.dimMap.offset] + space - (this.options.contained() ? 0 : Math.round(outer / 2));
 		},
 		"draginit": function( el, ev, drag ) {
 			this.getDimensions();
-			drag.limit(this.element.parent(), this.options.contained ? undefined : "width")
-				.step(this.widthOfSpot, this.element.parent());
+			drag.limit(this.element.parent(), this.options.contained ? undefined : this.dimMap.offset)
+				.step(this.dimOfSpot, this.element.parent());
 		},
 		"dragmove": function( el, ev, drag ) {
 			var current = this.determineValue();
 			if(this.lastMove !== current){
-				
 				this.element.trigger( "changing", current );
 				this.lastMove = current;
+				this.updateRange(Math.round((current - this.options.min()) * this.dimOfSpot));
 			} 
 		},
 		"dragend": function( el, ev, drag ) {
 			this.options.val( this.determineValue() )
 		},
-		determineValue : function() {
-			var left = this.element.offset().left - this.leftStart,
-				spot = Math.round(left / this.widthOfSpot);
+		determineValue : function(offset) {
+			var offset = (offset || this.element.offset()[this.dimMap.offset]) - this.start,
+				spot = Math.round(offset / this.dimOfSpot);
 			return spot + this.options.min();
 		},
 		updatePosition: function() {
 			this.getDimensions();
-			this.element.offset({
-				left: this.leftStart + Math.round((this.options.val() - this.options.min()) * this.widthOfSpot)
-			})
+			var dim = Math.round((this.options.val() - this.options.min()) * this.dimOfSpot);
+
+			var offset = {};
+			offset[this.dimMap.offset] = this.start + dim;
+			this.element.offset(offset);
+
+			this.updateRange(dim);
+		},
+		updateRange:function(dim){
+			if(this.options.range()){
+				this.element[this.options.range() === "min" ? 
+					"prev" : "next"]()[this.dimMap.dim](dim);
+			}
 		},
 		/**
 		 * @param {Number} value - Optional. The new value for the slider. If
@@ -138,15 +184,28 @@ steal(
 		 * @return {Number}
 		 */
 		val: function( value ) {
+			if(value != undefined){
+				if(value < this.options.min()){
+					value = this.options.min();
+				} else if(value > this.options.max()){
+					value = this.options.max();
+				}
+			}
+
 			return this.options.val(value)
 		},
-
 		"{val} change" : function(){
-			// change the position ... 
 			this.lastMove = this.options.val();
-			console.log("changed to ", this.lastMove)
 			this.updatePosition();
-			this.element.trigger( "change", this.lastMove )
+
+			this.element.trigger("changing", this.lastMove)
+						.trigger("change", this.lastMove);
+		},
+		"{parent} click":function(elm,ev){
+			if(ev.srcElement != this.element[0]){
+				this.getDimensions();
+				this.options.val(this.determineValue(ev[this.dimMap.pos]));
+			}
 		}
 	})
 
