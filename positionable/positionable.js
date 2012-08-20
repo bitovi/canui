@@ -198,6 +198,13 @@ steal('jquery',
 		},
 
 		move : function( el, ev, positionFrom ) {
+			// When combined with 'drag', this can fire
+			// causing errors when its goes to try to call
+			// methods on the Drag class rather than what its expecting
+			if($.Drag && positionFrom instanceof $.Drag) {
+				return false;
+			}
+			
 			var position = this.position.apply(this, arguments),
 				elem     = this.element,
 				options  = this.options;
