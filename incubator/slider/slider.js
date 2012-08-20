@@ -76,7 +76,8 @@ steal('can/construct/proxy',
 			contained : true,
 			val : undefined,
 			orientation: "h",
-			range: false
+			range: false,
+			animate: true
 		},
 		dimMap:{
 			h: {
@@ -145,6 +146,7 @@ steal('can/construct/proxy',
 			this.getDimensions();
 			drag.limit(this.element.parent(), this.options.contained ? undefined : this.dimMap.offset)
 				.step(this.dimOfSpot, this.element.parent());
+			this.element.addClass('dragging');
 		},
 		"dragmove": function( el, ev, drag ) {
 			var current = this.determineValue();
@@ -156,6 +158,7 @@ steal('can/construct/proxy',
 		},
 		"dragend": function( el, ev, drag ) {
 			this.options.val( this.determineValue() )
+			this.element.removeClass('dragging');
 		},
 		determineValue : function(offset) {
 			var offset = (offset || this.element.offset()[this.dimMap.offset]) - this.start,
@@ -167,8 +170,14 @@ steal('can/construct/proxy',
 			var dim = Math.round((this.options.val() - this.options.min()) * this.dimOfSpot);
 
 			var offset = {};
-			offset[this.dimMap.offset] = this.start + dim;
-			this.element.offset(offset);
+			offset[this.dimMap.offset] = dim;
+
+			if(this.options.animate()){
+				this.element.animate(offset, 'fast');
+			} else {
+				offset[this.dimMap.offset] = this.start + dim
+				this.element.offset(offset);
+			}
 
 			this.updateRange(dim);
 		},
