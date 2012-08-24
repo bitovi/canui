@@ -55,7 +55,7 @@ steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
 		var container = $('<table>').appendTo('#qunit-test-area');
 		container.grid({
 			columns : [{
-				name : "Person",
+				header : "Person",
 				content : function(observe) {
 					return observe.attr('name') + ' (' + observe.attr('age') + ')';
 				}
@@ -72,16 +72,16 @@ steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
 		equal(can.$.trim(container.find('td:first').html()), 'John (50)', 'Live binding compute');
 	});
 
-	/* TODO how to test this best?
 	test("tableScroll", function() {
 		var container = $('<table>').appendTo('#qunit-test-area');
 		container.grid({
 			columns : columns,
-			loading : function() { return 'Loading...'; },
-			empty : function() { return 'Nothing found' },
+			loading : 'Loading...',
+			empty : 'Nothing found',
 			scrollable : true,
 			list : []
 		});
+		var scrollControl = container.grid('tableScroll');
+		ok(scrollControl instanceof can.ui.TableScroll, 'Got a TableScroll instance');
 	});
-	*/
 });
