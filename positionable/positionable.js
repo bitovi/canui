@@ -272,7 +272,12 @@ steal('jquery',
 			} else if (options.of.top){
 				options.at = "left top";
 				targetWidth = targetHeight = 0;
-				basePosition = { top: options.of.top, left: options.of.left };		
+				basePosition = { top: options.of.top, left: options.of.left };	
+			} else if(target.is('path') || target.is('rect')) { 
+				//SVG elements have .width() and .height() of 0, so we have to use getBBox()
+				targetWidth = target[0].getBBox().width;
+				targetHeight = target[0].getBBox().height;
+				basePosition = target.offset();	
 			} else {
 				targetWidth = target.outerWidth();
 				targetHeight = target.outerHeight();
