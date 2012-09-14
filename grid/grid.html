@@ -2,93 +2,99 @@
 <html>
 <head>
   <title>CanUI Grid</title>
-  <style type="text/css">
-    section {
-      width: 50%;
-      margin: 0 auto;
-      border: 1px solid #EFEFEF;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    td, th {
-      padding: 5px;
-      border: 1px solid #505050;
-    }
-  </style>
 </head>
 <body style="padding-top: 30px;">
 
 <div class="container">
-  <section style="height: 200px;">
-    <table id="grid" class="table table-bordered"></table>
-  </section>
+  <h1 class="page-header">CanUI Grid</h1>
 
-  <input id="page" type="text"/>
+  <div style="height: 300px; overflow: auto;" class="table-bordered">
+    <table id="grid" class="table"></table>
+  </div>
+
+  <div class="pagination pagination-centered">
+    <ul>
+      <li class="active"><a href="#">1</a></li>
+      <li><a href="#">2</a></li>
+      <li><a href="#">3</a></li>
+      <li><a href="#">4</a></li>
+    </ul>
+  </div>
 </div>
 
 
 <script type="text/javascript" src="../../steal/steal.js"></script>
 <script type="text/javascript">
-  steal('jquery', 'canui/grid', 'can/model', 'can/util/fixture', 'steal/less',
-      function ($) {
-        steal('canui/table_scroll/table_scroll.less', function () {
-          var Model = can.Model({
-            findAll : 'GET /models'
-          }, {});
+  steal('jquery', 'canui/grid', 'can/model', 'can/util/fixture', 'steal/less', 'canui/style')
+      .then('canui/table_scroll/table_scroll.less', function () {
+        var Model = can.Model({
+          findAll : 'GET /models'
+        }, {});
 
-          var store = can.fixture.make(40, function (i) {
-            return {
-              id : i,
-              name : 'Dave ' + i,
-              age : i + 20
-            }
+        var store = can.fixture.make(60, function (i) {
+          return {
+            id : i + 1,
+            name : 'User ' + i,
+            age : Math.floor(Math.random() * 100)
+          }
+        });
+
+        can.fixture.delay = 300;
+        can.fixture('GET /models', store.findAll);
+
+        var offset = 0,
+            paginator = new can.Observe({
+              offset : 0,
+              limit : 15
+            });
+
+        var compute = can.compute(function() {
+          return Model.findAll({
+            offset : paginator.attr('offset'),
+            limit : paginator.attr('limit')
           });
+        });
 
-          can.fixture('GET /models', store.findAll);
-
-          var offset = 0,
-              paginator = new can.Observe({
-                offset : 0,
-                limit : 10
-              });
-
-          var dfd = Model.findAll();
-
-          $('#grid').grid({
-            columns : [
-              {
-                header : 'Test',
-                content : 'name'
-              },
-              {
-                header : 'Age',
-                content : 'age'
-              },
-              {
-                header : 'Stuff',
-                content : function (observe) {
-                  return observe.attr('name') + ' ' + observe.attr('age');
-                }
-              },
-              {
-                header : 'Things',
-                content : function (observe) {
-                  return observe._cid;
-                }
+        $('#grid').grid({
+          columns : [
+            {
+              header : 'Name',
+              content : function(observe) {
+                return '<input style="width: 100px;" size="3" type="text" class="name" data-id="' + observe.attr('id') +
+                    '" value="' + observe.attr('name') + '" />';
               }
-            ],
-            scrollable : true,
-            list : dfd
-          });
+            },
+            {
+              header : 'Age',
+              content : 'age'
+            },
+            {
+              header : 'Display name',
+              content : function (observe) {
+                return observe.attr('name').toLowerCase() + '_' + observe.attr('age');
+              }
+            }
+          ],
+          scrollable : true,
+          list : compute
+        });
 
 
-          $('#page').change(function () {
-            paginator.attr('offset', $(this).val());
-          });
+        $('#page').change(function () {
+          paginator.attr('offset', $(this).val());
+        });
+
+        $('.pagination a').click(function() {
+          paginator.attr('offset', (parseInt($(this).html()) - 1) * 10);
+          $('li.active').removeClass('active');
+          $(this).closest('li').addClass('active');
+        });
+
+        $('body').on('change', '.name', function() {
+          // We can grab the model directly from the store based on the data id
+          var model = Model.store[$(this).data('id')];
+          model.attr('name', $(this).val());
+          $(window).trigger('resize');
         });
       })
 </script>
