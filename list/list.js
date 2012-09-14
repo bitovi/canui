@@ -13,9 +13,14 @@ function($) {
 		},
 
 		/**
-		 * Updates the options and re-renders the list.
+		 * Updates the options and re-renders the list. Will also be called
+		 * by subsequent calls to `$(element).list([options])`.
 		 *
-		 * @param {Object} [options] The options to udpate
+		 *      $('#list').list({ view : '<li><%= this.attr("name") %></li>' });
+		 *      //
+		 *      $('#list').list({ list : [{ name : 'Test' }] });
+		 *
+		 * @param {Object} [options] The options to update
 		 */
 		update : function(options) {
 			can.Control.prototype.update.call(this, options);
@@ -140,7 +145,11 @@ function($) {
 		},
 
 		/**
-		 * Returns all rows or all rows representing the given list of observables.
+		 * Returns a jQuery collection of all rows or all rows for the given observables:
+		 *
+		 *      // Retrieves the row element for the first observe
+		 *      $('#list').list('rowElements', people[0]);
+		 *      // -> [<li data-cid="...">John</li>]
 		 *
 		 * @param arg
 		 * @return {*}
