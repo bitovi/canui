@@ -95,7 +95,7 @@ steal('can/construct/proxy',
 				padding: "paddingTop",
 				dim: "height",
 				pos: "clientY"
-			},
+			}
 		}
 	}, 
 	/**

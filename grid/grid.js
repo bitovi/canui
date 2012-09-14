@@ -93,7 +93,7 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 
 				current = can.view.frag(current);
 
-				// TODO maybe make an option
+				// TODO maybe make an option, what if it is not a TD?
 				if(wrap && !can.$(current).is('td')) {
 					current = can.$('<td colspan="' + self.options.columns.length
 						+ '"></td>').html(current);
@@ -149,20 +149,14 @@ steal('jquery', 'can/control', 'canui/list', 'can/view/ejs', 'canui/table_scroll
 			}
 		},
 
-		items : function() {
-			return this.control.list.items.apply(this.control.list, arguments);
-		},
-
-		list : function() {
-			return this.control.list.list.apply(this.control.list, arguments);
-		},
-
-		rowElements : function() {
-			return this.control.list.rowElements.apply(this.control.list, arguments);
-		},
-
 		tableScroll : function() {
 			return this.control.tableScroll;
+		}
+	});
+
+	can.each(['items', 'list', 'rowElements'], function(name) {
+		can.ui.Grid.prototype[name] = function() {
+			return this.control.list[name].apply(this.control.list, arguments);
 		}
 	});
 });

@@ -1,4 +1,4 @@
-steal('jquery').then(function ($) {
+steal('jquery', function () {
 	window.can || (window.can = {});
 	window.can.ui || (window.can.ui = {});
 
