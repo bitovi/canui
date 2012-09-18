@@ -277,7 +277,7 @@ steal('jquery', 'can/control', 'jquery/event/drag', 'jquery/dom/dimensions', 'ca
 
 		'.{handleClassName} draginit' : function (el, ev, drag) {
 			this.margin = this.element.offsetv().plus(this.element.dimensionsv('outer')).minus(el.offsetv());
-			this.overflow = $.curCSS(this.element[0], 'overflow');
+			this.overflow = $.css(this.element[0], 'overflow');
 
 			if (!$.support.correctOverflow && this.overflow == 'visible') {
 				this.element.css('overflow', 'hidden');
