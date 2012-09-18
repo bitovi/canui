@@ -363,8 +363,8 @@ steal('jquery',
 				if ( $.ui.position[ collision[i] ] ) {
 					var isEvent = ((options.of && options.of.preventDefault) != null),
 						within = $(isEvent || !options.of ? window : options.of),
-						marginLeft = parseInt( $.curCSS( elem[0], "marginLeft", true ) ) || 0,
-						marginTop = parseInt( $.curCSS( elem[0], "marginTop", true ) ) || 0;
+						marginLeft = parseInt( $.css( elem[0], "marginLeft", true ) ) || 0,
+						marginTop = parseInt( $.css( elem[0], "marginTop", true ) ) || 0;
 						
 					var scrollInfo = getScrollInfo(within);
 					$.ui.position[ collision[i] ][ dir ]( position, {
@@ -373,13 +373,13 @@ steal('jquery',
 						elem: elem,
 						within : within,
 						collisionPosition : {
-							marginLeft: parseInt( $.curCSS( elem[0], "marginLeft", true ) ) || 0,
-							marginTop: parseInt( $.curCSS( elem[0], "marginTop", true ) ) || 0
+							marginLeft: parseInt( $.css( elem[0], "marginLeft", true ) ) || 0,
+							marginTop: parseInt( $.css( elem[0], "marginTop", true ) ) || 0
 						},
 						collisionWidth: elemWidth + marginLeft +
-							( parseInt( $.curCSS( elem[0], "marginRight", true ) ) || 0 ) + scrollInfo.width,
+							( parseInt( $.css( elem[0], "marginRight", true ) ) || 0 ) + scrollInfo.width,
 						collisionHeight: elemHeight + marginTop +
-						( parseInt( $.curCSS( elem[0], "marginBottom", true ) ) || 0 ) + scrollInfo.height,
+						( parseInt( $.css( elem[0], "marginBottom", true ) ) || 0 ) + scrollInfo.height,
 						elemWidth: elemWidth,
 						elemHeight: elemHeight,
 						offset: offset,

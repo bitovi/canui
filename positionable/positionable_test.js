@@ -2,7 +2,7 @@ steal('funcunit').then(function(){
 
 module("can.ui.Positionable",{
 	setup: function(){
-        S.open("//canui/positionable/demos.html");
+        S.open("//canui/positionable/positionable.html");
 	}
 });
 
