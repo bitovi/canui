@@ -1,4 +1,4 @@
-steal("jquery", "canui/grid", 'funcunit/qunit').then(function ($) {
+steal("jquery", "canui/grid", 'funcunit/qunit', function ($) {
 
 	module("can.ui.Grid");
 
