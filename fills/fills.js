@@ -1,4 +1,21 @@
 steal('jquery', 'jquery/dom/dimensions', 'jquery/event/resize', function( $ ) {
+	
+	
+function T(){
+	var a=[];						//Holds the timer stack
+	return{
+		s:function(n){					//Starts a new timer, pass in 'n' as the name of the timer
+			a.unshift({n:n,t:new Date()})		//Puts the timer on top of the stack
+		},
+		e:function(l){					//Ends the most recently started timer
+			l=a.shift();				//Gets the timer from top of the stack
+			return((new Date()-l.t)+'ms|'+l.n)	//Returns elapsed milliseconds of named timer
+		}
+	}
+}
+	var Timer = T();
+	
+	
 	//evil things we should ignore
 	var matches = /script|td/,
 
@@ -155,6 +172,7 @@ steal('jquery', 'jquery/dom/dimensions', 'jquery/event/resize', function( $ ) {
 
 	$.extend(filler, {
 		parentResize : function( ev ) {
+			Timer.s("Resize");
 			if (ev.data.filler.is(':hidden')) {
 				return;
 			}
@@ -236,6 +254,8 @@ steal('jquery', 'jquery/dom/dimensions', 'jquery/event/resize', function( $ ) {
 			if ( isBleeder ) {
 				last.remove();
 			}
+			
+			console.log(Timer.e())
 		}
 	});
 })
