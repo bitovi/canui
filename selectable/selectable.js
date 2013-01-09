@@ -70,7 +70,7 @@ $.event.special.activate = {
  *        console.log(activated, 'has been activated')
  *     })
  * 
- * However, if [jQuery.fn.model] is used to add model data to those elements, 
+ * However, if [jQuery.fninstance] is used to add model data to those elements, 
  * then activated will be the model instances.
  * 
  * @param {HTMLElement} element an HTMLElement or jQuery-wrapped element.
@@ -228,7 +228,7 @@ can.Control('can.ui.Selectable',{
 			
 			// activate the new one
 			
-			el.trigger("activate", el.models ? [el.models()] : [el]);
+			el.trigger("activate", el.instances ? [el.instances()] : [el]);
 			
 		}else if(ev.ctrlKey || ev.metaKey || ev === true){ // if we add to the 'activated' list
 			
@@ -237,8 +237,8 @@ can.Control('can.ui.Selectable',{
 				el.trigger("deactivate");
 			}else{
 				var activated = this.element.find("."+this.options.activatedClassName);
-				if(el.models){
-					el.trigger("activate", [ activated.add(el).models() ]);
+				if(el.instances){
+					el.trigger("activate", [ activated.add(el).instances() ]);
 				}else{
 					el.trigger("activate", [ activated.add(el) ]);
 				}
