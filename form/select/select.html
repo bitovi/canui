@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>Select</title>
+</head>
+<body>
+	<h1>Select Demo</h1>
+	<form id='inquiry'></form>
+	<script src='../../../steal/steal.js'></script>
+	<script type='text/mustache' id='selectsStache'>
+		<p>Groups {{select groups groupId}}</p>
+		
+		<p>Products {{select products inquiry.productId}}</p>
+	</script>
+	<script type='text/mustache' id='selects2Stache'>
+		<p>Groups 
+			<select {{select groups groupId}}>
+				
+			</select>
+		</p>
+		
+		<p>Products {{select products inquiry.productId}}</p>
+	</script>
+	<script>
+	steal('canui/form/select','can','can/util/fixture',function(Select, can,fixture){
+		
+		Product = can.Model({
+			findAll: "/products"
+		},{});
+		Group = can.Model({
+			findAll: "/products"
+		},{})
+		
+		fixture("/groups",function(){
+			return [{
+				name: "Ice Creams",
+				id: 1
+			},{
+				name: "Fruits",
+				id: 2
+			}]
+		})
+		
+		fixture("/products",function(request){
+			return ({
+				1: [{id: 3, name: "Cherry"},{id: 4, name: "Vanilla"}],
+				2: [{id: 5, name: "Apple"}, {id: 6, name: "Bannana"}]
+			})
+		});
+		
+		var inquiry = new can.Map({}),
+		
+			// needs to be set by inquiry.productId -> groupId
+			groupId = can.compute(),
+			
+			products = can.compute(function(){
+				if( groupId() !== undefined ){
+					return Product.findAll({
+						groupId: groupId()
+					})
+				} else {
+					return []
+				}
+			})
+		
+		$("#inquiry").html(
+			can.view("selectsStache",{
+				group: Group.findAll({}),
+				groupId: groupId,
+				products: products,
+				inquiry: inquiry
+			})
+		)
+		
+	});
+	</script>
+</body>
+</html>
